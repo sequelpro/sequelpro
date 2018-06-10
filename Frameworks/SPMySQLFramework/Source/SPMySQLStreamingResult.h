@@ -46,7 +46,8 @@
 
 @property (readonly, assign) BOOL dataDownloaded;
 
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection;
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection;
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding NS_UNAVAILABLE;
 
 // Allow result fetching to be cancelled
 - (void)cancelResultLoad;

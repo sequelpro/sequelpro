@@ -52,7 +52,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 static NSUInteger SPSourceColumnTypeText        = 0;
 static NSUInteger SPSourceColumnTypeInteger     = 1;
 
-@interface SPFieldMapperController (Private)
+@interface SPFieldMapperController ()
 - (void)_setupFieldMappingPopUpMenus;
 @end
 
@@ -70,7 +70,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 		fieldMappingCurrentRow = 0;
 		if(managerDelegate == nil) {
 			NSBeep();
-			NSLog(@"FieldMapperController was called without a delegate.");
+			NSLog(@"SPFieldMapperController was called without a delegate.");
 			return nil;
 		}
 		theDelegate = managerDelegate;

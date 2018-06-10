@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <development version="8000" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SPFilterTableController">
+            <connections>
+                <outlet property="filterTableClearButton" destination="egJ-46-zsK" id="Fq2-LD-h16"/>
+                <outlet property="filterTableDistinctCheckbox" destination="kkn-vg-a1j" id="TDf-pu-HAk"/>
+                <outlet property="filterTableFilterButton" destination="97a-9g-t3j" id="zGX-CX-g2a"/>
+                <outlet property="filterTableLiveSearchCheckbox" destination="eW4-hf-ige" id="PR5-mS-LUC"/>
+                <outlet property="filterTableNegateCheckbox" destination="hdW-5X-UDu" id="NRU-CX-c0O"/>
+                <outlet property="filterTableQueryTitle" destination="WnE-kO-RxG" id="sVM-Sr-Er2"/>
+                <outlet property="filterTableSearchAllFields" destination="dCH-wr-KbJ" id="9xp-Cs-5GB"/>
+                <outlet property="filterTableSetDefaultOperatorSheet" destination="bXg-MQ-c5g" id="Ph2-a6-R2H"/>
+                <outlet property="filterTableSetDefaultOperatorValue" destination="KZQ-WN-rtU" id="QzL-fH-WTe"/>
+                <outlet property="filterTableSplitView" destination="Xk5-iI-QZb" id="Bv6-90-fDH"/>
+                <outlet property="filterTableView" destination="8SC-Fh-D9L" id="nIF-tg-501"/>
+                <outlet property="filterTableWhereClause" destination="NLm-8l-MrV" id="hMK-Jf-ydK"/>
+                <outlet property="window" destination="nzu-CY-UY7" id="EAC-V1-Oqh"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Advanced Filter" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="SPTableFilterPanel" animationBehavior="default" id="nzu-CY-UY7" userLabel="Advanced Filter Table Window" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" nonactivatingPanel="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="162" y="162" width="752" height="317"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <value key="minSize" type="size" width="600" height="317"/>
+            <view key="contentView" id="mgs-0s-XcR" userLabel="Filter Table Window">
+                <rect key="frame" x="0.0" y="0.0" width="752" height="317"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <splitView dividerStyle="thin" id="Xk5-iI-QZb" customClass="SPSplitView">
+                        <rect key="frame" x="0.0" y="40" width="752" height="277"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <customView id="P9T-cb-A1O">
+                                <rect key="frame" x="0.0" y="0.0" width="752" height="141"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="Zmg-mY-I5z">
+                                        <rect key="frame" x="0.0" y="0.0" width="752" height="142"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" id="PO1-a7-WBE">
+                                            <rect key="frame" x="0.0" y="23" width="752" height="119"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <tableView identifier="AdvancedFilterTableView" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" selectionHighlightStyle="sourceList" alternatingRowBackgroundColors="YES" emptySelection="NO" autosaveColumns="NO" headerView="eWi-Z3-2Sr" id="8SC-Fh-D9L" customClass="SPCopyTable">
+                                                    <rect key="frame" x="0.0" y="0.0" width="752" height="119"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <size key="intercellSpacing" width="3" height="2"/>
+                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                    <tableColumns>
+                                                        <tableColumn identifier="" width="748.921875" minWidth="40" maxWidth="1000" id="VGf-vY-BT6">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="isR-QM-Zos">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        </tableColumn>
+                                                    </tableColumns>
+                                                    <connections>
+                                                        <outlet property="dataSource" destination="-2" id="dtT-f4-3yI"/>
+                                                        <outlet property="delegate" destination="-2" id="hvw-73-bmw"/>
+                                                    </connections>
+                                                </tableView>
+                                            </subviews>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="E65-Wo-BZ0">
+                                            <rect key="frame" x="1" y="95.851600000000005" width="751.5" height="15"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="Vnq-gG-GNh">
+                                            <rect key="frame" x="224" y="17" width="15" height="102"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <tableHeaderView key="headerView" id="eWi-Z3-2Sr">
+                                            <rect key="frame" x="0.0" y="0.0" width="752" height="23"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableHeaderView>
+                                    </scrollView>
+                                </subviews>
+                            </customView>
+                            <customView id="86d-uH-suk">
+                                <rect key="frame" x="0.0" y="142" width="752" height="135"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <button toolTip="Perform filter while typing (⌘T)" id="eW4-hf-ige">
+                                        <rect key="frame" x="537" y="97" width="197" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Search while typing" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="XTP-ut-VQL">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent">t</string>
+                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                        </buttonCell>
+                                    </button>
+                                    <button toolTip="If set negate entire WHERE clause (⌘N)" id="hdW-5X-UDu">
+                                        <rect key="frame" x="537" y="77" width="197" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Negate clause" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="F8k-g6-s93">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent">n</string>
+                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="toggleNegateClause:" target="-2" id="leY-aP-oLa"/>
+                                        </connections>
+                                    </button>
+                                    <button toolTip="Perform filtering by using SELECT DISTINCT" id="kkn-vg-a1j">
+                                        <rect key="frame" x="537" y="57" width="197" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Select distinct" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="n3P-Lk-0tv">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent">d</string>
+                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="toggleDistinctSelect:" target="-2" id="8jm-si-8p2"/>
+                                        </connections>
+                                    </button>
+                                    <textField verticalHuggingPriority="750" id="Lir-gD-3FT">
+                                        <rect key="frame" x="537" y="37" width="137" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Default operator:" id="fOH-Fz-FbJ">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <button toolTip="Set default operator which should be used if pattern doen't begin with an operator" verticalHuggingPriority="750" id="AnE-dT-3rB">
+                                        <rect key="frame" x="678" y="35" width="55" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Edit" bezelStyle="rounded" alignment="center" controlSize="mini" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="XWS-uW-aVd">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="miniSystem"/>
+                                            <string key="keyEquivalent">o</string>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="setDefaultOperator:" target="-2" id="4EO-rc-z56"/>
+                                        </connections>
+                                    </button>
+                                    <textField verticalHuggingPriority="750" id="eRx-Pl-FwB">
+                                        <rect key="frame" x="554" y="19" width="181" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="LIKE '%@%'" id="Hag-Ug-A4W">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <connections>
+                                            <binding destination="E5e-Af-qLe" name="value" keyPath="values.FilterTableDefaultOperator" id="snR-X9-Dad"/>
+                                        </connections>
+                                    </textField>
+                                    <textField verticalHuggingPriority="750" id="WnE-kO-RxG">
+                                        <rect key="frame" x="17" y="115" width="294" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="WHERE query" id="iRJ-gQ-rJy">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="xjR-JS-f3q">
+                                        <rect key="frame" x="20" y="21" width="512" height="92"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" copiesOnScroll="NO" id="TBT-Nn-Rpn">
+                                            <rect key="frame" x="1" y="1" width="510" height="90"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" findStyle="panel" allowsNonContiguousLayout="YES" id="NLm-8l-MrV" customClass="SPTextView">
+                                                    <rect key="frame" x="0.0" y="0.0" width="510" height="90"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                    <size key="minSize" width="510" height="90"/>
+                                                    <size key="maxSize" width="518" height="10000000"/>
+                                                    <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                    <connections>
+                                                        <outlet property="delegate" destination="-2" id="nM8-08-2Rj"/>
+                                                    </connections>
+                                                </textView>
+                                            </subviews>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="dpu-5p-anM">
+                                            <rect key="frame" x="1" y="119" width="232" height="15"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="vhd-6q-xMy">
+                                            <rect key="frame" x="224" y="1" width="15" height="127"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                    </scrollView>
+                                </subviews>
+                            </customView>
+                        </subviews>
+                        <holdingPriorities>
+                            <real value="250"/>
+                            <real value="250"/>
+                        </holdingPriorities>
+                    </splitView>
+                    <button toolTip="Apply Filter to current Table (⌘F)" verticalHuggingPriority="750" id="97a-9g-t3j">
+                        <rect key="frame" x="595" y="12" width="143" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Filter" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aso-eo-Uh0">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">f</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="filterTable:" target="-2" id="RuC-c5-aMP"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Create a WHERE clause to search for the last typed pattern in all fields" verticalHuggingPriority="750" id="dCH-wr-KbJ">
+                        <rect key="frame" x="14" y="12" width="216" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Search all fields" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Ojj-hI-KbP">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">a</string>
+                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="toggleLookAllFieldsMode:" target="-2" id="S7l-Cy-VFb"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Clear all Filter Criteria (⌘⌫)" verticalHuggingPriority="750" id="egJ-46-zsK">
+                        <rect key="frame" x="452" y="12" width="143" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Clear" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="0Ec-f2-4N5">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent"></string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="tableFilterClear:" target="-2" id="f00-8N-Gks"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="initialFirstResponder" destination="8SC-Fh-D9L" id="zBz-CD-uGL"/>
+            </connections>
+            <point key="canvasLocation" x="146" y="493"/>
+        </window>
+        <userDefaultsController representsSharedInstance="YES" id="E5e-Af-qLe"/>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="bXg-MQ-c5g" userLabel="Filter Table Set Default Operator Sheet" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="235" y="418" width="251" height="102"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <value key="minSize" type="size" width="251" height="102"/>
+            <value key="maxSize" type="size" width="251" height="102"/>
+            <view key="contentView" id="nxt-IK-Ukn">
+                <rect key="frame" x="0.0" y="0.0" width="251" height="102"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" tag="1" id="dzK-Nw-kVd">
+                        <rect key="frame" x="140" y="13" width="96" height="28"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="lvs-yx-6iE">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeSheet:" target="-2" id="Szi-4E-jOM"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" id="eKg-Fu-UA7">
+                        <rect key="frame" x="46" y="13" width="96" height="28"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="FJo-lE-2oi">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeSheet:" target="-2" id="HtZ-Ia-92w"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" id="iLi-Fh-ovo">
+                        <rect key="frame" x="17" y="76" width="208" height="14"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Enter Filter Table's Default Operator:" id="Aps-Nn-GvU">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <comboBox verticalHuggingPriority="750" id="KZQ-WN-rtU">
+                        <rect key="frame" x="20" y="51" width="214" height="22"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <comboBoxCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" completes="NO" numberOfVisibleItems="5" id="UeY-Ej-YPK">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </comboBoxCell>
+                    </comboBox>
+                    <button horizontalHuggingPriority="750" verticalHuggingPriority="750" id="6wf-fR-6SB">
+                        <rect key="frame" x="17" y="14" width="25" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QYZ-U7-zc5">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="showDefaultOperaterHelp:" target="-2" id="hCi-Lg-QN3"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <point key="canvasLocation" x="75" y="132"/>
+        </window>
+    </objects>
+</document>

@@ -42,6 +42,12 @@ void SPMainQSync(void (^block)(void))
 	}
 }
 
+void SPMainLoopAsync(void (^block)(void))
+{
+	NSArray *modes = @[NSDefaultRunLoopMode];
+	CFRunLoopPerformBlock(CFRunLoopGetMain(), modes, block);
+}
+
 int SPBetterRandomBytes(uint8_t *buf, size_t count)
 {
 	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {

@@ -33,7 +33,7 @@
 #import "SPEditorPreferencePane.h"
 #import "SPGeneralPreferencePane.h"
 
-@interface SPPreferenceController (PrivateAPI)
+@interface SPPreferenceController () <NSWindowDelegate>
 
 - (void)_setupToolbar;
 - (void)_resizeWindowForContentView:(NSView *)view;
@@ -224,6 +224,103 @@
 	[[[self window] contentView] addSubview:view];
 	
 	[view setFrameOrigin:NSMakePoint(0, 0)];
+}
+
+#pragma mark - SPPreferenceControllerDelegate
+
+#pragma mark Window delegate methods
+
+/**
+ * Trap window close notifications and use them to ensure changes are saved.
+ */
+- (void)windowWillClose:(NSNotification *)notification
+{
+	[[NSColorPanel sharedColorPanel] close];
+
+	// Mark the currently selected field in the window as having finished editing, to trigger saves.
+	if ([[self window] firstResponder]) {
+		[[self window] endEditingFor:[[self window] firstResponder]];
+	}
+}
+
+/**
+ * Trap window resize notifications and use them to disable resizing on most tabs
+ * - except for the favourites tab.
+ */
+- (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize
+{
+	[[NSColorPanel sharedColorPanel] close];
+
+	return [sender showsResizeIndicator] ? frameSize : [sender frame].size;
+}
+
+#pragma mark -
+#pragma mark Toolbar delegate methods
+
+- (NSToolbarItem *)toolbar:(NSToolbar *)aToolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+{
+	if ([itemIdentifier isEqualToString:SPPreferenceToolbarGeneral]) {
+		return generalItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarTables]) {
+		return tablesItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNotifications]) {
+		return notificationsItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarAutoUpdate]) {
+		return autoUpdateItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNetwork]) {
+		return networkItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarEditor]) {
+		return editorItem;
+	}
+	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarShortcuts]) {
+		return shortcutItem;
+	}
+
+	return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+}
+
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)aToolbar
+{
+	return @[
+			 SPPreferenceToolbarGeneral,
+			 SPPreferenceToolbarTables,
+			 SPPreferenceToolbarNotifications,
+			 SPPreferenceToolbarEditor,
+			 SPPreferenceToolbarShortcuts,
+			 SPPreferenceToolbarAutoUpdate,
+			 SPPreferenceToolbarNetwork
+			 ];
+}
+
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)aToolbar
+{
+	return @[
+			 SPPreferenceToolbarGeneral,
+			 SPPreferenceToolbarTables,
+			 SPPreferenceToolbarNotifications,
+			 SPPreferenceToolbarEditor,
+			 SPPreferenceToolbarShortcuts,
+			 SPPreferenceToolbarAutoUpdate,
+			 SPPreferenceToolbarNetwork
+			 ];
+}
+
+- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)aToolbar
+{
+	return @[
+			 SPPreferenceToolbarGeneral,
+			 SPPreferenceToolbarTables,
+			 SPPreferenceToolbarNotifications,
+			 SPPreferenceToolbarEditor,
+			 SPPreferenceToolbarShortcuts,
+			 SPPreferenceToolbarAutoUpdate,
+			 SPPreferenceToolbarNetwork
+			 ];
 }
 
 #pragma mark -

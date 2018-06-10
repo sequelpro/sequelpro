@@ -28,7 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-union SPSomeFileHandle;
+struct SPRawFileHandles;
 /**
  * @class SPFileHandle SPFileHandle.h
  *
@@ -40,7 +40,7 @@ union SPSomeFileHandle;
  */
 @interface SPFileHandle : NSObject 
 {
-	union SPSomeFileHandle *wrappedFile;
+	struct SPRawFileHandles *wrappedFile;
 	char *wrappedFilePath;
 
 	NSMutableData *buffer;

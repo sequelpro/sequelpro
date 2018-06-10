@@ -33,7 +33,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPNarrowDownCompletion.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
 #import "SPNavigatorController.h"
@@ -42,7 +41,6 @@
 #ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
-#import "SPDatabaseViewController.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
@@ -52,6 +50,7 @@
 #import "SPCopyTable.h"
 #import "SPEditorTokens.h"
 #import "SPSyntaxParser.h"
+#import "SPHelpViewerClient.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -81,10 +80,11 @@
 
 #pragma mark -
 
-@interface SPTextView (Private_API)
+@interface SPTextView ()
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 #ifndef SP_CODA
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor;
 - (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
 #endif
 - (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
@@ -185,27 +185,56 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
 #ifndef SP_CODA
-	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
-	NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
-	[self setQueryEditorBackgroundColor:backgroundColor];
-	[self setBackgroundColor:backgroundColor];
-	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
-	[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
-	[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
-	[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
-	[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
-	[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
-	[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
-	[self setTextColor:otherTextColor];
-	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
-	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
+	{
+		struct csItem {
+			NSString *p;
+			SEL m;
+		} colorSetup[] = {
+			{ .p = SPCustomQueryEditorHighlightQueryColor, .m = @selector(setQueryHiliteColor:) },
+			{ .p = SPCustomQueryEditorBackgroundColor,     .m = @selector(setQueryEditorBackgroundColor:) },
+			{ .p = SPCustomQueryEditorBackgroundColor,     .m = @selector(setBackgroundColor:) },
+			{ .p = SPCustomQueryEditorCommentColor,        .m = @selector(setCommentColor:) },
+			{ .p = SPCustomQueryEditorQuoteColor,          .m = @selector(setQuoteColor:) },
+			{ .p = SPCustomQueryEditorSQLKeywordColor,     .m = @selector(setKeywordColor:) },
+			{ .p = SPCustomQueryEditorBacktickColor,       .m = @selector(setBacktickColor:) },
+			{ .p = SPCustomQueryEditorNumericColor,        .m = @selector(setNumericColor:) },
+			{ .p = SPCustomQueryEditorVariableColor,       .m = @selector(setVariableColor:) },
+			{ .p = SPCustomQueryEditorTextColor,           .m = @selector(setOtherTextColor:) },
+			{ .p = SPCustomQueryEditorTextColor,           .m = @selector(setTextColor:) },
+			{ .p = SPCustomQueryEditorCaretColor,          .m = @selector(setInsertionPointColor:) },
+			{ .p = SPCustomQueryEditorSelectionColor,      .m = @selector(_setTextSelectionColor:) },
+			{ .p = nil, .m = NULL } // stop key
+		};
+		
+		struct csItem *item = &colorSetup[0];
+		
+		NSDictionary *vendorDefaults = [prefs volatileDomainForName:NSRegistrationDomain]; //prefs from -registerDefaults: in app controller
 
-	[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
+		do {
+			NSData *colorData = [prefs dataForKey:item->p];
+			NSColor *color;
+			BOOL canRetry = YES;
+retry:
+			if(colorData && (color = [NSUnarchiver unarchiveObjectWithData:colorData])) {
+				[self performSelector:item->m withObject:color];
+			}
+			else if(canRetry) {
+				// #2963: previous versions of SP would accept invalid data (resulting in `nil`) and store it in prefs,
+				//        so if loading failed use the default color instead (`nil` would cause exceptions later on)
+				colorData = [vendorDefaults objectForKey:item->p];
+				canRetry = NO;
+				SPLog(@"user defaults contains invalid value for theme color '%@'! (retrying with default value)", item->p);
+				goto retry;
+			}
+		} while((++item)->p);
+	}
+	
+	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	[self setAutomaticDashSubstitutionEnabled:NO];  // prevents -- from becoming —, the em dash.
 	[self setAutomaticQuoteSubstitutionEnabled:NO]; // prevents ' and " from becoming ‘, ’ and “, ” respectively.
 
-	// Register observers for the when editor background colors preference changes
+	// Register observers for the when editor colors preference changes
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSelectionColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorCaretColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
@@ -883,27 +912,24 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 
 	completionIsOpen = YES;
-	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
-					alreadyTyped:filter 
-					staticPrefix:prefix 
-					additionalWordCharacters:allow 
-					caseSensitive:!caseInsensitive
-					charRange:completionRange
-					parseRange:parseRange
-					inView:self
-					dictMode:isDictMode
-					dbMode:dbBrowseMode
-					tabTriggerMode:[self isSnippetMode]
-					fuzzySearch:fuzzySearch
-					backtickMode:backtickMode
-					withDbName:dbName
-					withTableName:tableName
-					selectedDb:currentDb
-					caretMovedLeft:caretMovedLeft
-					autoComplete:autoCompleteMode
-					oneColumn:isDictMode
-					alias:alias
-					withDBStructureRetriever:[tableDocumentInstance databaseStructureRetrieval]];
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName]
+	                                                   alreadyTyped:filter
+	                                                   staticPrefix:prefix
+	                                       additionalWordCharacters:allow
+	                                                  caseSensitive:!caseInsensitive
+	                                                      charRange:completionRange
+	                                                     parseRange:parseRange
+	                                                         inView:self
+	                                                       dictMode:isDictMode
+	                                                 tabTriggerMode:[self isSnippetMode]
+	                                                    fuzzySearch:fuzzySearch
+	                                                   backtickMode:backtickMode
+	                                                     selectedDb:currentDb
+	                                                 caretMovedLeft:caretMovedLeft
+	                                                   autoComplete:autoCompleteMode
+	                                                      oneColumn:isDictMode
+	                                                          alias:alias
+	                                       withDBStructureRetriever:[tableDocumentInstance databaseStructureRetrieval]];
 
 	completionParseRangeLocation = parseRange.location;
 
@@ -1032,7 +1058,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 - (IBAction)printDocument:(id)sender
 {
 
-	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// If Extended Table Info tab is active delegate the print call to the SPDatabaseDocument
 	// if the user doesn't select anything in self
 	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
 		[[(NSObject*)[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];
@@ -1079,7 +1105,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
 {
-	[customQueryInstance showHelpForCurrentWord:self];
+	[[tableDocumentInstance helpViewerClient] showHelpForCurrentWord:self];
 }
 #endif
 
@@ -1512,27 +1538,24 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 	completionIsOpen = YES;
-	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-					alreadyTyped:@"" 
-					staticPrefix:@"" 
-					additionalWordCharacters:@"_." 
-					caseSensitive:NO
-					charRange:aRange
-					parseRange:aRange
-					inView:self
-					dictMode:NO
-					dbMode:YES
-					tabTriggerMode:[self isSnippetMode]
-					fuzzySearch:fuzzySearchMode
-					backtickMode:NO
-					withDbName:@""
-					withTableName:@""
-					selectedDb:@""
-					caretMovedLeft:NO
-					autoComplete:NO
-					oneColumn:NO
-					alias:nil
-					withDBStructureRetriever:nil];
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
+	                                                   alreadyTyped:@""
+	                                                   staticPrefix:@""
+	                                       additionalWordCharacters:@"_."
+	                                                  caseSensitive:NO
+	                                                      charRange:aRange
+	                                                     parseRange:aRange
+	                                                         inView:self
+	                                                       dictMode:NO
+	                                                 tabTriggerMode:[self isSnippetMode]
+	                                                    fuzzySearch:fuzzySearchMode
+	                                                   backtickMode:NO
+	                                                     selectedDb:@""
+	                                                 caretMovedLeft:NO
+	                                                   autoComplete:NO
+	                                                      oneColumn:NO
+	                                                          alias:nil
+	                                       withDBStructureRetriever:nil];
 
 	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:aRange.location];
 
@@ -1665,27 +1688,24 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 							if (completionIsOpen) [completionPopup close], completionPopup = nil;
 							completionIsOpen = YES;
-							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-											alreadyTyped:@"" 
-											staticPrefix:@"" 
-											additionalWordCharacters:@"_." 
-											caseSensitive:NO
-											charRange:insertRange
-											parseRange:insertRange
-											inView:self
-											dictMode:NO
-											dbMode:NO
-											tabTriggerMode:[self isSnippetMode]
-											fuzzySearch:fuzzySearchMode
-											backtickMode:NO
-											withDbName:@""
-											withTableName:@""
-											selectedDb:@""
-											caretMovedLeft:NO
-											autoComplete:NO
-											oneColumn:YES
-											alias:nil
-											withDBStructureRetriever:nil];
+							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
+							                                                   alreadyTyped:@""
+							                                                   staticPrefix:@""
+							                                       additionalWordCharacters:@"_."
+							                                                  caseSensitive:NO
+							                                                      charRange:insertRange
+							                                                     parseRange:insertRange
+							                                                         inView:self
+							                                                       dictMode:NO
+							                                                 tabTriggerMode:[self isSnippetMode]
+							                                                    fuzzySearch:fuzzySearchMode
+							                                                   backtickMode:NO
+							                                                     selectedDb:@""
+							                                                 caretMovedLeft:NO
+							                                                   autoComplete:NO
+							                                                      oneColumn:YES
+							                                                          alias:nil
+							                                       withDBStructureRetriever:nil];
 
 							[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:r2.location];
 
@@ -3697,12 +3717,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPTextView (Private_API)
 
 /**
  * Sort function (mainly used to sort the words in the textView)
@@ -3735,6 +3751,11 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Set the selection colour
 	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
+}
+
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor
+{
+	[self _setTextSelectionColor:newSelectionColor onBackgroundColor:[self backgroundColor]];
 }
 #endif
 

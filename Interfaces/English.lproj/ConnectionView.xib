@@ -176,14 +176,14 @@
                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="5859"/>
                                 </imageView>
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="4910">
-                                    <rect key="frame" x="0.0" y="23" width="200" height="483"/>
+                                    <rect key="frame" x="0.0" y="23" width="200" height="490"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <clipView key="contentView" drawsBackground="NO" id="cjP-S4-7Nz">
-                                        <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="490"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" autosaveColumns="NO" id="4913" customClass="SPFavoritesOutlineView">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="490"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -261,7 +261,7 @@
                                                 <rect key="frame" x="0.0" y="0.0" width="681" height="480"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                 <subviews>
-                                                    <customView id="4888" customClass="NSCustomView">
+                                                    <customView wantsLayer="YES" id="4888" customClass="NSCustomView">
                                                         <rect key="frame" x="116" y="5" width="446" height="472"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         <subviews>
@@ -285,7 +285,7 @@
                                                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="5422">
+                                                            <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="5422">
                                                                 <rect key="frame" x="7" y="43" width="16" height="16"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                             </progressIndicator>

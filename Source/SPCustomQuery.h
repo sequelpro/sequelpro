@@ -31,17 +31,6 @@
 
 #import "SPDatabaseContentViewDelegate.h"
 
-#import <WebKit/WebKit.h>
-
-#define SP_HELP_TOC_SEARCH_STRING @"contents"
-#define SP_HELP_SEARCH_IN_MYSQL   0
-#define SP_HELP_SEARCH_IN_PAGE    1
-#define SP_HELP_SEARCH_IN_WEB     2
-#define SP_HELP_GOBACK_BUTTON     0
-#define SP_HELP_SHOW_TOC_BUTTON   1
-#define SP_HELP_GOFORWARD_BUTTON  2
-#define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
-
 #define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG       100001
 #define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG 100000
 #define SP_FAVORITE_HEADER_MENUITEM_TAG          200000
@@ -57,16 +46,14 @@
 @class SPMySQLConnection;
 @class SPMySQLStreamingResultStore;
 @class SPTextView;
-
-#ifdef SP_CODA
 @class SPDatabaseDocument;
 @class SPTablesList;
-#endif
+
 
 @interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate, SPDatabaseContentViewDelegate>
 {
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tablesListInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTablesList *tablesListInstance;
 
 #ifndef SP_CODA
 	IBOutlet id queryFavoritesButton;
@@ -124,12 +111,6 @@
 #ifndef SP_CODA
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
-	IBOutlet NSWindow *helpWebViewWindow;
-	IBOutlet WebView *helpWebView;
-	IBOutlet NSSearchField *helpSearchField;
-	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
-	IBOutlet NSSegmentedControl *helpNavigator;
-	IBOutlet NSSegmentedControl *helpTargetSelector;
 #endif
 
 	IBOutlet NSButton *queryInfoButton;
@@ -147,21 +128,12 @@
 	NSArray *currentQueryRanges;
 	BOOL currentQueryBeforeCaret;
 
-	NSString *mySQLversion;
 	NSTableColumn *sortColumn;
 
 	NSUInteger queryStartPosition;
 
-#ifndef SP_CODA
-	NSUInteger helpTarget;
-	WebHistory *helpHistory;
-	NSString *helpHTMLTemplate;
-#endif
-
 	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
-	NSCondition *resultLoadingCondition;
-	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
 	NSInteger editedRow;
@@ -217,17 +189,6 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
-#ifndef SP_CODA
-- (IBAction)showHelpForCurrentWord:(id)sender;
-- (IBAction)showHelpForSearchString:(id)sender;
-- (IBAction)helpSegmentDispatcher:(id)sender;
-- (IBAction)helpTargetDispatcher:(id)sender;
-- (IBAction)helpSearchFindNextInPage:(id)sender;
-- (IBAction)helpSearchFindPreviousInPage:(id)sender;
-- (IBAction)helpSelectHelpTargetMySQL:(id)sender;
-- (IBAction)helpSelectHelpTargetPage:(id)sender;
-- (IBAction)helpSelectHelpTargetWeb:(id)sender;
-#endif
 - (IBAction)filterQueryFavorites:(id)sender;
 - (IBAction)filterQueryHistory:(id)sender;
 - (IBAction)saveQueryHistory:(id)sender;
@@ -272,11 +233,6 @@
 #ifndef SP_CODA
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;
-- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp;
-- (void)showHelpFor:(NSString *)aString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp;
-- (void)helpTargetValidation;
-- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
-- (NSWindow *)helpWebViewWindow;
 #endif
 - (void)setMySQLversion:(NSString *)theVersion;
 
@@ -302,7 +258,6 @@
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
-- (void)historyItemsHaveBeenUpdated:(id)manager;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end

@@ -57,6 +57,10 @@
 @class SPCharsetCollationHelper;
 @class SPGotoDatabaseController;
 @class SPCreateDatabaseInfo;
+@class SPExtendedTableInfo;
+@class SPTableTriggers;
+@class SPTableRelations;
+@class SPHelpViewerClient;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -76,19 +80,20 @@
 
 	// IBOutlets
 	IBOutlet SPTablesList *tablesListInstance;
-	IBOutlet SPTableStructure *tableSourceInstance;				
+	IBOutlet SPTableStructure *tableSourceInstance;
 	IBOutlet SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
-	IBOutlet id tableRelationsInstance;
-	IBOutlet id tableTriggersInstance;
+	IBOutlet SPTableRelations *tableRelationsInstance;
+	IBOutlet SPTableTriggers *tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet SPTableData *tableDataInstance;
-	IBOutlet id extendedTableInfoInstance;
+	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 #ifndef SP_CODA
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
 #endif
+	IBOutlet SPHelpViewerClient *helpViewerClientInstance;
 
 	IBOutlet id statusTableAccessoryView;
 	IBOutlet id statusTableView;
@@ -126,8 +131,6 @@
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
 	IBOutlet NSButton *taskCancelButton;
-	
-	IBOutlet id favoritesButton;
 #endif
 	
 	IBOutlet id databaseNameField;
@@ -148,9 +151,9 @@
 	IBOutlet id renameDatabaseMessageField;
 	IBOutlet id renameDatabaseButton;
 
-	IBOutlet id chooseDatabaseButton;
+	IBOutlet NSPopUpButton *chooseDatabaseButton;
 #ifndef SP_CODA
-	IBOutlet id historyControl;
+	IBOutlet NSSegmentedControl *historyControl;
 	IBOutlet NSTabView *tableTabView;
 	
 	IBOutlet NSTableView *tableInfoTable;
@@ -194,8 +197,6 @@
 #ifndef SP_CODA /* ivars */
 	SPProcessListController *processListController;
 	SPServerVariablesController *serverVariablesController;
-
-	NSInteger currentTabIndex;
 #endif
 	NSString *selectedTableName;
 	SPTableType selectedTableType;
@@ -262,8 +263,6 @@
 	NSMutableArray *runningActivitiesArray;
 #endif
 
-	NSString *keyChainID;
-	
 #ifndef SP_CODA /* ivars */
 	NSThread *printThread;
 	
@@ -291,6 +290,8 @@
 	int64_t instanceId;
 }
 
+@property (nonatomic, assign) NSTableView *dbTablesTableView;
+
 #ifdef SP_CODA /* ivars */
 @property (assign) SPDatabaseData* databaseDataInstance;
 @property (assign) SPTableData* tableDataInstance;
@@ -305,9 +306,7 @@
 @property (assign) id databaseRenameNameField;
 @property (assign) id renameDatabaseButton;
 @property (assign) id databaseRenameSheet;
-#endif
 
-#ifdef SP_CODA /* ivars */
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
@@ -328,6 +327,8 @@
 @property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
 @property (readonly) int64_t instanceId;
 
+- (SPHelpViewerClient *)helpViewerClient;
+
 #ifndef SP_CODA /* method decls */
 - (BOOL)isUntitled;
 #endif
@@ -335,12 +336,11 @@
 
 #ifndef SP_CODA /* method decls */
 - (void)initQueryEditorWithString:(NSString *)query;
+#endif
 
 // Connection callback and methods
-#endif
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (SPMySQLConnection *)getConnection;
-- (void)setKeychainID:(NSString *)theID;
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
@@ -358,7 +358,7 @@
 - (IBAction)renameDatabase:(id)sender;
 #ifndef SP_CODA /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
-- (IBAction) makeTableListFilterHaveFocus:(id)sender;
+- (IBAction)makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)shutdownServer:(id)sender;
@@ -449,7 +449,6 @@
 - (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
-- (NSString *)keyChainID;
 - (NSString *)connectionID;
 #ifndef SP_CODA /* method decls */
 - (NSString *)tabTitleForTooltip;
@@ -461,6 +460,7 @@
 - (NSArray *)allTableNames;
 - (SPTablesList *)tablesListInstance;
 - (SPCreateDatabaseInfo *)createDatabaseInfo;
+- (SPTableViewType) currentlySelectedView;
 
 #ifndef SP_CODA /* method decls */
 // Notification center methods
@@ -531,7 +531,47 @@
 - (void)connect;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
-
 #endif
+
+#pragma mark - SPDatabaseViewController
+
+// Accessors
+- (NSString *)table;
+- (SPTableType)tableType;
+
+- (BOOL)structureLoaded;
+- (BOOL)contentLoaded;
+- (BOOL)statusLoaded;
+
+#ifndef SP_CODA /* method decls */
+// Tab view control
+- (IBAction)viewStructure:(id)sender;
+- (IBAction)viewContent:(id)sender;
+- (IBAction)viewQuery:(id)sender;
+- (IBAction)viewStatus:(id)sender;
+- (IBAction)viewRelations:(id)sender;
+- (IBAction)viewTriggers:(id)sender;
+#endif
+
+- (void)setStructureRequiresReload:(BOOL)reload;
+- (void)setContentRequiresReload:(BOOL)reload;
+- (void)setStatusRequiresReload:(BOOL)reload;
+- (void)setRelationsRequiresReload:(BOOL)reload;
+
+// Table control
+- (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;
+
+#ifndef SP_CODA /* method decls */
+- (NSView *)databaseView;
+#endif
+
+#pragma mark - SPPrintController
+
+- (void)startPrintDocumentOperation;
+- (void)generateHTMLForPrinting;
+- (void)generateTableInfoHTMLForPrinting;
+
+- (NSArray *)columnNames;
+- (NSMutableDictionary *)connectionInformation;
 
 @end

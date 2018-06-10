@@ -34,7 +34,7 @@
  * Please see the header files for a general description of the purpose of this class.
  */
 
-@implementation SPCSVParser : NSObject
+@implementation SPCSVParser
 
 #pragma mark -
 #pragma mark Retrieving data from the CSV string

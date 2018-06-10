@@ -47,7 +47,7 @@ CLEAN='NO'
 MIN_OS_X_VERSION='10.6'
 ARCHITECTURES='-arch i386 -arch x86_64'
 
-CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared" -DWITHOUT_SERVER=1 -DWITH_ZLIB=system'
+CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared" -DWITHOUT_SERVER=1 -DWITH_ZLIB=system -DWITH_UNIT_TESTS=0'
 OUTPUT_DIR='SPMySQLFiles.build'
 
 ESC=`printf '\033'`
@@ -156,9 +156,15 @@ then
 	exit 1
 fi
 
+# For CMake 3.0+ use CMAKE_OSX_SYSROOT and CMAKE_OSX_DEPLOYMENT_TARGET to set SDK path and minimum version
+CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} -DCMAKE_OSX_SYSROOT='${SDK_PATH}' -DCMAKE_OSX_DEPLOYMENT_TARGET=${MIN_OS_X_VERSION}"
+
+# For CMake 2 add these parameters to the CFLAGS/CXXFLAGS:
+# -isysroot ${SDK_PATH} -mmacosx-version-min=${MIN_OS_X_VERSION}
+
 # C/C++ compiler flags
-export CFLAGS="-isysroot ${SDK_PATH} ${ARCHITECTURES} -O3 -fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=${MIN_OS_X_VERSION}"
-export CXXFLAGS="-isysroot ${SDK_PATH} ${ARCHITECTURES} -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti -mmacosx-version-min=${MIN_OS_X_VERSION}"
+export CFLAGS="${ARCHITECTURES} -O3 -fno-omit-frame-pointer -fno-exceptions"
+export CXXFLAGS="${ARCHITECTURES} -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti"
 
 echo "$ESC[1mConfiguring MySQL source...$ESC[0m"
 

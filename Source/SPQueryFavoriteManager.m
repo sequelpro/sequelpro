@@ -32,14 +32,12 @@
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPSplitView.h"
 #import "SPAppController.h"
-#import "SPAppleScriptSupport.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -201,11 +199,19 @@
 	[[self window] makeFirstResponder:favoriteNameTextField];
 
 	// Duplicate a selected favorite if sender == self
-	if (sender == self)
-		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
+	if (sender == self) {
+		favorite = [NSMutableDictionary dictionaryWithDictionary:@{
+			@"name":  [NSString stringWithFormat:NSLocalizedString(@"%@ Copy", @"query favorite manager : duplicate favorite : new favorite name"),[favoriteNameTextField stringValue]],
+			@"query": [NSString stringWithString:[favoriteQueryTextView string]] // #2938 - without copying the string we would store the live NS*MutableString object that backs the text view and changes its contents when selection changes!
+		}];
+	}
 	// Add a new favorite
-	else
-		favorite = [NSMutableDictionary dictionaryWithObjects:@[@"New Favorite", @""] forKeys:@[@"name", @"query"]];
+	else {
+		favorite = [NSMutableDictionary dictionaryWithDictionary:@{
+			@"name":  NSLocalizedString(@"New Favorite",@"query favorite manager : new favorite : name"),
+			@"query": @""
+		}];
+	}
 	
 	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
@@ -478,9 +484,7 @@
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [SPAppDelegate orderedDocuments])
-			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
-				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPQueryFavoritesHaveBeenUpdatedNotification object:self];
 	}
 #endif
 
@@ -815,8 +819,6 @@
 
 		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
 		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
@@ -824,15 +826,19 @@
 		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
 
-			spf = [[NSPropertyListSerialization propertyListFromData:pData 
-					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+			if(pData && !readError) {
+				spf = [[NSPropertyListSerialization propertyListWithData:pData
+																 options:NSPropertyListImmutable
+																  format:NULL
+																   error:&readError] retain];
+			}
+			
+			if(!spf || readError) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while reading data file", @"error while reading data file")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
+												   otherButton:nil
+									 informativeTextWithFormat:NSLocalizedString(@"File couldn't be read. (%@)", @"error while reading data file"), [readError localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -925,24 +931,25 @@
 
 			[spfdata setObject:favoriteData forKey:SPQueryFavorites];
 			
-			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
-													  format:NSPropertyListXMLFormat_v1_0
-											errorDescription:&err];
+			NSError *error = nil;
+			
+			NSData *plist = [NSPropertyListSerialization dataWithPropertyList:spfdata
+																	   format:NSPropertyListXMLFormat_v1_0
+																	  options:0
+																		error:&error];
 
-			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")]
+			if(error) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:@"%@", err];
+												   otherButton:nil
+									 informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
 				return;
 			}
 
-			NSError *error = nil;
 			[plist writeToURL:[panel URL] options:NSAtomicWrite error:&error];
 			if (error) [[NSAlert alertWithError:error] runModal];
 

@@ -108,16 +108,18 @@ typedef enum
 	SPTableTypeEvent = 4
 } SPTableType;
 
-// History views
-typedef enum
+// Content views
+typedef NS_ENUM(NSInteger, SPTableViewType)
 {
 	SPTableViewStructure   = 0,
 	SPTableViewContent     = 1,
 	SPTableViewCustomQuery = 2,
 	SPTableViewStatus      = 3,
 	SPTableViewRelations   = 4,
-	SPTableViewTriggers    = 5
-} SPTableViewType;
+	SPTableViewTriggers    = 5,
+
+	SPTableViewInvalid     = NSNotFound
+};
 
 // SSH tunnel password modes
 typedef enum
@@ -414,6 +416,7 @@ extern NSString *SPFileNameYearTokenName;
 extern NSString *SPFileNameMonthTokenName;
 extern NSString *SPFileNameDayTokenName;
 extern NSString *SPFileNameTimeTokenName;
+extern NSString *SPFileName24HourTimeTokenName;
 extern NSString *SPFileNameFavoriteTokenName;
 extern NSString *SPFileNameTableTokenName;
 
@@ -448,6 +451,9 @@ extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
 extern NSString *SPSSLCipherListKey;
+extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
+extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;
+extern NSString *SPContentFiltersHaveBeenUpdatedNotification;
 
 // URLs
 extern NSString *SPDonationsURL;

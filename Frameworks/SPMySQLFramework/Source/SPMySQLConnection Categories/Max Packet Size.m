@@ -67,7 +67,6 @@
  */
 - (NSUInteger)setGlobalMaxQuerySize:(NSUInteger)newMaxSize
 {
-
 	// Perform basic validation.  First, ensure the max query size is editable
 	if (![self isMaxQuerySizeEditable]) return NSNotFound;
 
@@ -114,8 +113,7 @@
 
 	NSInteger _maxQuerySize = maxQuerySizeString ? [maxQuerySizeString integerValue] : 0;
 
-	if(_maxQuerySize == 0)
-		NSLog(@"Query (%@) for max_allowed_packet returned invalid value: %ld (raw value: %@) (on %@)", query, _maxQuerySize, maxQuerySizeString, [self serverVersionString]);
+	if(_maxQuerySize == 0) NSLog(@"Query (%@) for max_allowed_packet returned invalid value: %ld (raw value: %@) (on %@)", query, _maxQuerySize, maxQuerySizeString, [self serverVersionString]);
 
 	return _maxQuerySize;
 }
@@ -164,12 +162,10 @@
  */
 - (BOOL)_attemptMaxQuerySizeIncreaseTo:(NSUInteger)targetSize
 {
-
 	// If the query size is editable, attempt to increase the size
 	if ([self isMaxQuerySizeEditable]) {
 		NSUInteger newSize = [self setGlobalMaxQuerySize:targetSize];
 		if (newSize != NSNotFound) {
-
 			// Successfully increased the global size - reconnect to use it, and return success
 			[self _reconnectAllowingRetries:YES];
 			return YES;
@@ -185,6 +181,7 @@
 		[delegate queryGaveError:errorMessage connection:self];
 	}
 
+	//TODO Setting the last error above should be enough at the framework level. Also this is the only case where -showErrorWithTitle:message: is even used, so we should get rid of it.
 	// Display an alert as this is a special failure
 	if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)]) {
 		[delegate showErrorWithTitle:NSLocalizedString(@"Error", @"error") message:errorMessage];
@@ -202,7 +199,6 @@
  */
 - (void)_restoreMaximumQuerySizeAfterQuery
 {
-
 	// Return if no action needs to be performed
 	if (queryActionShouldRestoreMaxQuerySize == NSNotFound) return;
 

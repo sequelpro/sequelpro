@@ -67,72 +67,73 @@ static inline NSString *PathForHTMLResource(NSString *named)
 
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
 {
+	@autoreleasepool {
+		NSURL *myURL = (NSURL *)url;
+		NSString *urlExtension = [[[myURL path] pathExtension] lowercaseString];
 
-	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+		NSString *html = nil;
+		NSInteger previewHeight = 280;
 
-	NSURL *myURL = (NSURL *)url;
-	NSString *urlExtension = [[[myURL path] pathExtension] lowercaseString];
-
-	NSString *html = nil;
-	NSInteger previewHeight = 280;
-
-	// Dispatch different file extensions
-	if([urlExtension isEqualToString:@"spf"]) {
-		html = PreviewForSPF(myURL, &previewHeight);
-	}
-	else if([urlExtension isEqualToString:@"spfs"]) {
-		html = PreviewForSPFS(myURL,&previewHeight);
-	}
-	else if([urlExtension isEqualToString:@"sql"]) {
-		html = PreviewForSQL(myURL,&previewHeight,preview);
-	}
-	
-	if(html) {
-		NSImage *iconImage;
-		
-		// Get current Sequel Pro's set of file icons
-		NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
-		
-		// just in case
-		if(!iconImages || [iconImages count] < 1)
-			iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
-		
-		if([iconImages count] > 1)
-			iconImage = [iconImages objectAtIndex:1];
-		else
-			iconImage = [iconImages objectAtIndex:0];
-		
-#warning This can cause a runtime error: "This application is assuming that a particular image contains an NSBitmapImageRep, which is not a good assumption.  We are instantiating a bitmap so that whatever this is keeps working, but please do not do this. (...)  This may break in the future."
-		// TODO: draw the image into a bitmap context and grab the jpeg representation?
-		NSData *image = [iconImage TIFFRepresentation];
-		
-		NSMutableDictionary *props    = [[NSMutableDictionary alloc] initWithCapacity:6];
-		NSMutableDictionary *imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
-		
-		[props setObject:@(previewHeight) forKey:(NSString *)kQLPreviewPropertyHeightKey];
-		[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
-		
-		if(image) {
-			[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
-			[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
+		// Dispatch different file extensions
+		if([urlExtension isEqualToString:@"spf"]) {
+			html = PreviewForSPF(myURL, &previewHeight);
 		}
-		
-		[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
-		[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
-		[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
-		[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
-		
-		QLPreviewRequestSetDataRepresentation(preview,
-											  (CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
-											  kUTTypeHTML,
-											  (CFDictionaryRef)props
-											  );
-		
-		[props release];
-		[imgProps release];
-	}
+		else if([urlExtension isEqualToString:@"spfs"]) {
+			html = PreviewForSPFS(myURL,&previewHeight);
+		}
+		else if([urlExtension isEqualToString:@"sql"]) {
+			html = PreviewForSQL(myURL,&previewHeight,preview);
+		}
 
-	[pool release];
+		if(html) {
+			NSImage *iconImage;
+
+			// Get current Sequel Pro's set of file icons
+			NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
+
+			// just in case
+			if(!iconImages || [iconImages count] < 1) {
+				iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
+			}
+
+			if([iconImages count] > 1) {
+				iconImage = [iconImages objectAtIndex:1];
+			}
+			else {
+				iconImage = [iconImages objectAtIndex:0];
+			}
+
+#warning This can cause a runtime error: "This application is assuming that a particular image contains an NSBitmapImageRep, which is not a good assumption.  We are instantiating a bitmap so that whatever this is keeps working, but please do not do this. (...)  This may break in the future."
+			// TODO: draw the image into a bitmap context and grab the jpeg representation?
+			NSData *image = [iconImage TIFFRepresentation];
+
+			NSMutableDictionary *props    = [[NSMutableDictionary alloc] initWithCapacity:6];
+			NSMutableDictionary *imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
+
+			[props setObject:@(previewHeight) forKey:(NSString *)kQLPreviewPropertyHeightKey];
+			[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
+
+			if(image) {
+				[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+				[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
+			}
+
+			[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
+			[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
+			[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
+			[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+
+			QLPreviewRequestSetDataRepresentation(
+				preview,
+				(CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
+				kUTTypeHTML,
+				(CFDictionaryRef)props
+			);
+
+			[props release];
+			[imgProps release];
+		}
+	}
 
 	return noErr;
 }
@@ -145,20 +146,23 @@ void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview)
 #pragma mark -
 
 NSString *PreviewForSPF(NSURL *myURL, NSInteger *previewHeight) {
-	
+	NSDictionary *spf = nil;
 	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
-	NSString *html = nil;
-	
+
 	// Get spf data as dictionary
-	NSData *pData = [NSData dataWithContentsOfFile:[myURL path] options:NSUncachedRead error:&readError];
-	NSDictionary *spf = [[NSPropertyListSerialization propertyListFromData:pData
-	                                                      mutabilityOption:NSPropertyListImmutable
-	                                                                format:&format
-	                                                      errorDescription:&convError] retain];
+	NSData *pData = [NSData dataWithContentsOfFile:[myURL path]
+										   options:NSUncachedRead
+											 error:&readError];
 	
-	if(!readError && spf && ![convError length] && (format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+	if(pData && !readError) {
+		spf = [[NSPropertyListSerialization propertyListWithData:pData
+														 options:NSPropertyListImmutable
+														  format:NULL
+														   error:&readError] retain];
+	}
+	
+	NSString *html = nil;
+	if(!readError && spf) {
 		NSString *spfType = [spf objectForKey:SPFFormatKey];
 		NSString *(*fp)(NSDictionary *spf,NSURL *myURL, NSInteger *previewHeight) = NULL;
 		// Dispatch different spf formats
@@ -378,16 +382,21 @@ NSString *PreviewForSPFS(NSURL *myURL,NSInteger *previewHeight)
 	}
 	
 	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
 	NSDictionary *spf = nil;
 	
 	// Get info.plist data as dictionary
-	NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", [myURL path]] options:NSUncachedRead error:&readError];
-	spf = [[NSPropertyListSerialization propertyListFromData:pData
-											mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+	NSData *pData = [NSData dataWithContentsOfFile:[[myURL path] stringByAppendingPathComponent:@"info.plist"]
+										   options:NSUncachedRead
+											 error:&readError];
 	
-	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+	if(pData && !readError) {
+		spf = [[NSPropertyListSerialization propertyListWithData:pData
+														 options:NSPropertyListImmutable
+														  format:NULL
+														   error:&readError] retain];
+	}
+	
+	if(!spf || readError) {
 		[spf release];
 		return nil;
 	}
@@ -434,14 +443,19 @@ NSString *PreviewForSPFS(NSURL *myURL,NSInteger *previewHeight)
 				continue;
 			}
 			// Get info.plist data as dictionary
-			NSDictionary *sessionSpf;
+			NSDictionary *sessionSpf = nil;
 			pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
-			sessionSpf = [[NSPropertyListSerialization propertyListFromData:pData
-														   mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+			if(pData && !readError) {
+				sessionSpf = [[NSPropertyListSerialization propertyListWithData:pData
+																		options:NSPropertyListImmutable
+																		 format:NULL
+																		  error:&readError] retain];
+			}
 			
-			if(!sessionSpf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+			if(!sessionSpf || readError) {
 				[spfsHTML appendFormat:@"&nbsp;&nbsp;&nbsp;&nbsp;%@&nbsp;∅", [tab objectForKey:@"path"]];
-			} else {
+			}
+			else {
 				
 				NSString *name = @"••••";
 				NSString *host = @"••••";

@@ -32,7 +32,6 @@
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
-#import "SPDatabaseViewController.h"
 #import "SPThreadAdditions.h"
 
 @implementation SPHistoryController
@@ -59,6 +58,7 @@
 
 - (void) awakeFromNib
 {
+#warning private ivar accessed from outside
 	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
 	tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 	toolbarItemVisible = NO;
@@ -170,33 +170,6 @@
 }
 
 /**
- * Retrieve the view that is currently selected from the database
- */
-- (NSUInteger) currentlySelectedView
-{
-	NSUInteger theView = NSNotFound;
-
-	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
-	
-	if ([viewName isEqualToString:@"source"]) {
-		theView = SPTableViewStructure;
-	} else if ([viewName isEqualToString:@"content"]) {
-		theView = SPTableViewContent;
-	} else if ([viewName isEqualToString:@"customQuery"]) {
-		theView = SPTableViewCustomQuery;
-	} else if ([viewName isEqualToString:@"status"]) {
-		theView = SPTableViewStatus;
-	} else if ([viewName isEqualToString:@"relations"]) {
-		theView = SPTableViewRelations;
-	}
-	else if ([viewName isEqualToString:@"triggers"]) {
-		theView = SPTableViewTriggers;
-	}
-
-	return theView;
-}
-
-/**
  * Set up the toolbar items as appropriate.
  * State tracking is necessary as manipulating items not on the toolbar
  * can cause crashes.
@@ -267,17 +240,19 @@
 	// Don't modify anything if we're in the process of restoring an old history state
 	if (modifyingState) return;
 
+#warning Basically all of those next calls do stuff that must be done on the main thread (AND en block in order to be consistent). This needs to be refactored!
 	// Work out the current document details
 	NSString *theDatabase = [theDocument database];
 	NSString *theTable = [theDocument table];
-	NSUInteger theView = [self currentlySelectedView];
+	SPTableViewType theView = [[theDocument onMainThread] currentlySelectedView];
 	NSString *contentSortCol = [tableContentInstance sortColumnName];
 	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
 	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
-	NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
-	NSRect contentViewport = [tableContentInstance viewport];
+	NSDictionary *contentSelectedRows = [[tableContentInstance onMainThread] selectionDetailsAllowingIndexSelection:YES];
+	NSRect contentViewport = [[tableContentInstance onMainThread] viewport];
 	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
-	NSData *filterTableData = [tableContentInstance filterTableData];
+	NSData *filterTableData = [[tableContentInstance onMainThread] filterTableData];
+	SPTableContentFilterSource activeFilter = [[tableContentInstance onMainThread] activeFilter];
 	if (!theDatabase) return;
 
 	// If a table is selected, save state information
@@ -288,10 +263,11 @@
 												[NSNumber numberWithUnsignedInteger:contentPageNumber], @"page",
 												[NSValue valueWithRect:contentViewport], @"viewport",
 												[NSNumber numberWithBool:contentSortColIsAsc], @"sortIsAsc",
+												@(activeFilter), @"activeFilter",
 												nil];
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
 		if (contentSelectedRows) [contentState setObject:contentSelectedRows forKey:@"selection"];
-		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
+		if (contentFilter) [contentState setObject:contentFilter forKey:@"filterV2"];
 		if (filterTableData) [contentState setObject:filterTableData forKey:@"filterTable"];
 
 		// Update the table content states with this information - used when switching tables to restore last used view.
@@ -305,38 +281,45 @@
 	} else if (historyPosition != NSNotFound && historyPosition == [history count] - 1) {
 		NSMutableDictionary *currentHistoryEntry = [history objectAtIndex:historyPosition];
 
+		BOOL databaseIsTheSame = [[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase];
+		BOOL tableIsTheSame    = [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable];
+		BOOL viewIsTheSame     = ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] == theView);
 		// If the table is the same, and the filter settings haven't changed, delete the
 		// last entry so it can be replaced.  This updates navigation within a table, rather than
 		// creating a new entry every time detail is changed.
-		if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] != theView
-				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && !contentFilter)
-					|| (![currentHistoryEntry objectForKey:@"contentFilter"]
-						&& ![(NSString *)[contentFilter objectForKey:@"filterValue"] length]
-						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
-						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
-					|| [[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
-		{
+		if (
+			databaseIsTheSame &&
+			tableIsTheSame &&
+			(
+				!viewIsTheSame ||
+				(
+					(![currentHistoryEntry objectForKey:@"contentFilterV2"] && !contentFilter) ||
+					[[currentHistoryEntry objectForKey:@"contentFilterV2"] isEqualToDictionary:contentFilter]
+				)
+			)
+		) {
 			[history removeLastObject];
-
+		}
 		// If the only db/table/view are the same, but the filter settings have changed, also store the
 		// position details on the *previous* history item
-		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] == theView
-				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && contentFilter)
-					|| ![[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
-		{
+		else if (
+			databaseIsTheSame &&
+			tableIsTheSame &&
+			(
+				viewIsTheSame ||
+				(
+					(![currentHistoryEntry objectForKey:@"contentFilterV2"] && contentFilter) ||
+					![[currentHistoryEntry objectForKey:@"contentFilterV2"] isEqualToDictionary:contentFilter]
+				)
+			)
+		) {
 			[currentHistoryEntry setObject:[NSValue valueWithRect:contentViewport] forKey:@"contentViewport"];
 			if (contentSelectedRows) [currentHistoryEntry setObject:contentSelectedRows forKey:@"contentSelection"];
-
+		}
 		// Special case: if the last history item is currently active, and has no table,
 		// but the new selection does - delete the last entry, in order to replace it.
 		// This improves history flow.
-		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& ![currentHistoryEntry objectForKey:@"table"])
-		{
+		else if (databaseIsTheSame && ![currentHistoryEntry objectForKey:@"table"]) {
 			[history removeLastObject];
 		}
 	}
@@ -349,10 +332,11 @@
 										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
 										[NSNumber numberWithInteger:contentPageNumber], @"contentPageNumber",
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
+										@(activeFilter), @"activeFilter",
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
 	if (contentSelectedRows) [newEntry setObject:contentSelectedRows forKey:@"contentSelection"];
-	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilter"];
+	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilterV2"];
 
 	[history addObject:newEntry];
 
@@ -392,99 +376,99 @@
 }
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber
 {
-	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
-	NSUInteger position = [positionNumber unsignedIntegerValue];
+	@autoreleasepool {
+		NSUInteger position = [positionNumber unsignedIntegerValue];
 
-	modifyingState = YES;
+		modifyingState = YES;
 
-	// Update the position and extract the history entry
-	historyPosition = position;
-	NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
+		// Update the position and extract the history entry
+		historyPosition = position;
+		NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
 
-	// Set table content details for restore
-	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
-	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
-	[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
-	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
-	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
+		// Set table content details for restore
+		[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
+		[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
+		[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
+		[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
+		[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilterV2"]];
+		[tableContentInstance setActiveFilterToRestore:(SPTableContentFilterSource)[[historyEntry objectForKey:@"activeFilter"] integerValue]];
 
-	// If the database, table, and view are the same and content - just trigger a table reload (filters)
-	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
-		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == [self currentlySelectedView]
-		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == SPTableViewContent)
-	{
-		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
+		// If the database, table, and view are the same and content - just trigger a table reload (filters)
+		if (
+			[[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
+			&& [historyEntry objectForKey:@"table"]
+			&& [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
+			&& [[historyEntry objectForKey:@"view"] integerValue] == [theDocument currentlySelectedView]
+			&& [[historyEntry objectForKey:@"view"] integerValue] == SPTableViewContent
+		) {
+			[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
+			modifyingState = NO;
+			[[self onMainThread] updateToolbarItem];
+			[theDocument endTask];
+			return;
+		}
+
+		// If the same table was selected, mark the content as requiring a reload
+		if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
+			[theDocument setContentRequiresReload:YES];
+		}
+
+		// Update the database and table name if necessary
+		[theDocument selectDatabase:[historyEntry objectForKey:@"database"] item:[historyEntry objectForKey:@"table"]];
+
+		// If the database or table couldn't be selected, error.
+		if (
+			(
+				![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]] &&
+				([theDocument database] || [historyEntry objectForKey:@"database"])
+			) ||
+			(
+				![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]] &&
+				([theDocument table] || [historyEntry objectForKey:@"table"])
+			)
+		) {
+			goto abort_entry_load;
+		}
+
+		// Check and set the view
+		if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+			switch ([[historyEntry objectForKey:@"view"] integerValue]) {
+				case SPTableViewStructure:
+					[theDocument viewStructure:self];
+					break;
+				case SPTableViewContent:
+					[theDocument viewContent:self];
+					break;
+				case SPTableViewCustomQuery:
+					[theDocument viewQuery:self];
+					break;
+				case SPTableViewStatus:
+					[theDocument viewStatus:self];
+					break;
+				case SPTableViewRelations:
+					[theDocument viewRelations:self];
+					break;
+				case SPTableViewTriggers:
+					[theDocument viewTriggers:self];
+					break;
+			}
+			if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+				goto abort_entry_load;
+			}
+		}
+
 		modifyingState = NO;
 		[[self onMainThread] updateToolbarItem];
+
+		// End the task
 		[theDocument endTask];
-		[loadPool drain];
 		return;
+
+abort_entry_load:
+		NSBeep();
+		modifyingState = NO;
+		[theDocument endTask];
 	}
-
-	// If the same table was selected, mark the content as requiring a reload
-	if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-		[theDocument setContentRequiresReload:YES];
-	}
-
-	// Update the database and table name if necessary
-	[theDocument selectDatabase:[historyEntry objectForKey:@"database"] item:[historyEntry objectForKey:@"table"]];
-
-	// If the database or table couldn't be selected, error.
-	if ((![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
-			&& ([theDocument database] || [historyEntry objectForKey:@"database"]))
-		|| 
-		(![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-			&& ([theDocument table] || [historyEntry objectForKey:@"table"])))
-	{
-		return [self abortEntryLoadWithPool:loadPool];
-	}
-
-	// Check and set the view
-	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
-		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
-			case SPTableViewStructure:
-				[theDocument viewStructure:self];
-				break;
-			case SPTableViewContent:
-				[theDocument viewContent:self];
-				break;
-			case SPTableViewCustomQuery:
-				[theDocument viewQuery:self];
-				break;
-			case SPTableViewStatus:
-				[theDocument viewStatus:self];
-				break;
-			case SPTableViewRelations:
-				[theDocument viewRelations:self];
-				break;
-			case SPTableViewTriggers:
-				[theDocument viewTriggers:self];
-				break;
-		}
-		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
-			return [self abortEntryLoadWithPool:loadPool];
-		}
-	}
-
-	modifyingState = NO;
-	[[self onMainThread] updateToolbarItem];
-
-	// End the task
-	[theDocument endTask];
-	[loadPool drain];
-}
-
-/**
- * Convenience method for aborting history load - could at some point
- * clean up the history list, show an alert, etc
- */
-- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool
-{
-	NSBeep();
-	modifyingState = NO;
-	[theDocument endTask];
-	if (pool) [pool drain];
 }
 
 /**
@@ -523,7 +507,8 @@
 	[tableContentInstance setPageToRestore:[[contentState objectForKey:@"page"] unsignedIntegerValue]];
 	[tableContentInstance setSelectionToRestore:[contentState objectForKey:@"selection"]];
 	[tableContentInstance setViewportToRestore:[[contentState objectForKey:@"viewport"] rectValue]];
-	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filter"]];
+	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filterV2"]];
+	[tableContentInstance setActiveFilterToRestore:(SPTableContentFilterSource)[[contentState objectForKey:@"activeFilter"] integerValue]];
 }
 
 #pragma mark -
@@ -557,21 +542,14 @@
 
 	[theName appendFormat:@"/%@", [theEntry objectForKey:@"table"]];
 
-	if ([theEntry objectForKey:@"contentFilter"]) {
-		NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
-		if ([filterSettings objectForKey:@"filterField"]) {
-			if([filterSettings objectForKey:@"menuLabel"]) {
-				theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"),
-							theName, [filterSettings objectForKey:@"menuLabel"]];
-			}
-		}
+	if ([theEntry objectForKey:@"contentFilterV2"]) {
+		theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Filtered)", @"History item filtered by values label"), theName];
 	}
 
 	if ([theEntry objectForKey:@"contentPageNumber"]) {
 		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntegerValue];
 		if (pageNumber > 1) {
-			theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"),
-						theName, (unsigned long)pageNumber];
+			theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"), theName, (unsigned long)pageNumber];
 		}
 	}
 

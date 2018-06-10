@@ -55,7 +55,6 @@
 - (void)goBackInHistory;
 - (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
-- (NSUInteger) currentlySelectedView;
 - (void) setupInterface;
 - (void) startDocumentTask:(NSNotification *)aNotification;
 - (void) endDocumentTask:(NSNotification *)aNotification;
@@ -66,7 +65,6 @@
 // Loading history entries
 - (void) loadEntryAtPosition:(NSUInteger)position;
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber;
-- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool;
 - (void) loadEntryFromMenuItem:(id)theMenuItem;
 
 // Restoring view states

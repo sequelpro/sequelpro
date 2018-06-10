@@ -1,5 +1,5 @@
 //
-//  Encoding.m
+//  Conversion.m
 //  SPMySQLFramework
 //
 //  Created by Rowan Beentje (rowan.beent.je) on January 22, 2012
@@ -47,7 +47,6 @@
          But the "string" can already contain NUL bytes, so it's not a valid c string anyway.
 + (const char *)_cStringForString:(NSString *)aString usingEncoding:(NSStringEncoding)anEncoding returningLengthAs:(NSUInteger *)cStringLengthPointer
 {
-
 	// Don't try and convert nil strings
 	if (!aString) return NULL;
 
@@ -73,13 +72,12 @@
  */
 - (const char *)_cStringForString:(NSString *)aString
 {
-
 	// Use a cached reference to avoid dynamic method overhead
 	return _cStringForStringWithEncoding(aString, stringEncoding, NULL);
 }
 
 /**
- * Converts a C string to an NSString using the supplied encoding.
+ * Converts a C string to an NSString using the current connection encoding.
  * This method *will not* correctly preserve nul characters within c strings; instead
  * the first nul character within the string will be treated as the line ending. This
  * is unavoidable without supplying a string length, so this method should not be widely
@@ -87,11 +85,15 @@
  */
 - (NSString *)_stringForCString:(const char *)cString
 {
+	return _stringForCStringWithEncoding(cString, stringEncoding);
+}
 
-	// Don't try and convert null strings
-	if (cString == NULL) return nil;
-
-	return [NSString stringWithCString:cString encoding:stringEncoding];
+/**
+ * @see _stringForCStringWithEncoding()
+ */
++ (NSString *)_stringForCString:(const char *)cString usingEncoding:(NSStringEncoding)encoding
+{
+	return _stringForCStringWithEncoding(cString, encoding);
 }
 
 @end

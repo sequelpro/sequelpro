@@ -37,196 +37,174 @@
 
 int main(int argc, const char *argv[])
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSDictionary *environment = [[NSProcessInfo processInfo] environment];
-	NSString *argument = nil;
-	SPSSHTunnel *sequelProTunnel;
-	NSString *connectionName = [environment objectForKey:@"SP_CONNECTION_NAME"];
-	NSString *verificationHash = [environment objectForKey:@"SP_CONNECTION_VERIFY_HASH"];
+	@autoreleasepool {
+		NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+		NSString *argument = nil;
+		SPSSHTunnel *sequelProTunnel;
+		NSString *connectionName = [environment objectForKey:@"SP_CONNECTION_NAME"];
+		NSString *verificationHash = [environment objectForKey:@"SP_CONNECTION_VERIFY_HASH"];
 
-	if (![environment objectForKey:@"SP_PASSWORD_METHOD"]) {
-		[pool release];
-		return 1;
-	}
-
-	if (argc > 1) {
-		argument = [[[NSString alloc] initWithCString:argv[1] encoding:NSUTF8StringEncoding] autorelease];
-	}
-
-	// Check if we're being asked a question and respond if so
-	if (argument && [argument rangeOfString:@" (yes/no)?"].location != NSNotFound) {
-		
-		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
-		
-		if (!sequelProTunnel) {
-			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
-			[pool release];
+		if (![environment objectForKey:@"SP_PASSWORD_METHOD"]) {
 			return 1;
-		
 		}
-		
-		BOOL response = [sequelProTunnel getResponseForQuestion:argument];
-		
-		if (response) {
-			printf("yes\n");
-		} 
-		else {
-			printf("no\n");
+
+		if (argc > 1) {
+			argument = [[[NSString alloc] initWithCString:argv[1] encoding:NSUTF8StringEncoding] autorelease];
 		}
-		
-		[pool release];
-		
-		return 0;
-	}
-	
-	// Check whether we're being asked for a standard SSH password - if so, use the app-entered value.
-	if (argument && [[argument lowercaseString] rangeOfString:@"password:"].location != NSNotFound ) {
 
-		// If the password method is set to use the keychain, use the supplied keychain name to
-		// request the password
-		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordUsesKeychain) {
-			SPKeychain *keychain;
-			NSString *keychainName = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-			NSString *keychainAccount = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		// Check if we're being asked a question and respond if so
+		if (argument && [argument rangeOfString:@" (yes/no)?"].location != NSNotFound) {
 
-			if (!keychainName || !keychainAccount) {
-				NSLog(@"SSH Tunnel: keychain authentication specified but insufficient internal details supplied");
-				[pool release];
+			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+
+			if (!sequelProTunnel) {
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 				return 1;
+
 			}
 
-			keychain = [[SPKeychain alloc] init];
-			
-			if ([keychain passwordExistsForName:keychainName account:keychainAccount]) {
-				printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
-				[keychain release];
-				[pool release];
-				return 0;
-			}
-			
-			[keychain release];
+			BOOL response = [sequelProTunnel getResponseForQuestion:argument];
 
-			// If retrieving the password failed, log an error and fall back to requesting from the GUI
-			NSLog(@"SSH Tunnel: specified keychain password not found");
-			
-			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded from the keychain; please enter the SSH password for %@:", @"Prompt for SSH password when keychain fetch failed"), connectionName];
+			if (response) {
+				printf("yes\n");
+			}
+			else {
+				printf("no\n");
+			}
+
+			return 0;
 		}
 
-		// If the password method is set to request the password from the tunnel instance, do so.
-		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordAsksUI) {
-			NSString *password;
-			
-			if (!connectionName || !verificationHash) {
-				NSLog(@"SSH Tunnel: internal authentication specified but insufficient details supplied");
-				[pool release];
+		// Check whether we're being asked for a standard SSH password - if so, use the app-entered value.
+		if (argument && [[argument lowercaseString] rangeOfString:@"password:"].location != NSNotFound ) {
+
+			// If the password method is set to use the keychain, use the supplied keychain name to
+			// request the password
+			if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordUsesKeychain) {
+				SPKeychain *keychain;
+				NSString *keychainName = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+				NSString *keychainAccount = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+				if (!keychainName || !keychainAccount) {
+					NSLog(@"SSH Tunnel: keychain authentication specified but insufficient internal details supplied");
+					return 1;
+				}
+
+				keychain = [[SPKeychain alloc] init];
+
+				if ([keychain passwordExistsForName:keychainName account:keychainAccount]) {
+					printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
+					[keychain release];
+					return 0;
+				}
+
+				[keychain release];
+
+				// If retrieving the password failed, log an error and fall back to requesting from the GUI
+				NSLog(@"SSH Tunnel: specified keychain password not found");
+
+				argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded from the keychain; please enter the SSH password for %@:", @"Prompt for SSH password when keychain fetch failed"), connectionName];
+			}
+
+			// If the password method is set to request the password from the tunnel instance, do so.
+			if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordAsksUI) {
+				NSString *password;
+
+				if (!connectionName || !verificationHash) {
+					NSLog(@"SSH Tunnel: internal authentication specified but insufficient details supplied");
+					return 1;
+				}
+
+				sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+
+				if (!sequelProTunnel) {
+					NSLog(@"SSH Tunnel: unable to connect to Sequel Pro for internal authentication");
+					return 1;
+				}
+
+				password = [sequelProTunnel getPasswordWithVerificationHash:verificationHash];
+
+				if (password) {
+					printf("%s\n", [password UTF8String]);
+					return 0;
+				}
+
+				// If retrieving the password failed, log an error and fall back to requesting from the GUI
+				NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
+
+				argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded; please enter the SSH password for %@:", @"Prompt for SSH password when direct fetch failed"), connectionName];
+			}
+		}
+
+		// Check whether we're being asked for a SSH key passphrase
+		if (argument && [[argument lowercaseString] rangeOfString:@"enter passphrase for"].location != NSNotFound ) {
+			NSString *passphrase;
+			NSString *keyName = [argument stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
+
+			if (keyName) {
+
+				// Check whether the passphrase is in the keychain, using standard OS X sshagent name and account
+				SPKeychain *keychain = [[SPKeychain alloc] init];
+
+				if ([keychain passwordExistsForName:@"SSH" account:keyName]) {
+					printf("%s\n", [[keychain getPasswordForName:@"SSH" account:keyName] UTF8String]);
+					[keychain release];
+					return 0;
+				}
+
+				[keychain release];
+			}
+
+			// Not found in the keychain - we need to ask the GUI.
+
+			if (!verificationHash) {
+				NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
 				return 1;
 			}
 
 			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
-			
+
 			if (!sequelProTunnel) {
-				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro for internal authentication");
-				[pool release];
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 				return 1;
 			}
-			
-			password = [sequelProTunnel getPasswordWithVerificationHash:verificationHash];
-			
-			if (password) {
-				printf("%s\n", [password UTF8String]);
-				[pool release];
-				return 0;			
+			passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
+
+			if (!passphrase) {
+				return 1;
 			}
-			
-			// If retrieving the password failed, log an error and fall back to requesting from the GUI
-			NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
-			
-			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded; please enter the SSH password for %@:", @"Prompt for SSH password when direct fetch failed"), connectionName];
+
+			printf("%s\n", [passphrase UTF8String]);
+
+			return 0;
 		}
-	}
 
-	// Check whether we're being asked for a SSH key passphrase
-	if (argument && [[argument lowercaseString] rangeOfString:@"enter passphrase for"].location != NSNotFound ) {
-		NSString *passphrase;
-		NSString *keyName = [argument stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
+		// SSH has some other question. Show that directly to the user. This is an attempt to support RSA SecurID
+		if (argument) {
+			NSString *passphrase;
 
-		if (keyName) {
-		
-			// Check whether the passphrase is in the keychain, using standard OS X sshagent name and account
-			SPKeychain *keychain = [[SPKeychain alloc] init];
-			
-			if ([keychain passwordExistsForName:@"SSH" account:keyName]) {
-				printf("%s\n", [[keychain getPasswordForName:@"SSH" account:keyName] UTF8String]);
-				[keychain release];
-				[pool release];
-				return 0;
+			if (!verificationHash) {
+				NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
+				return 1;
 			}
-			
-			[keychain release];
-		}
-		
-		// Not found in the keychain - we need to ask the GUI.
 
-		if (!verificationHash) {
-			NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
-			[pool release];
-			return 1;
-		}
+			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 
-		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
-		
-		if (!sequelProTunnel) {
-			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
-			[pool release];
-			return 1;
-		}
-		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
-		
-		if (!passphrase) {
-			[pool release];
-			return 1;
-		}
+			if (!sequelProTunnel) {
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+				return 1;
+			}
 
-		printf("%s\n", [passphrase UTF8String]);
-		
-		[pool release];
-		
-		return 0;
+			passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
+
+			if (!passphrase) {
+				return 1;
+			}
+
+			printf("%s\n", [passphrase UTF8String]);
+			return 0;
+		}
 	}
-    
-    // SSH has some other question. Show that directly to the user. This is an attempt to support RSA SecurID
-	if (argument) {
-		NSString *passphrase;
-		
-		if (!verificationHash) {
-			NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
-			[pool release];
-			return 1;
-		}
-
-		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
-		
-		if (!sequelProTunnel) {
-			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
-			[pool release];
-			return 1;
-		}
-        
-		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
-		
-		if (!passphrase) {
-			[pool release];
-			return 1;
-		}
-
-		printf("%s\n", [passphrase UTF8String]);
-		[pool release];
-		return 0;
-	}
-
-    
-	[pool release];
 	
 	return 1;
 }

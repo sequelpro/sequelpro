@@ -36,6 +36,12 @@
 void SPMainQSync(void (^block)(void));
 
 /**
+ * Asynchronously execute a block on the main run loop.
+ * This function is equivalent to calling -[[NSRunLoop mainRunLoop] performBlock:] on 10.12+
+ */
+void SPMainLoopAsync(void (^block)(void));
+
+/**
  * Copies count bytes into buf provided by caller
  * @param buf Base address to copy to
  * @param count Number of bytes to copy

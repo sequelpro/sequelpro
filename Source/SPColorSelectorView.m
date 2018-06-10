@@ -43,7 +43,7 @@
 #import "SPColorSelectorView.h"
 #import "SPOSInfo.h"
 
-@interface SPColorSelectorView (Private)
+@interface SPColorSelectorView ()
 
 - (void)setupTrackingAreas;
 - (void)_drawDotBevelStyleWithGradient:(NSGradient *)gradient insideRect:(NSRect)colorSquareRect;
@@ -414,7 +414,7 @@ enum trackingAreaIDs
 			}
 			
 			if (delegate != nil && [delegate respondsToSelector:@selector(colorSelectorDidChange:)]) {
-				[delegate colorSelectorDidChange:self];
+				[(id<SPColorSelectorViewDelegate>)delegate colorSelectorDidChange:self];
 			}
 			
 			[self setNeedsDisplay:YES];

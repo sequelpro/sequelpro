@@ -34,9 +34,13 @@
 #define kSPComboPopupButtonLineOffsetSmall 15;
 #define kSPComboPopupButtonLineOffsetRegular 17;
 
-@interface SPComboPopupButton (PrivateAPI)
+@interface SPComboPopupButton ()
 
 - (void)_initCustomData;
+
+@end
+
+@interface SPComboPopupButtonCell : NSPopUpButtonCell
 
 @end
 
@@ -184,11 +188,7 @@
 	menuIsOpen = NO;
 }
 
-@end
-
 #pragma mark -
-
-@implementation SPComboPopupButton (PrivateAPI)
 
 - (void)_initCustomData
 {
@@ -220,12 +220,6 @@
 @end
 
 #pragma mark -
-
-@interface SPComboPopupButtonCell (PrivateAPI)
-
-- (void)_initCustomData;
-
-@end
 
 @implementation SPComboPopupButtonCell
 

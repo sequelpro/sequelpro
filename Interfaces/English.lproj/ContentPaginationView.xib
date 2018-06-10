@@ -6,39 +6,17 @@
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="SPTableContent">
+        <customObject id="-2" userLabel="File's Owner" customClass="ContentPaginationViewController">
             <connections>
-                <outlet property="paginationBox" destination="2" id="plQ-Ch-kaG"/>
                 <outlet property="paginationGoButton" destination="cXy-Rp-Edv" id="tIC-S1-mTE"/>
                 <outlet property="paginationPageField" destination="Vtc-V2-j0v" id="cwZ-g9-Qbj"/>
-                <outlet property="paginationView" destination="1" id="46"/>
-                <outlet property="paginationViewController" destination="hrG-95-pXC" id="yiZ-Ax-bVs"/>
+                <outlet property="paginationPageStepper" destination="S7c-s1-KCT" id="c4Q-RA-Dny"/>
+                <outlet property="view" destination="ZlV-bd-j4D" id="zKu-MD-Rhn"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
-        <customView id="1">
-            <rect key="frame" x="0.0" y="0.0" width="330" height="89"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <subviews>
-                <box autoresizesSubviews="NO" wantsLayer="YES" boxType="custom" borderType="line" titlePosition="noTitle" id="2">
-                    <rect key="frame" x="0.0" y="-47" width="330" height="136"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <view key="contentView">
-                        <rect key="frame" x="1" y="1" width="328" height="134"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    </view>
-                    <color key="borderColor" white="0.0" alpha="0.20000000300000001" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.94758063550000005" alpha="1" colorSpace="calibratedWhite"/>
-                </box>
-            </subviews>
-        </customView>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <userDefaultsController representsSharedInstance="YES" id="24"/>
-        <viewController id="hrG-95-pXC" userLabel="Popover View Controller">
-            <connections>
-                <outlet property="view" destination="ZlV-bd-j4D" id="zor-2S-MNt"/>
-            </connections>
-        </viewController>
         <customView id="ZlV-bd-j4D" userLabel="Popover Content View">
             <rect key="frame" x="0.0" y="0.0" width="330" height="89"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -51,7 +29,7 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <action selector="navigatePaginationFromButton:" target="-2" id="28B-A6-zUZ"/>
+                        <action selector="paginationGoAction:" target="-2" id="86K-61-7Jl"/>
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="AkR-JA-LEs"/>
                     </connections>
                 </button>
@@ -69,6 +47,8 @@
                     </textFieldCell>
                     <connections>
                         <action selector="performClick:" target="cXy-Rp-Edv" id="4Uu-gW-Xhz"/>
+                        <binding destination="-2" name="maxValue" keyPath="maxPage" id="JKa-ju-VyP"/>
+                        <binding destination="-2" name="value" keyPath="page" previousBinding="JKa-ju-VyP" id="21h-9k-7Xk"/>
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="rJH-8j-rCm"/>
                     </connections>
                 </textField>
@@ -108,7 +88,8 @@
                         <font key="font" metaFont="smallSystem"/>
                     </stepperCell>
                     <connections>
-                        <action selector="takeIntValueFrom:" target="Vtc-V2-j0v" id="JYr-Pw-YZ2"/>
+                        <binding destination="-2" name="maxValue" keyPath="maxPage" id="h3F-DA-oCz"/>
+                        <binding destination="-2" name="value" keyPath="page" previousBinding="h3F-DA-oCz" id="W48-Lg-Q7t"/>
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="Nl1-31-oLD"/>
                     </connections>
                 </stepper>

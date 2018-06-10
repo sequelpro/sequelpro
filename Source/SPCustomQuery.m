@@ -46,7 +46,6 @@
 #import "SPQueryFavoriteManager.h"
 #endif
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
@@ -61,14 +60,20 @@
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
 #endif
+#import "SPFunctions.h"
+#import "SPHelpViewerClient.h"
+#import "SPHelpViewerController.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPCustomQuery (PrivateAPI)
+@interface SPCustomQuery ()
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
-+ (NSString *)linkToHelpTopic:(NSString *)aTopic;
+- (void)documentWillClose:(NSNotification *)notification;
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification;
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification;
+- (void)helpWindowClosedByUser:(NSNotification *)notification;
 
 @end
 
@@ -600,374 +605,370 @@
 
 - (void)performQueriesTask:(NSDictionary *)taskArguments
 {
-	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
-	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	SPMySQLStreamingResultStore	*resultStore  = nil;
-	NSMutableString		*errors     = [NSMutableString string];
-	SEL					callbackMethod = NULL;
-	NSString			*taskButtonString;
+	@autoreleasepool {
+		NSArray                     *queries        = [taskArguments objectForKey:@"queries"];
+		SPMySQLStreamingResultStore *resultStore    = nil;
+		NSMutableString             *errors         = [NSMutableString string];
+		SEL                          callbackMethod = NULL;
+		NSString                    *taskButtonString;
 
-	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
-	double executionTime = 0;
-	NSInteger firstErrorOccuredInQuery = -1;
-	BOOL suppressErrorSheet = NO;
-	BOOL tableListNeedsReload = NO;
-	BOOL databaseWasChanged = NO;
-	// BOOL queriesSeparatedByDelimiter = NO;
+		NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
+		double executionTime = 0;
+		NSInteger firstErrorOccuredInQuery = -1;
+		BOOL suppressErrorSheet = NO;
+		BOOL tableListNeedsReload = NO;
+		BOOL databaseWasChanged = NO;
+		// BOOL queriesSeparatedByDelimiter = NO;
 
-	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+		NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 #ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
-	[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
+		[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
 #endif
 
-	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+		// Notify listeners that a query has started
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 #ifndef SP_CODA /* growl */
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
+		// Start the notification timer to allow notifications to be shown even if frontmost for long queries
+		[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
 #endif
 
-	// Reset the current table view as necessary to avoid redraw and reload issues.
-	// Restore the view position to the top left to be within the results for all datasets.
-	if(editedRow == -1 && !reloadingExistingResult) {
-		[[customQueryView onMainThread] scrollRowToVisible:0];
-		[[customQueryView onMainThread] scrollColumnToVisible:0];
-	}
-
-	// Remove all the columns if not reloading the table
-	if(!reloadingExistingResult) {
-		if (cqColumnDefinition) SPClear(cqColumnDefinition);
-		[[self onMainThread] updateTableView];
-	}
-
-	// Disable automatic query retries on failure for the custom queries
-	[mySQLConnection setRetryQueriesOnConnectionFailure:NO];
-
-	NSUInteger queryCount = [queries count];
-	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
-
-	// Enable task cancellation
-	if (queryCount > 1)
-		taskButtonString = NSLocalizedString(@"Stop queries", @"Stop queries string");
-	else
-		taskButtonString = NSLocalizedString(@"Stop query", @"Stop query string");
-	[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
-
-	// Perform the supplied queries in series
-	for ( i = 0 ; i < queryCount ; i++ ) {
-
-		if (i > 0) {
-			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
-			[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
-			[[errorText onMainThread] setString:taskString];
+		// Reset the current table view as necessary to avoid redraw and reload issues.
+		// Restore the view position to the top left to be within the results for all datasets.
+		if(editedRow == -1 && !reloadingExistingResult) {
+			[[customQueryView onMainThread] scrollRowToVisible:0];
+			[[customQueryView onMainThread] scrollColumnToVisible:0];
 		}
 
-		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
+		// Remove all the columns if not reloading the table
+		if(!reloadingExistingResult) {
+			SPClear(cqColumnDefinition);
+			[[self onMainThread] updateTableView];
+		}
 
-		// Don't run blank queries, or queries which only contain whitespace.
-		if (![query length])
-			continue;
+		// Disable automatic query retries on failure for the custom queries
+		[mySQLConnection setRetryQueriesOnConnectionFailure:NO];
 
-		// store trimmed queries for usedQueries and history
-		[tempQueries addObject:query];
+		NSUInteger queryCount = [queries count];
+		NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
-		// Run the query, timing execution (note this also includes network and overhead)
-		resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
-		executionTime += [resultStore queryExecutionTime];
-		totalQueriesRun++;
+		// Enable task cancellation
+		taskButtonString = (queryCount > 1)? NSLocalizedString(@"Stop queries", @"Stop queries string") : NSLocalizedString(@"Stop query", @"Stop query string");
+		[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
 
-		// If this is the last query, retrieve and store the result; otherwise,
-		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount || [mySQLConnection lastQueryWasCancelled]) {
+		// Perform the supplied queries in series
+		for ( i = 0 ; i < queryCount ; i++ ) {
 
-			// Retrieve and cache the column definitions for the result array
-			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[resultStore fieldDefinitions] retain];
-
-			if(!reloadingExistingResult) {
-				[[self onMainThread] updateTableView];
+			if (i > 0) {
+				NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
+				[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
+				[[errorText onMainThread] setString:taskString];
 			}
 
-			// Find result table name for copying as SQL INSERT.
-			// If more than one table name is found set resultTableName to nil.
-			// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
-			// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-			NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
-			for(id field in cqColumnDefinition) {
-				if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
-					resultTableName = nil;
-					break;
+			NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
+
+			// Don't run blank queries, or queries which only contain whitespace.
+			if (![query length]) continue;
+
+			// store trimmed queries for usedQueries and history
+			[tempQueries addObject:query];
+
+			// Run the query, timing execution (note this also includes network and overhead)
+			resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
+			executionTime += [resultStore queryExecutionTime];
+			totalQueriesRun++;
+
+			// If this is the last query, retrieve and store the result; otherwise,
+			// discard the result without fully loading.
+			if (totalQueriesRun == queryCount || [mySQLConnection lastQueryWasCancelled]) {
+
+				// Retrieve and cache the column definitions for the result array
+				if (cqColumnDefinition) [cqColumnDefinition release];
+				cqColumnDefinition = [[resultStore fieldDefinitions] retain];
+
+				if(!reloadingExistingResult) {
+					[[self onMainThread] updateTableView];
 				}
-			}
 
-			// Init copyTable with necessary information for copying selected rows as SQL INSERT
-			[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+				// Find result table name for copying as SQL INSERT.
+				// If more than one table name is found set resultTableName to nil.
+				// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
+				// and the resultTableName can differ due to case-sensitive/insensitive settings!.
+				NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
+				for(id field in cqColumnDefinition) {
+					if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
+						resultTableName = nil;
+						break;
+					}
+				}
 
-			[self updateResultStore:resultStore];
-		} else {
-			[resultStore cancelResultLoad];
-		}
+				// Init copyTable with necessary information for copying selected rows as SQL INSERT
+				[customQueryView setTableInstance:self
+				                    withTableData:resultData
+				                      withColumns:cqColumnDefinition
+				                    withTableName:resultTableName
+				                   withConnection:mySQLConnection];
 
-		// Record any affected rows
-		if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 )
-			totalAffectedRows += (NSUInteger)[mySQLConnection rowsAffectedByLastQuery];
-		else if ( [resultStore numberOfRows] )
-			totalAffectedRows += (NSUInteger)[resultStore numberOfRows];
-
-		[resultStore release];
-
-		// Store any error messages
-		if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
-
-			NSString *errorString;
-			if ([mySQLConnection lastQueryWasCancelled]) {
-				if ([mySQLConnection lastQueryWasCancelledUsingReconnect])
-					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
-				else
-					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
+				[self updateResultStore:resultStore];
 			} else {
-				errorString = [mySQLConnection lastErrorMessage];
-
-				// If dealing with a "MySQL server has gone away" error, explain the situation.
-				// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
-				if ([mySQLConnection lastErrorID] == 2006) {
-					errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
-				}
+				[resultStore cancelResultLoad];
 			}
 
-			// If the query errored, append error to the error log for display at the end
-			if ( queryCount > 1 ) {
-				if(firstErrorOccuredInQuery == -1)
-					firstErrorOccuredInQuery = i+1;
+			// Record any affected rows
+			if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 ) {
+				totalAffectedRows += (NSUInteger) [mySQLConnection rowsAffectedByLastQuery];
+			}
+			else if ( [resultStore numberOfRows] ) {
+				totalAffectedRows += (NSUInteger) [resultStore numberOfRows];
+			}
 
-				if(!suppressErrorSheet)
-				{
-					// Update error text for the user
-					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-										(long)(i+1),
-										errorString];
-					[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
-					[[errorText onMainThread] setString:errors];
+			[resultStore release];
 
-					// ask the user to continue after detecting an error
-					if (![mySQLConnection lastQueryWasCancelled]) {
+			// Store any error messages
+			if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
 
-						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
-						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
-						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
-						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
-						                                    alertStyle:NSWarningAlertStyle
-						                                     docWindow:[tableDocumentInstance parentWindow]
-						                                 modalDelegate:self
-						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-						                                   contextInfo:@"runAllContinueStopSheet"
-						                                      infoText:[mySQLConnection lastErrorMessage]
-						                                    returnCode:&runAllContinueStopSheetReturnCode];
-
-						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
-
-						switch (runAllContinueStopSheetReturnCode) {
-							case NSAlertDefaultReturn:
-								suppressErrorSheet = YES;
-							case NSAlertAlternateReturn:
-								break;
-							default:
-								if(i < queryCount-1) // output that message only if it was not the last one
-									[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-								i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
-						}
+				NSString *errorString;
+				if ([mySQLConnection lastQueryWasCancelled]) {
+					if ([mySQLConnection lastQueryWasCancelledUsingReconnect]){
+						errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
+					}
+					else {
+						errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 					}
 				} else {
-					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-											(long)(i+1),
-											errorString];
+					errorString = [mySQLConnection lastErrorMessage];
+
+					// If dealing with a "MySQL server has gone away" error, explain the situation.
+					// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
+					if ([mySQLConnection lastErrorID] == 2006) {
+						errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
+					}
+				}
+
+				// If the query errored, append error to the error log for display at the end
+				if ( queryCount > 1 ) {
+					if(firstErrorOccuredInQuery == -1) firstErrorOccuredInQuery = i+1;
+
+					if(!suppressErrorSheet)
+					{
+						// Update error text for the user
+						[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+						                     (long)(i+1),
+						                     errorString];
+						[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
+						[[errorText onMainThread] setString:errors];
+
+						// ask the user to continue after detecting an error
+						if (![mySQLConnection lastQueryWasCancelled]) {
+
+							[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
+							[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
+							                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
+							                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
+							                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+							                                    alertStyle:NSWarningAlertStyle
+							                                     docWindow:[tableDocumentInstance parentWindow]
+							                                 modalDelegate:self
+							                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+							                                   contextInfo:@"runAllContinueStopSheet"
+							                                      infoText:[mySQLConnection lastErrorMessage]
+							                                    returnCode:&runAllContinueStopSheetReturnCode];
+
+							[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
+
+							switch (runAllContinueStopSheetReturnCode) {
+								case NSAlertDefaultReturn:
+									suppressErrorSheet = YES;
+								case NSAlertAlternateReturn:
+									break;
+								default:
+									if(i < queryCount-1) {
+										// output that message only if it was not the last one
+										[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+									}
+									i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
+							}
+						}
+					} else {
+						[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+						                     (long)(i+1),
+						                     errorString];
+					}
+				} else {
+					[errors setString:errorString];
 				}
 			} else {
-				[errors setString:errorString];
+				// Check if table/db list needs an update
+				// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
+				if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."]) {
+					tableListNeedsReload = YES;
+				}
+				if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."]){
+					databaseWasChanged = YES;
+				}
 			}
-		} else {
-			// Check if table/db list needs an update
-			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
-				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
-				databaseWasChanged = YES;
+			// If the query was cancelled, end all queries.
+			if ([mySQLConnection lastQueryWasCancelled]) break;
 		}
-		// If the query was cancelled, end all queries.
-		if ([mySQLConnection lastQueryWasCancelled]) break;
-	}
 
-	// Reload table list if at least one query began with drop, alter, rename, or create
-	if(tableListNeedsReload || databaseWasChanged) {
-		// Build database pulldown menu
-		[[tableDocumentInstance onMainThread] setDatabases:self];
+		// Reload table list if at least one query began with drop, alter, rename, or create
+		if(tableListNeedsReload || databaseWasChanged) {
+			// Build database pulldown menu
+			[[tableDocumentInstance onMainThread] setDatabases:self];
 
-		if (databaseWasChanged)
-			// Reset the current database
-			[tableDocumentInstance refreshCurrentDatabase];
+			if (databaseWasChanged) {
+				// Reset the current database
+				[tableDocumentInstance refreshCurrentDatabase];
+			}
 
-		// Reload table list
-		[tablesListInstance updateTables:self];
+			// Reload table list
+			[tablesListInstance updateTables:self];
+		}
 
-	}
+		if(usedQuery) [usedQuery release];
 
-	if(usedQuery)
-		[usedQuery release];
+		// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
+		usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 
-	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
-	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
+		if (lastExecutedQuery) [lastExecutedQuery release];
+		lastExecutedQuery = [[tempQueries lastObject] retain];
 
-	if (lastExecutedQuery) [lastExecutedQuery release];
-	lastExecutedQuery = [[tempQueries lastObject] retain];
-
-	// Perform empty query if no query is given
-	if ( !queryCount ) {
-		resultStore = [mySQLConnection resultStoreFromQueryString:@""];
-		[resultStore cancelResultLoad];
-		[errors setString:[mySQLConnection lastErrorMessage]];
-	}
+		// Perform empty query if no query is given
+		if ( !queryCount ) {
+			resultStore = [mySQLConnection resultStoreFromQueryString:@""];
+			[resultStore cancelResultLoad];
+			[errors setString:[mySQLConnection lastErrorMessage]];
+		}
 
 #ifndef SP_CODA
-	// add query to history
-	if(!reloadingExistingResult && [usedQuery length])
-		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+		// add query to history
+		if(!reloadingExistingResult && [usedQuery length]) {
+			[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+		}
 #endif
 
-	// Update status/errors text
-	NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									errors, @"errorString",
-									[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
-									nil];
-	[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
+		// Update status/errors text
+		NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+			errors, @"errorString",
+			[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
+			nil
+		];
+		[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
 
-	// Set up the status string
-	NSString *statusString = nil;
-	NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
-	if ( [mySQLConnection lastQueryWasCancelled] ) {
-		if (totalQueriesRun > 1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
-								statusErrorString,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
+		// Set up the status string
+		NSString *statusString = nil;
+		NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
+		if ( [mySQLConnection lastQueryWasCancelled] ) {
+			if (totalQueriesRun > 1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
+				                                          statusErrorString,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled after %@", @"text showing a query was cancelled"),
+				                                          statusErrorString,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			}
+		} else if ( totalQueriesRun > 1 ) {
+			if (totalAffectedRows==1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
+				                                          statusErrorString,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+				                                          statusErrorString,
+				                                          (long)totalAffectedRows,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			}
 		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled after %@", @"text showing a query was cancelled"),
-								statusErrorString,
-								[NSString stringForTimeInterval:executionTime]
-							];
+			if (totalAffectedRows==1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
+				                                          statusErrorString];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
+				                                          statusErrorString,
+				                                          (long)totalAffectedRows];
+			}
+			if([resultData count]) {
+				// we were running a query that returns a result set (ie. SELECT).
+				// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
+				//       and that makes our query time measurement pretty useless (see #264)
+				statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+			}
+			else {
+				statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+			}
 		}
-	} else if ( totalQueriesRun > 1 ) {
-		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
-								statusErrorString,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
-		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
-								statusErrorString,
-								(long)totalAffectedRows,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
-		}
-	} else {
-		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
-								statusErrorString
-							];
-		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
-								statusErrorString,
-								(long)totalAffectedRows
-							];
-		}
-		if(resultDataCount) {
-			// we were running a query that returns a result set (ie. SELECT).
-			// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
-			//       and that makes our query time measurement pretty useless (see #264)
-			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
-		}
-		else {
-			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
-		}
-	}
 
-	[[affectedRowsText onMainThread] setStringValue:statusString];
+		[[affectedRowsText onMainThread] setStringValue:statusString];
 
-	// Restore automatic query retries
-	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
+		// Restore automatic query retries
+		[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
 
 #ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 #endif
 
-	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !resultDataCount ) {
-		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+		// If no results were returned, redraw the empty table and post notifications before returning.
+		if ( ![resultData count] ) {
+			[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
-		// Notify any listeners that the query has completed
+			// Notify any listeners that the query has completed
+			[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+
+#ifndef SP_CODA /* growl */
+			// Perform the Growl notification for query completion
+			[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
+			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+			                                                  document:tableDocumentInstance
+			                                          notificationName:@"Query Finished"];
+#endif
+
+			// Set up the callback if present
+			if ([taskArguments objectForKey:@"callback"]) {
+				[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
+				[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+			}
+
+			[tableDocumentInstance endTask];
+
+			return;
+		}
+
+		// Restore the result view origin if appropriate
+		if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+			// Scroll the viewport to the saved location
+			selectionViewportToRestore.size = [customQueryView visibleRect].size;
+			[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
+		}
+
+		//query finished
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 #ifndef SP_CODA /* growl */
-		// Perform the Growl notification for query completion
+		// Query finished Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
-														  document:tableDocumentInstance
-                                                  notificationName:@"Query Finished"];
+		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+		                                                  document:tableDocumentInstance
+		                                          notificationName:@"Query Finished"];
 #endif
 
 		// Set up the callback if present
 		if ([taskArguments objectForKey:@"callback"]) {
 			[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
-			[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+			[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:YES];
 		}
 
 		[tableDocumentInstance endTask];
-		[queryRunningPool release];
 
-		return;
+		// Restore selection indexes if appropriate
+		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+
+		if(reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
 	}
-
-	[[customQueryView onMainThread] reloadData];
-
-	// Restore the result view origin if appropriate
-	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
-
-		// Scroll the viewport to the saved location
-		selectionViewportToRestore.size = [customQueryView visibleRect].size;
-		[(SPCopyTable*)[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
-	}
-
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-
-#ifndef SP_CODA /* growl */
-	// Query finished Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
-													  document:tableDocumentInstance
-                                              notificationName:@"Query Finished"];
-#endif
-
-	// Set up the callback if present
-	if ([taskArguments objectForKey:@"callback"]) {
-		[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
-		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:YES];
-	}
-
-	[tableDocumentInstance endTask];
-
-	// Restore selection indexes if appropriate
-	if (selectionIndexToRestore)
-		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
-	if(reloadingExistingResult)
-		[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
-
-	[queryRunningPool release];
 }
 
 /**
@@ -976,12 +977,12 @@
  */
 - (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore
 {
-
-	// Remove all items from the table
-	resultDataCount = 0;
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
-	[resultData removeAllRows];
+	// Remove all items from the table
+	SPMainQSync(^{
+		[resultData removeAllRows];
+		[customQueryView noteNumberOfRowsChanged];
+	});
 
 	// Add the new store
 	[resultData setDataStorage:theResultStore updatingExisting:NO];
@@ -993,16 +994,9 @@
 	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initQueryLoadTimer];
 
-	[resultLoadingCondition lock];
-	while (![resultData dataDownloaded]) {
-		[resultLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	}
-	[resultLoadingCondition unlock];
-
-	// If the final column autoresize wasn't performed, perform it
-	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
-
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+	[resultData awaitDataDownloaded];
+	
+	// Any further UI updates are the responsibility of the timer callback
 }
 
 /**
@@ -1492,23 +1486,20 @@
  */
 - (void) queryLoadUpdate:(NSTimer *)theTimer
 {
-	resultDataCount = [resultData count];
-
+	NSUInteger resultDataCount = [resultData count];
+	
 	if (queryLoadTimerTicksSinceLastUpdate < queryLoadInterfaceUpdateInterval) {
 		queryLoadTimerTicksSinceLastUpdate++;
 		return;
 	}
 
 	if ([resultData dataDownloaded]) {
-		[resultLoadingCondition lock];
-		[resultLoadingCondition signal];
 		[self clearQueryLoadTimer];
-		[resultLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
 	// available to display.
-	if (resultDataCount == (NSInteger)queryLoadLastRowCount) {
+	if (resultDataCount == queryLoadLastRowCount) {
 		return;
 	}
 
@@ -1555,7 +1546,7 @@
  */
 - (NSUInteger)currentResultRowCount
 {
-	return resultDataCount;
+	return [resultData count];
 }
 
 /**
@@ -1630,7 +1621,7 @@
 
 #ifndef SP_CODA
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:nil waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
@@ -2084,7 +2075,7 @@
  */
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return (aTableView == customQueryView) ? (resultData == nil) ? 0 : resultDataCount : 0;
+	return (aTableView == customQueryView) ? (resultData == nil) ? 0 : [resultData count] : 0;
 }
 
 /**
@@ -2109,7 +2100,7 @@
 		if (isWorking) {
 			pthread_mutex_lock(&resultDataLock);
 				
-			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+			if (SPIntS2U(rowIndex) < [resultData count] && columnIndex < [resultData columnCount]) {
 				showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 			} else {
 				showCellAsGray = YES;
@@ -2410,7 +2401,7 @@
 	// cases.
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
-		if (row < resultDataCount && (NSUInteger)[[aTableColumn identifier] integerValue] < [resultData columnCount]) {
+		if (SPIntS2U(row) < [resultData count] && (NSUInteger)[[aTableColumn identifier] integerValue] < [resultData columnCount]) {
 			theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]) copy] autorelease];
 		}
 		pthread_mutex_unlock(&resultDataLock);
@@ -2841,220 +2832,13 @@
 
 #endif
 
-#pragma mark -
-#pragma mark MySQL Help
-
 /**
- * Set the MySQL version as X.Y for Help window title and online search
+ * Set the MySQL version as X.Y
  */
 - (void)setMySQLversion:(NSString *)theVersion
 {
-	mySQLversion = [[theVersion substringToIndex:3] retain];
-	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
+	[textView setConnection:mySQLConnection withVersion:[[[[theVersion substringToIndex:3] componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
 }
-
-#ifndef SP_CODA
-/**
- * Return the Help window.
- */
-- (NSWindow *)helpWebViewWindow
-{
-	return helpWebViewWindow;
-}
-
-/**
- * Show the data for "HELP 'searchString'".
- */
-- (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp
-{
-
-	// If there's no search string, show nothing if called by autohelp, and the index otherwise
-	if (![searchString length]) {
-		if (autoHelp) return;
-		searchString = SP_HELP_TOC_SEARCH_STRING;
-	}
-
-	NSString *helpString = [self getHTMLformattedMySQLHelpFor:searchString calledByAutoHelp:autoHelp];
-
-	if(autoHelp && [helpString isEqualToString:SP_HELP_NOT_AVAILABLE]) {
-		[helpWebViewWindow orderOut:nil];
-		return;
-	}
-
-	// Order out resp. init the Help window if not visible
-	if(![helpWebViewWindow isVisible])
-	{
-		// set title of the Help window
-		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), mySQLversion]];
-
-		// init goback/forward buttons
-		if([[helpWebView backForwardList] backListCount] < 1)
-		{
-			[helpNavigator setEnabled:NO forSegment:SP_HELP_GOBACK_BUTTON];
-			[helpNavigator setEnabled:NO forSegment:SP_HELP_GOFORWARD_BUTTON];
-		} else {
-			[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
-			[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
-		}
-
-		// set default to search in MySQL help
-		helpTarget = SP_HELP_SEARCH_IN_MYSQL;
-		[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_MYSQL];
-		[self helpTargetValidation];
-
-		// order out Help window if Help is available
-		if(![helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
-			[helpWebViewWindow orderFront:helpWebView];
-	}
-
-	// close Help window if no Help available
-	if([helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
-		[helpWebViewWindow close];
-
-	if(![helpString length]) return;
-
-	// add searchString to history list
-	if(addToHistory)
-	{
-		WebHistoryItem *aWebHistoryItem = [[WebHistoryItem alloc] initWithURLString:[NSString stringWithFormat:@"applewebdata://%@", searchString] title:searchString lastVisitedTimeInterval:[[NSDate date] timeIntervalSinceDate:[NSDate distantFuture]]];
-		[[helpWebView backForwardList] addItem:aWebHistoryItem];
-		[aWebHistoryItem release];
-	}
-
-	// validate goback/forward buttons
-	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
-	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
-
-	// load HTML formatted help into the webview
-	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
-}
-
-/**
- * Show the data for "HELP 'search word'" according to helpTarget
- */
-- (IBAction)showHelpForSearchString:(id)sender
-{
-	NSString *searchString = [[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	switch(helpTarget)
-	{
-		case SP_HELP_SEARCH_IN_PAGE:
-			if(![helpWebView searchFor:searchString direction:YES caseSensitive:NO wrap:YES])
-				if([searchString length]) NSBeep();
-			break;
-		case SP_HELP_SEARCH_IN_WEB:
-			if(![searchString length])
-				break;
-			[self openMySQLonlineDocumentationWithString:searchString];
-			break;
-		case SP_HELP_SEARCH_IN_MYSQL:
-			[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:NO];
-			break;
-	}
-}
-
-/**
- * Show the Help for the selected text in the webview
- */
-- (IBAction)showHelpForWebViewSelection:(id)sender
-{
-	[self showHelpFor:[[helpWebView selectedDOMRange] text] addToHistory:YES calledByAutoHelp:NO];
-}
-
-/*
- * Show MySQL's online documentation for the selected text in the webview
- */
-- (IBAction)searchInDocForWebViewSelection:(id)sender
-{
-	NSString *searchString = [[[helpWebView selectedDOMRange] text] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	if(![searchString length])
-	{
-		NSBeep();
-		return;
-	}
-	[self openMySQLonlineDocumentationWithString:searchString];
-}
-
-
-/**
- * Show the data for "HELP 'currentWord'"
- */
-- (IBAction)showHelpForCurrentWord:(id)sender
-{
-	NSString *searchString = [[sender string] substringWithRange:[sender getRangeForCurrentWord]];
-	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:NO];
-}
-
-/**
- * Find Next/Previous in current page
- */
-- (IBAction)helpSearchFindNextInPage:(id)sender
-{
-	if(helpTarget == SP_HELP_SEARCH_IN_PAGE)
-		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES])
-			NSBeep();
-}
-
-- (IBAction)helpSearchFindPreviousInPage:(id)sender
-{
-	if(helpTarget == SP_HELP_SEARCH_IN_PAGE)
-		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:NO caseSensitive:NO wrap:YES])
-			NSBeep();
-}
-
-/**
- * Navigation for back/TOC/forward
- */
-- (IBAction)helpSegmentDispatcher:(id)sender
-{
-	switch([helpNavigator selectedSegment])
-	{
-		case SP_HELP_GOBACK_BUTTON:
-			[helpWebView goBack];
-			break;
-		case SP_HELP_SHOW_TOC_BUTTON:
-			[self showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
-			break;
-		case SP_HELP_GOFORWARD_BUTTON:
-			[helpWebView goForward];
-			break;
-	}
-	
-	// validate goback and goforward buttons according history
-	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
-	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
-
-}
-
-/**
- * Set helpTarget according user choice via mouse and keyboard short-cuts.
- */
-- (IBAction)helpSelectHelpTargetMySQL:(id)sender
-{
-	helpTarget = SP_HELP_SEARCH_IN_MYSQL;
-	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_MYSQL];
-	[self helpTargetValidation];
-}
-
-- (IBAction)helpSelectHelpTargetPage:(id)sender
-{
-	helpTarget = SP_HELP_SEARCH_IN_PAGE;
-	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_PAGE];
-	[self helpTargetValidation];
-}
-
-- (IBAction)helpSelectHelpTargetWeb:(id)sender
-{
-	helpTarget = SP_HELP_SEARCH_IN_WEB;
-	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_WEB];
-	[self helpTargetValidation];
-}
-
-- (IBAction)helpTargetDispatcher:(id)sender
-{
-	helpTarget = [helpTargetSelector selectedSegment];
-	[self helpTargetValidation];
-}
-#endif
 
 - (IBAction)showCompletionList:(id)sender
 {
@@ -3079,294 +2863,22 @@
 - (void)showAutoHelpForCurrentWord:(id)sender
 {
 	NSString *searchString = [[sender string] substringWithRange:[sender getRangeForCurrentWord]];
-	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:YES];
-}
-
-/**
- * Control the help search field behaviour.
- */
-- (void)helpTargetValidation
-{
-	switch(helpTarget)
-	{
-		case SP_HELP_SEARCH_IN_PAGE:
-		case SP_HELP_SEARCH_IN_WEB:
-		[helpSearchFieldCell setSendsWholeSearchString:YES];
-		break;
-		case SP_HELP_SEARCH_IN_MYSQL:
-		[helpSearchFieldCell setSendsWholeSearchString:NO];
-		break;
-	}
-}
-
-- (void)openMySQLonlineDocumentationWithString:(NSString *)searchString
-{
-	NSString *version = nil;
-	if([[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""] integerValue] < 42)
-		version = @"4.1";
-	else
-		version = [NSString stringWithString:mySQLversion];
-
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
-		[[NSString stringWithFormat:
-			SPMySQLSearchURL,
-			version,
-			NSLocalizedString(@"en", @"MySQL search language code - eg in http://search.mysql.com/search?q=select&site=refman-50&lr=lang_en"),
-			searchString]
-		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
-}
-
-/**
- * Return the help string HTML formatted from executing "HELP 'searchString'".
- * If more than one help topic was found return a link list.
- */
-- (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp
-{
-
-	if(![searchString length]) return @"";
-
-	// Don't escape % when being used as a wildcard, but escape it when it's being used by itself.
-	if ([searchString isEqualToString:@"%"]) searchString = @"\\%";
-
-	NSRange         aRange;
-	SPMySQLResult   *theResult = nil;
-	NSDictionary    *tableDetails;
-	NSMutableString *theHelp = [NSMutableString string];
-
-	[theHelp setString:@""];
-
-	// search via: HELP 'searchString'
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
-	if ([mySQLConnection queryErrored])
-	{
-		// if an error or HELP is not supported fall back to online search but
-		// don't open it if autoHelp is enabled
-		if(!autoHelp)
-			[self openMySQLonlineDocumentationWithString:searchString];
-
-		[helpWebViewWindow close];
-		return SP_HELP_NOT_AVAILABLE;
-	}
-
-	// nothing found?
-	if(![theResult numberOfRows]) {
-
-		// try to search via: HELP 'searchString%'
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
-
-		// really nothing found?
-		if(![theResult numberOfRows])
-			return [NSString stringWithFormat:@"<em style='color: gray'>%@</em>", NSLocalizedString(@"No results found.", @"Mysql Help Viewer : Search : No results")];
-	}
-
-	// Ensure rows are returned as strings to prevent data problems with older 4.1 servers
-	[theResult setReturnDataAsStrings:YES];
-
-	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult getRowAsDictionary]];
-
-	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
-		if ([tableDetails objectForKey:@"name"]) {
-			[theHelp appendString:@"<h2 class='header'>"];
-			[theHelp appendString:[[[tableDetails objectForKey:@"name"] copy] autorelease]];
-			[theHelp appendString:@"</h2>"];
-
-		}
-		if ([tableDetails objectForKey:@"description"]) {
-			NSMutableString *desc = [NSMutableString string];
-			NSError *err1 = NULL;
-			NSString *aUrl;
-
-			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
-
-			//[desc replaceOccurrencesOfString:[searchString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [searchString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
-
-			// detect and generate http links
-			aRange = NSMakeRange(0,0);
-			NSInteger safeCnt = 0; // safety counter - not more than 200 loops allowed
-			while(1){
-				aRange = [desc rangeOfRegex:@"\\s((https?|ftp|file)://.*?html)" options:RKLNoOptions inRange:NSMakeRange(NSMaxRange(aRange), [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
-				if(aRange.location != NSNotFound) {
-					aUrl = [desc substringWithRange:aRange];
-					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];
-				}
-				else
-					break;
-				safeCnt++;
-				if(safeCnt > 200)
-					break;
-			}
-
-			// Detect and generate cross-links.  First, handle the old-style [HELP ...] text.
-			[desc replaceOccurrencesOfRegex:@"(\\[HELP ([^\\]]*?)\\]" withString:[SPCustomQuery linkToHelpTopic:@"$1"]];
-
-			// Handle "see [...]" and "in [...]"-style 5.x links.
-			//look-behind won't work here because of the \s+
-			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP\\s+)?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 %@",[SPCustomQuery linkToHelpTopic:@"$2"]]];
-
-			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
-		}
-		// are examples available?
-		if([tableDetails objectForKey:@"example"]){
-			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
-			if([examples length])
-				[theHelp appendFormat:@"<br><i><b>%1$@</b></i><br><pre class='example'>%2$@</pre>",NSLocalizedString(@"Example:",@"Mysql Help Viewer : Help Topic: Example section title"), examples];
-
-		}
-	} else { // list all found topics
-
-		// check if HELP 'contents' is called
-		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
-			[theHelp appendFormat:@"<br><i>%@</i><br>", [NSString stringWithFormat:NSLocalizedString(@"Help topics for “%@”", @"MySQL Help Viewer : Results list : Page title"), searchString]];
-		else
-			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories")];
-
-		// iterate through all found rows and print them as HTML ul/li list
-		[theHelp appendString:@"<ul>"];
-		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
-		for (NSArray *eachRow in theResult) {
-			NSString *topic = [eachRow objectAtIndex:[eachRow count]-2];
-			[theHelp appendFormat:@"<li>%@</li>",[SPCustomQuery linkToHelpTopic:topic]];
-		}
-		[theHelp appendString:@"</ul>"];
-	}
-
-	[tableDetails release];
-
-	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
-}
-
-+ (NSString *)linkToHelpTopic:(NSString *)aTopic 
-{
-	NSString *linkTitle = [NSString stringWithFormat:NSLocalizedString(@"Show MySQL help for “%@”", @"MySQL Help Viewer : Results list : Link tooltip"),aTopic];
-	return [NSString stringWithFormat:@"<a title='%2$@' href='%1$@' class='internallink'>%1$@</a>", aTopic, linkTitle];
-}
-
-#pragma mark -
-#pragma mark WebView delegate methods
-
-/**
- * Link detector: If user clicked at an http link open it in the default browser,
- * otherwise search for it in the MySQL help. Additionally handle back/forward events from
- * keyboard and context menu.
- */
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
-{
-	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
-
-	if([[[request URL] scheme] isEqualToString:@"applewebdata"] && navigationType == WebNavigationTypeLinkClicked){
-		[self showHelpFor:[[[request URL] path] lastPathComponent] addToHistory:YES calledByAutoHelp:NO];
-		[listener ignore];
-	} else {
-		if (navigationType == WebNavigationTypeOther) {
-			// catch reload event
-			// if([[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] isEqualToString:@"about:blank"])
-			// 	[listener use];
-			// else
-			[listener use];
-		} else if (navigationType == WebNavigationTypeLinkClicked) {
-			// show http in browser
-			[[NSWorkspace sharedWorkspace] openURL:[actionInformation objectForKey:WebActionOriginalURLKey]];
-			[listener ignore];
-		} else if (navigationType == WebNavigationTypeBackForward) {
-			// catch back/forward events from contextual menu
-			[self showHelpFor:[[[[actionInformation objectForKey:WebActionOriginalURLKey] absoluteString] lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSASCIIStringEncoding] addToHistory:NO calledByAutoHelp:NO];
-			[listener ignore];
-		} else if (navigationType == WebNavigationTypeReload) {
-			// just in case
-			[listener ignore];
-		} else {
-			// Ignore WebNavigationTypeFormSubmitted, WebNavigationTypeFormResubmitted.
-			[listener ignore];
-		}
-	}
-}
-
-/**
- * Manage contextual menu in helpWebView
- * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link" etc.
- */
-- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
-{
-
-	NSMutableArray *webViewMenuItems = [[defaultMenuItems mutableCopy] autorelease];
-
-	if (webViewMenuItems)
-	{
-		// Remove all needless default menu items
-		NSEnumerator *itemEnumerator = [defaultMenuItems objectEnumerator];
-		NSMenuItem *menuItem = nil;
-		
-		while ((menuItem = [itemEnumerator nextObject]))
-		{
-			NSInteger tag = [menuItem tag];
-			
-			switch (tag)
-			{
-				case 2000: // WebMenuItemTagOpenLink
-				case WebMenuItemTagOpenLinkInNewWindow:
-				case WebMenuItemTagDownloadLinkToDisk:
-				case WebMenuItemTagOpenImageInNewWindow:
-				case WebMenuItemTagDownloadImageToDisk:
-				case WebMenuItemTagCopyImageToClipboard:
-				case WebMenuItemTagOpenFrameInNewWindow:
-				case WebMenuItemTagStop:
-				case WebMenuItemTagReload:
-				case WebMenuItemTagCut:
-				case WebMenuItemTagPaste:
-				case WebMenuItemTagSpellingGuess:
-				case WebMenuItemTagNoGuessesFound:
-				case WebMenuItemTagIgnoreSpelling:
-				case WebMenuItemTagLearnSpelling:
-				case WebMenuItemTagOther:
-				case WebMenuItemTagOpenWithDefaultApplication:
-				[webViewMenuItems removeObjectIdenticalTo: menuItem];
-				break;
-			}
-		}
-	}
-
-	// Add two menu items for a selection if no link is given
-	if(webViewMenuItems
-		&& [[element objectForKey:@"WebElementIsSelected"] boolValue]
-		&& ![[element objectForKey:@"WebElementLinkIsLive"] boolValue])
-	{
-
-		NSMenuItem *searchInMySQL;
-		NSMenuItem *searchInMySQLonline;
-
-		[webViewMenuItems insertObject:[NSMenuItem separatorItem] atIndex:0];
-
-		searchInMySQLonline = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Documentation", @"Search in MySQL Documentation") action:@selector(searchInDocForWebViewSelection:) keyEquivalent:@""];
-		[searchInMySQLonline setEnabled:YES];
-		[searchInMySQLonline setTarget:self];
-		[webViewMenuItems insertObject:searchInMySQLonline atIndex:0];
-		[searchInMySQLonline release];
-
-		searchInMySQL = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Search in MySQL Help", @"Search in MySQL Help") action:@selector(showHelpForWebViewSelection:) keyEquivalent:@""];
-		[searchInMySQL setEnabled:YES];
-		[searchInMySQL setTarget:self];
-		[webViewMenuItems insertObject:searchInMySQL atIndex:0];
-		[searchInMySQL release];
-
-	}
-
-	return webViewMenuItems;
+	[[tableDocumentInstance helpViewerClient] showHelpFor:searchString addToHistory:YES calledByAutoHelp:YES];
 }
 
 /**
  * Detect when the help window is closed (manually) and disable autohelp to ensure it
  * isn't reopened on keypresses.
  */
-- (BOOL)windowShouldClose:(id)sender
+- (void)helpWindowClosedByUser:(NSNotification *)notification
 {
-	if (sender == helpWebViewWindow) {
-		[prefs setBool:NO forKey:SPCustomQueryUpdateAutoHelp];
-		[prefs synchronize];
-		[autohelpMenuItem setState:NSOffState];
-		[textView setAutohelp:NO];
-	}
+	if ([notification object] != [tableDocumentInstance helpViewerClient]) return;
 
-	return YES;
+	//TODO: this doesn't belong in the document context, since multiple open documents can become out of sync through this
+	[prefs setBool:NO forKey:SPCustomQueryUpdateAutoHelp];
+	[prefs synchronize];
+	[autohelpMenuItem setState:NSOffState];
+	[textView setAutohelp:NO];
 }
 
 #endif
@@ -3378,8 +2890,12 @@
 
 /**
  * Rebuild history popup menu.
+ *
+ * Warning: notification may be nil if invoked directly from within this class.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
-- (void)historyItemsHaveBeenUpdated:(id)manager
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification
 {
 	// Abort if the connection has been closed already - sign of a closed window
 	if (![mySQLConnection isConnected]) return;
@@ -3401,9 +2917,14 @@
 /**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
-- (void)queryFavoritesHaveBeenUpdated:(id)manager
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification
 {
-	NSMenuItem *headerMenuItem;
+	NSURL *fileURL = [tableDocumentInstance fileURL];
+
+	// Warning: This method may be called before any connection has been made in the current tab (triggered by another tab)!
+	// There doesn't seem to be a real indicator for this, but fileURL is the closest thing plus we need it below (#2266)
+	if(!fileURL) return;
+
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
@@ -3411,28 +2932,23 @@
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
-	NSString *tblDocName = [[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
-	if(!tblDocName) {
-		//NSMenuItem will not accept nil as title
-		@throw [NSException exceptionWithName:NSInternalInconsistencyException
-									   reason:[NSString stringWithFormat:@"Document name conversion resulted in nil string!? tableDocumentInstance=%@ fileURL=%@",tableDocumentInstance,[tableDocumentInstance fileURL]]
-									 userInfo:nil];
+	NSString *tblDocName = [[[fileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
 	}
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
-	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
+	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:fileURL]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3444,21 +2960,22 @@
 	}
 
 	// Build global list
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
+	}
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3755,28 +3272,7 @@
 		selectionIndexToRestore = nil;
 		selectionViewportToRestore = NSZeroRect;
 
-#ifndef SP_CODA
-		// init helpHTMLTemplate
-		NSError *error;
-
-		helpHTMLTemplate = [[NSString alloc]
-							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SPHTMLHelpTemplate ofType:@"html"]
-							encoding:NSUTF8StringEncoding
-							error:&error];
-
-		// an error occurred while reading
-		if (helpHTMLTemplate == nil) {
-			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “%@.html”!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
-			NSBeep();
-		}
-
-		// init search history
-		[helpWebView setMaintainsBackForwardList:YES];
-		[[helpWebView backForwardList] setCapacity:20];
-#endif
-
 		// init tableView's data source
-		resultDataCount = 0;
 		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
 
@@ -3787,7 +3283,6 @@
 		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
-		resultLoadingCondition = [NSCondition new];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -3999,6 +3494,22 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(documentWillClose:)
+	                                             name:SPDocumentWillCloseNotification
+	                                           object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(queryFavoritesHaveBeenUpdated:)
+	                                             name:SPQueryFavoritesHaveBeenUpdatedNotification
+	                                           object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(historyItemsHaveBeenUpdated:)
+	                                             name:SPHistoryItemsHaveBeenUpdatedNotification
+	                                           object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(helpWindowClosedByUser:)
+	                                             name:SPUserClosedHelpViewerNotification
+	                                           object:[tableDocumentInstance helpViewerClient]];
 
 #ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
@@ -4020,7 +3531,7 @@
  */
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
-#warning duplicate code with SPTableContentDataSource.m tableView:objectValueForTableColumn:…
+#warning duplicate code with SPTableContent.m tableView:objectValueForTableColumn:…
 	id value = nil;
 	
 	// While the table is being loaded, additional validation is required - data
@@ -4030,7 +3541,7 @@
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
 		
-		if (row < resultDataCount && column < [resultData columnCount]) {
+		if (SPIntS2U(row) < [resultData count] && column < [resultData columnCount]) {
 			value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
 		}
 		
@@ -4059,6 +3570,13 @@
 	return value;
 }
 
+//this method is called right before the UI objects are deallocated
+- (void)documentWillClose:(NSNotification *)notification
+{
+	// if a result load is in progress we must stop the timer or it may try to call invalid IBOutlets
+	[self clearQueryLoadTimer];
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -4070,7 +3588,6 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
-	SPClear(resultLoadingCondition);
 	SPClear(usedQuery);
 	SPClear(lastExecutedQuery);
 	SPClear(resultData);
@@ -4078,10 +3595,6 @@
 
 	if(fieldEditor) SPClear(fieldEditor);
 
-#ifndef SP_CODA
-	if (helpHTMLTemplate)        SPClear(helpHTMLTemplate);
-#endif
-	if (mySQLversion)            SPClear(mySQLversion);
 	if (sortField)               SPClear(sortField);
 	if (cqColumnDefinition)      SPClear(cqColumnDefinition);
 	if (selectionIndexToRestore) SPClear(selectionIndexToRestore);

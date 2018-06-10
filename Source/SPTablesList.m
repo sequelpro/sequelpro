@@ -33,7 +33,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
-#import "SPDatabaseViewController.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
 #import "SPTableInfo.h"
@@ -52,7 +51,6 @@
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
 #import "SPCharsetCollationHelper.h"
-#import "SPWindowManagement.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -232,7 +230,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = %@ ORDER BY routine_name", [[tableDocumentInstance database] tickQuotedString]];
 			theResult = [mySQLConnection queryString:pQuery];
 			[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
-
+			[theResult setReturnDataAsStrings:YES]; //see tables above
+			
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
 			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] && [theResult numberOfFields] > 3) {
@@ -315,7 +314,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
-		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
+		SPMainQSync(^{
+			// -cell is a UI call according to Xcode 9.2 (and -setPlaceholderString: is too, obviously)
+			[[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
+		});
 	}
 #endif
 
@@ -1370,6 +1372,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Select an item using the provided name; returns YES if the
  * supplied name could be selected, or NO if not.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (BOOL)selectItemWithName:(NSString *)theName
 {
@@ -1418,7 +1422,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 
-	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 #endif
 
 	return YES;
@@ -2346,117 +2350,121 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		return;
 	}
 	
-	NSAutoreleasePool *tableAdditionPool = [[NSAutoreleasePool alloc] init];
-	
-	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
+	@autoreleasepool {
+		[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
 
-	NSString *charSetStatement   = @"";
-	NSString *collationStatement = @"";
-	NSString *engineStatement    = @"";
+		NSString *charSetStatement   = @"";
+		NSString *collationStatement = @"";
+		NSString *engineStatement    = @"";
 
-	NSString *tableType = [tableTypeButton title];
-	NSString *tableName = [tableNameField stringValue];
+		NSString *tableType = [tableTypeButton title];
+		NSString *tableName = [tableNameField stringValue];
 
-	// Ensure the use of UTF8 when creating new tables
-	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
-	
-	if (changeEncoding) {
-		[mySQLConnection storeEncodingForRestoration];
-		[mySQLConnection setEncoding:@"utf8"];
-	}
+		// Ensure the use of UTF8 when creating new tables
+		BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
-	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
-	NSString *encodingName = [addTableCharsetHelper selectedCharset];
-	if (encodingName)		
-		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
-	
-	// If there is a collation selected other than the default we must specify it in the CREATE TABLE statement
-	NSString *collationName = [addTableCharsetHelper selectedCollation];
-	if (collationName)		
-		collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@",[collationName backtickQuotedString]];
+		if (changeEncoding) {
+			[mySQLConnection storeEncodingForRestoration];
+			[mySQLConnection setEncoding:@"utf8"];
+		}
 
-	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
-	if ([tableTypeButton indexOfSelectedItem] > 0) {
-		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [[tableDocumentInstance serverSupport] supportsQuotingEngineTypeInCreateSyntax] ? [tableType backtickQuotedString] : tableType];
-	}
+		// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
+		NSString *encodingName = [addTableCharsetHelper selectedCharset];
+		if (encodingName) charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
 
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, collationStatement, engineStatement];
+		// If there is a collation selected other than the default we must specify it in the CREATE TABLE statement
+		NSString *collationName = [addTableCharsetHelper selectedCollation];
+		if (collationName) collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@",[collationName backtickQuotedString]];
 
-	// Create the table
-	[mySQLConnection queryString:createStatement];
+		// If there is a type selected other than the default we must specify it in CREATE TABLE statement
+		if ([tableTypeButton indexOfSelectedItem] > 0) {
+			engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [[tableDocumentInstance serverSupport] supportsQuotingEngineTypeInCreateSyntax] ? [tableType backtickQuotedString] : tableType];
+		}
 
-	if (![mySQLConnection queryErrored]) {
+		NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, collationStatement, engineStatement];
 
-		// Table creation was successful - insert the new item into the tables list and select it.
-		NSInteger addItemAtIndex = NSNotFound;
+		// Create the table
+		[mySQLConnection queryString:createStatement];
 
-		for (NSUInteger i = 0; i < [tables count]; i++)
-		{
-			NSInteger eachTableType = [[tableTypes objectAtIndex:i] integerValue];
+		if (![mySQLConnection queryErrored]) {
 
-			if (eachTableType == SPTableTypeNone) continue;
-			if (eachTableType == SPTableTypeProc || eachTableType == SPTableTypeFunc) {
-				addItemAtIndex = (i - 1);
-				break;
+			// Table creation was successful - insert the new item into the tables list and select it.
+			NSInteger addItemAtIndex = NSNotFound;
+
+			for (NSUInteger i = 0; i < [tables count]; i++)
+			{
+				NSInteger eachTableType = [[tableTypes objectAtIndex:i] integerValue];
+
+				if (eachTableType == SPTableTypeNone) continue;
+				if (eachTableType == SPTableTypeProc || eachTableType == SPTableTypeFunc) {
+					addItemAtIndex = (i - 1);
+					break;
+				}
+
+				if ([tableName localizedCompare:[tables objectAtIndex:i]] == NSOrderedAscending) {
+					addItemAtIndex = i;
+					break;
+				}
 			}
 
-			if ([tableName localizedCompare:[tables objectAtIndex:i]] == NSOrderedAscending) {
-				addItemAtIndex = i;
-				break;
+			if (addItemAtIndex == NSNotFound) {
+				[tables addObject:tableName];
+				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 			}
-		}
+			else {
+				[tables insertObject:tableName atIndex:addItemAtIndex];
+				[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeTable] atIndex:addItemAtIndex];
+			}
 
-		if (addItemAtIndex == NSNotFound) {
-			[tables addObject:tableName];
-			[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
-		}
-		else {
-			[tables insertObject:tableName atIndex:addItemAtIndex];
-			[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeTable] atIndex:addItemAtIndex];
-		}
+			// Set the selected table name and type, and then update the filter list and the
+			// selection.
+			if (selectedTableName) [selectedTableName release];
 
-		// Set the selected table name and type, and then update the filter list and the
-		// selection.
-		if (selectedTableName) [selectedTableName release];
-		
-		selectedTableName = [[NSString alloc] initWithString:tableName];
-		selectedTableType = SPTableTypeTable;
+			selectedTableName = [[NSString alloc] initWithString:tableName];
+			selectedTableType = SPTableTypeTable;
 
-		[[self onMainThread] updateFilter:self];
-		[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+			[[self onMainThread] updateFilter:self];
+			[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
 
-		// Select the newly created table and switch to the table structure view for easier setup
-		[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
+			// Select the newly created table and switch to the table structure view for easier setup
+			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 #ifndef SP_CODA
-		[tableDocumentInstance viewStructure:self];
+			[tableDocumentInstance viewStructure:self];
 #endif
 
 #ifdef SP_CODA
-		[sidebarViewController setTableNames:[self allTableNames] selectedTableName:selectedTableName];
+			[sidebarViewController setTableNames:[self allTableNames] selectedTableName:selectedTableName];
 #endif
 
-		// Query the structure of all databases in the background (mainly for completion)
-		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
+			// Query the structure of all databases in the background (mainly for completion)
+			[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
+		}
+		else {
+			// Error while creating new table
+			alertSheetOpened = YES;
+
+			SPBeginAlertSheet(
+				NSLocalizedString(@"Error adding new table", @"error adding new table message"),
+				NSLocalizedString(@"OK", @"OK button"),
+				nil,
+				nil,
+				[tableDocumentInstance parentWindow],
+				self,
+				@selector(sheetDidEnd:returnCode:contextInfo:),
+				SPAddRow,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection lastErrorMessage]]
+			);
+
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
+			[[tablesListView onMainThread] reloadData];
+		}
+
+		// Clear table name
+		[[tableNameField onMainThread] setStringValue:@""];
+
+		[tableDocumentInstance endTask];
 	}
-	else {
-		// Error while creating new table
-		alertSheetOpened = YES;
-
-		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"),
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), SPAddRow,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection lastErrorMessage]]);
-
-		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-		
-		[[tablesListView onMainThread] reloadData];
-	}
-
-	// Clear table name
-	[[tableNameField onMainThread] setStringValue:@""];
-
-	[tableDocumentInstance endTask];
-	[tableAdditionPool release];
 }
 
 #ifndef SP_CODA

@@ -42,7 +42,10 @@ static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
 static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
 static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
-@interface SPProcessListController (PrivateAPI)
+static NSString * const SPKillModeKey = @"SPKillMode";
+static NSString * const SPKillIdKey   = @"SPKillId";
+
+@interface SPProcessListController ()
 
 - (void)_processListRefreshed;
 - (void)_startAutoRefreshTimer;
@@ -283,7 +286,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessQueryMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessQueryMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -311,7 +321,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessConnectionMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessConnectionMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -364,7 +381,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	   modalForWindow:[self window]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+		  contextInfo:NULL];
 }
 
 #pragma mark -
@@ -386,7 +403,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Invoked when the kill alerts are dismissed. Decide what to do based on the user's decision.
  */
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)]) {
@@ -396,19 +413,23 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		[[sheet window] orderOut:nil];
 	}
 
-	if (returnCode == NSAlertDefaultReturn) {
-		
-		if (sheet == customIntervalWindow) {			
-			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
-		}
-		else {
-			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	if (sheet == customIntervalWindow) {
+		if (returnCode == NSAlertDefaultReturn) [self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
+	}
+	else {
+		NSDictionary *userInfo = [(NSDictionary *)contextInfo autorelease]; //we retained it during the beginSheet… call because Cocoa does not do memory management on void *.
+		if (returnCode == NSAlertDefaultReturn) {
+			long long processId = [[userInfo objectForKey:SPKillIdKey] longLongValue];
 			
-			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
+			NSString *mode = [userInfo objectForKey:SPKillModeKey];
+			if ([mode isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
 			}
-			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
+			else if ([mode isEqualToString:SPKillProcessConnectionMode]) {
 				[self _killProcessConnectionWithId:processId];
+			}
+			else {
+				[NSException raise:NSInternalInconsistencyException format:@"%s: Unhandled branch for mode=%@", __PRETTY_FUNCTION__, mode];
 			}
 		}
 	}
@@ -612,54 +633,51 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
  */
 - (void)_getDatabaseProcessListInBackground:(id)object;
 {	
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSUInteger i = 0;
-	
-	// Get processes
-	if ([connection isConnected]) {
-		
-		SPMySQLResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
-		
-		[processList setReturnDataAsStrings:YES];
+	@autoreleasepool {
+		NSUInteger i = 0;
 
-		[[processes onMainThread] removeAllObjects];
-		
-		for (i = 0; i < [processList numberOfRows]; i++) 
-		{
-			//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
-			NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
+		// Get processes
+		if ([connection isConnected]) {
 
-			// The ID can be a 64-bit value on 64-bit servers
-			id idColumn = [rowsFixed objectForKey:@"Id"];
-			if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
-				long long numRaw = [(NSString *)idColumn longLongValue];
-				NSNumber *num = [NSNumber numberWithLongLong:numRaw];
-				[rowsFixed setObject:num forKey:@"Id"];
+			SPMySQLResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
+
+			[processList setReturnDataAsStrings:YES];
+
+			[[processes onMainThread] removeAllObjects];
+
+			for (i = 0; i < [processList numberOfRows]; i++)
+			{
+				//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
+				NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
+
+				// The ID can be a 64-bit value on 64-bit servers
+				id idColumn = [rowsFixed objectForKey:@"Id"];
+				if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
+					long long numRaw = [(NSString *)idColumn longLongValue];
+					NSNumber *num = [NSNumber numberWithLongLong:numRaw];
+					[rowsFixed setObject:num forKey:@"Id"];
+				}
+
+				// Time is a signed int(7) - this is a 32 bit int value
+				id timeColumn = [rowsFixed objectForKey:@"Time"];
+				if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
+					int numRaw = [(NSString *)timeColumn intValue];
+					NSNumber *num = [NSNumber numberWithInt:numRaw];
+					[rowsFixed setObject:num forKey:@"Time"];
+				}
+
+				// This is pretty bad from a performance standpoint, but we must not
+				// interfere with the NSTableView's reload cycle and there is no way
+				// to know when it starts/ends. We only know it will happen on the
+				// main thread, so we have to interlock with that.
+				[[processes onMainThread] addObject:[[rowsFixed copy] autorelease]];
+				[rowsFixed release];
 			}
-
-			// Time is a signed int(7) - this is a 32 bit int value
-			id timeColumn = [rowsFixed objectForKey:@"Time"];
-			if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
-				int numRaw = [(NSString *)timeColumn intValue];
-				NSNumber *num = [NSNumber numberWithInt:numRaw];
-				[rowsFixed setObject:num forKey:@"Time"];
-			}
-			
-			// This is pretty bad from a performance standpoint, but we must not
-			// interfere with the NSTableView's reload cycle and there is no way
-			// to know when it starts/ends. We only know it will happen on the
-			// main thread, so we have to interlock with that.
-			[[processes onMainThread] addObject:[[rowsFixed copy] autorelease]];
-			[rowsFixed release];
 		}
 
+		// Update the UI on the main thread
+		[self performSelectorOnMainThread:@selector(_processListRefreshed) withObject:nil waitUntilDone:NO];
 	}
-	
-	// Update the UI on the main thread
-	[self performSelectorOnMainThread:@selector(_processListRefreshed) withObject:nil waitUntilDone:NO];
-	
-	[pool release];
 }
 
 /**
@@ -780,6 +798,70 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 {
 	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
+#pragma mark - SPProcessListControllerDataSource
+
+#pragma mark Tableview delegate methods
+
+/**
+ * Table view delegate method. Returns the number of rows in the table veiw.
+ */
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+	return [processesFiltered count];
+}
+
+/**
+ * Table view delegate method. Returns the specific object for the request column and row.
+ */
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
+
+	if ([object isNSNull]) {
+		return [prefs stringForKey:SPNullValue];
+	}
+
+	// If the string is exactly 100 characters long, and FULL process lists are not enabled, it's a safe
+	// bet that the string is truncated
+	if (!showFullProcessList && [object isKindOfClass:[NSString class]] && [(NSString *)object length] == 100) {
+		return [object stringByAppendingString:@"…"];
+	}
+
+	return object;
+}
+
+/**
+ * Table view delegate method. Called when the user changes the sort by column.
+ */
+- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
+{
+	[processesFiltered sortUsingDescriptors:[tableView sortDescriptors]];
+
+	[tableView reloadData];
+}
+
+/**
+ * Table view delegate method. Called whenever the user changes a column width.
+ */
+- (void)tableViewColumnDidResize:(NSNotification *)notification
+{
+	NSTableColumn *column = [[notification userInfo] objectForKey:@"NSTableColumn"];
+
+	// Get the existing table column widths dictionary if it exists
+	NSMutableDictionary *tableColumnWidths = ([prefs objectForKey:SPProcessListTableColumnWidths]) ?
+	[NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPProcessListTableColumnWidths]] :
+	[NSMutableDictionary dictionary];
+
+	// Save column size
+	NSString *columnName = [[column headerCell] stringValue];
+
+	if (columnName) {
+		[tableColumnWidths setObject:[NSNumber numberWithDouble:[column width]] forKey:columnName];
+
+		[prefs setObject:tableColumnWidths forKey:SPProcessListTableColumnWidths];
+	}
 }
 
 #pragma mark -

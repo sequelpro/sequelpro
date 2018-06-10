@@ -48,7 +48,6 @@ static id NSNullPointer;
 
 + (void)initialize
 {
-
 	// Cached NSNull singleton reference
 	if (!NSNullPointer) NSNullPointer = [NSNull null];
 
@@ -59,7 +58,7 @@ static id NSNullPointer;
 /**
  * Standard initialisation - not intended for external use.
  */
-- (id)init
+- (instancetype)init
 {
 	if ((self = [super init])) {
 		stringEncoding = NSASCIIStringEncoding;
@@ -83,9 +82,8 @@ static id NSNullPointer;
  * Standard init method, constructing the SPMySQLResult around a MySQL
  * result pointer and the encoding to use when working with the data.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
 {
-
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
@@ -275,7 +273,6 @@ static id NSNullPointer;
  */
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
-
 	// If the start index is out of bounds, return 0 to indicate end of results
 	if (state->state >= numberOfRows) return 0;
 

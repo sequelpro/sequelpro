@@ -40,15 +40,14 @@ typedef char SPMySQLStreamingResultStoreRowData;
 	BOOL loadCancelled;
 	id <SPMySQLStreamingResultStoreDelegate> delegate;
 
-    // Data storage and allocation
-    NSUInteger rowCapacity;
+	// Data storage and allocation
+	NSUInteger rowCapacity;
 	NSUInteger rowDownloadIterator;
 	malloc_zone_t *storageMallocZone;
-    SPMySQLStreamingResultStoreRowData **dataStorage;
+	SPMySQLStreamingResultStoreRowData **dataStorage;
 
-    // Thread safety
-    pthread_mutex_t dataLock;
-
+	// Thread safety
+	pthread_mutex_t dataLock;
 }
 
 @property (readwrite, assign) id <SPMySQLStreamingResultStoreDelegate> delegate;

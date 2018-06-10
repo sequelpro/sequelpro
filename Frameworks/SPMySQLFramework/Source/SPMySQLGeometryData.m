@@ -28,6 +28,8 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPMySQLGeometryData.h"
+#include <stdlib.h>
+#include <string.h>
 
 enum wkbType
 {
@@ -57,7 +59,7 @@ typedef struct st_point_2d_
 /**
  * Initialize the SPMySQLGeometryData object
  */
-- (id)init
+- (instancetype)init
 {
 	if ((self = [super init])) {
 		geoBuffer = nil;
@@ -69,7 +71,7 @@ typedef struct st_point_2d_
 /**
  * Initialize the SPMySQLGeometryData object with the WKB data
  */
-- (id)initWithBytes:(const void *)geoData length:(NSUInteger)length
+- (instancetype)initWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	if ((self = [self init])) {
 		bufferLength = length;
@@ -82,7 +84,7 @@ typedef struct st_point_2d_
 /**
  * Return an autorelease SPMySQLGeometryData object
  */
-+ (id)dataWithBytes:(const void *)geoData length:(NSUInteger)length
++ (instancetype)dataWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	return [[[SPMySQLGeometryData alloc] initWithBytes:geoData length:length] autorelease];
 }
@@ -134,16 +136,14 @@ typedef struct st_point_2d_
 
 	NSMutableString *wkt = [NSMutableString string];
 
-	if (bufferLength < WKB_HEADER_SIZE)
-		return @"";
+	if (bufferLength < WKB_HEADER_SIZE) return @"";
 
 	memcpy(&srid, &geoBuffer[0], SIZEOF_STORED_UINT32);
 	ptr += SIZEOF_STORED_UINT32;
 
 	byteOrder = (char)geoBuffer[ptr];
 
-	if (byteOrder != 0x1)
-		return @"Byte order not yet supported";
+	if (byteOrder != 0x1) return @"Byte order not yet supported";
 
 	ptr++;
 	geoType = geoBuffer[ptr];
@@ -256,8 +256,7 @@ typedef struct st_point_2d_
 
 				byteOrder = (char)geoBuffer[ptr];
 
-				if(byteOrder != 0x1)
-					return @"Byte order not yet supported";
+				if(byteOrder != 0x1) return @"Byte order not yet supported";
 
 				ptr++;
 				geoType = geoBuffer[ptr];
@@ -405,16 +404,14 @@ typedef struct st_point_2d_
 	NSMutableArray *polygoncoordinates = [NSMutableArray array];
 	NSMutableArray *polygonsubcoordinates = [NSMutableArray array];
 
-	if (bufferLength < WKB_HEADER_SIZE)
-		return nil;
+	if (bufferLength < WKB_HEADER_SIZE) return nil;
 
 	memcpy(&srid, &geoBuffer[0], SIZEOF_STORED_UINT32);
 	ptr += SIZEOF_STORED_UINT32;
 
 	byteOrder = (char)geoBuffer[ptr];
 
-	if (byteOrder != 0x1)
-		return nil;
+	if (byteOrder != 0x1) return nil;
 
 	ptr++;
 	geoType = geoBuffer[ptr];
@@ -750,22 +747,18 @@ typedef struct st_point_2d_
 
 	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
-	if (bufferLength < WKB_HEADER_SIZE)
-		return -1;
+	if (bufferLength < WKB_HEADER_SIZE) return -1;
 
 	byteOrder = (char)geoBuffer[ptr];
 
-	if (byteOrder != 0x1)
-		return -1;
+	if (byteOrder != 0x1) return -1;
 
 	ptr++;
 	geoType = geoBuffer[ptr];
 	
-	if (geoType > 0 && geoType < 8)
-		return geoType;
-	else
-		return -1;
-	
+	if (geoType > 0 && geoType < 8) return geoType;
+
+	return -1;
 }
 
 /**

@@ -30,9 +30,8 @@
 
 
 #import "SPMySQLKeepAliveTimer.h"
-#import "SPMySQL Private APIs.h"
 
-@interface SPMySQLKeepAliveTimer (Private_API)
+@interface SPMySQLKeepAliveTimer () // Private API
 
 - (void)_initKeepAliveTimer;
 - (void)_forwardPing;
@@ -46,7 +45,7 @@
 /**
  * Prevent SPMySQLKeepAliveTimer from being init'd normally.
  */
-- (id)init
+- (instancetype)init
 {
 	[NSException raise:NSInternalInconsistencyException format:@"SPMySQLKeepAliveTimers should not be init'd directly; use initWithInterval:target:selector: instead."];
 	return nil;
@@ -60,7 +59,7 @@
  * After initialisation, the delegate should be set to ensure that the timer events
  * are received.
  */
-- (id)initWithInterval:(NSTimeInterval)anInterval target:(id)aTarget selector:(SEL)aSelector
+- (instancetype)initWithInterval:(NSTimeInterval)anInterval target:(id)aTarget selector:(SEL)aSelector
 {
 	if ((self = [super init])) {
 		wrappedTimer = nil;
@@ -96,13 +95,11 @@
 
 - (void)dealloc
 {
-	[wrappedTimer dealloc];
+	[wrappedTimer release];
 	[super dealloc];
 }
 
-@end
-
-@implementation SPMySQLKeepAliveTimer (Private_API)
+#pragma mark - Private API
 
 /**
  * Set up the timer to tickle the target.  This must be set up on the main thread

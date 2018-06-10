@@ -33,7 +33,7 @@
  */
 @interface NSObject (SPMainThreadTrampoline)
 
-- (id)onMainThread;
+- (instancetype)onMainThread;
 - (id)retainedOnMainThread;
 
 @end

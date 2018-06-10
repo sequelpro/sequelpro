@@ -473,7 +473,11 @@ typedef struct {
 	}
 	
 	// Fill in background of tab bar
-	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
+	if (tabBar.cells.count != 1) { // multiple tabs - fill with background color
+		[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
+	} else { // When there's only one tab, the tabs are probably hidden, so use the selected cell's highlight colour as our background colour
+		[[self fillColorForCell:selectedCell] set];
+	}
 	NSRectFill(NSMakeRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height));
 
 	// Draw horizontal line across the top edge
@@ -626,6 +630,9 @@ typedef struct {
 			if([cell backgroundColor]) {
 				//should be a slightly darker variant of the color
 				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
+				
+				// also desaturate the color
+				fillColor = [NSColor colorWithCalibratedHue:fillColor.hueComponent saturation:fillColor.saturationComponent * 0.4 brightness:fillColor.brightnessComponent alpha:1.0f];
 			}
 		}
 	} else {
@@ -647,7 +654,7 @@ typedef struct {
 			//make it dark first, then desaturate
 			if (cell.backgroundColor) {
 				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
-				fillColor = [NSColor colorWithCalibratedHue:dark.hueComponent saturation:dark.saturationComponent brightness:(dark.brightnessComponent * 1.28) alpha:1.0f];
+				fillColor = [NSColor colorWithCalibratedHue:dark.hueComponent saturation:dark.saturationComponent * 0.15 brightness:(dark.brightnessComponent * 1.28) alpha:1.0f];
 			}
 		}
 	}

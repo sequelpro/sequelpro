@@ -82,7 +82,6 @@
  */
 - (BOOL)setEncoding:(NSString *)theEncoding
 {
-
 	// MySQL versions prior to 4.1 don't support encoding changes; return NO on those
 	// versions.
 	if (![self serverVersionIsGreaterThanOrEqualTo:4 minorVersion:1 releaseVersion:0]) {
@@ -116,14 +115,13 @@
  * Latin1 transport is a compatibility mode in place for compatibility with older
  * incorrect setups, where databases and clients might both be set to use UTF8 (or
  * other encodings) for storing and retrieving data, but the MySQL link was never
- * set to UTF8 mode; as a result, multibyte characters where split by the connection
+ * set to UTF8 mode; as a result, multibyte characters were split by the connection
  * into pairs of characters, resulting in malformed storage.  The data works
  * correctly if written and read in the same way, so this mode allows correct display
  * of that data.
  */
 - (BOOL)setEncodingUsesLatin1Transport:(BOOL)useLatin1
 {
-
 	// MySQL versions prior to 4.1 don't support encoding changes; return NO on those
 	// versions.
 	if (![self serverVersionIsGreaterThanOrEqualTo:4 minorVersion:1 releaseVersion:0]) {
@@ -208,7 +206,6 @@
  */
 + (NSStringEncoding)stringEncodingForMySQLCharset:(const char *)mysqlCharset
 {
-
 	// Handle the most common cases first
 	if (!strcmp(mysqlCharset, "utf8")) {
 		return NSUTF8StringEncoding;
@@ -337,7 +334,6 @@
  */
 + (NSString *)mySQLCharsetForStringEncoding:(NSStringEncoding)aStringEncoding
 {
-
 	// Switch through the list of NSStringEncodings from NSString, returning the most
 	// appropriate encoding for each
 	switch (aStringEncoding) {
