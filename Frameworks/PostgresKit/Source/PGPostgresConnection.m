@@ -301,7 +301,6 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 		int sock = PQsocket(_connection);
 
 		if (sock == -1) {
-			[pool release];
 			return;
 		}
 
