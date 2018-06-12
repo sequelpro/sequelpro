@@ -130,8 +130,8 @@
 		177AC6AF15C5460C00A3658D /* PGPostgresConnectionQueryPreparation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresConnectionQueryPreparation.m; sourceTree = "<group>"; };
 		177C9BA915CD37E000128642 /* PGPostgresConnectionEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresConnectionEncoding.h; sourceTree = "<group>"; };
 		177C9BAA15CD37E000128642 /* PGPostgresConnectionEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresConnectionEncoding.m; sourceTree = "<group>"; };
+		17DC685B20D029D5003A5E49 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		17F5B77C15C9D092006DA689 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		17F7962F16150C0100E21D82 /* PGPostgresTypeBinaryHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypeBinaryHandler.h; sourceTree = "<group>"; };
 		17F7963016150C0100E21D82 /* PGPostgresTypeBinaryHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresTypeBinaryHandler.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
@@ -175,7 +175,7 @@
 		0867D691FE84028FC02AAC07 /* QueryKit */ = {
 			isa = PBXGroup;
 			children = (
-				17F5B77C15C9D092006DA689 /* README */,
+				17DC685B20D029D5003A5E49 /* README.md */,
 				173D4E2F15BAB13C0007F267 /* PostgresKit-Prefix.pch */,
 				173D4E2115BAB0FE0007F267 /* Source */,
 				171D582B1612E00D00F84472 /* Tests */,
