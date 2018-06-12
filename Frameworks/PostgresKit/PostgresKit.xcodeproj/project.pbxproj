@@ -41,8 +41,6 @@
 		173D4EE215BACA700007F267 /* libpq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D4EE115BACA700007F267 /* libpq.a */; };
 		173D4F4515BAD22B0007F267 /* PGPostgresTypeHandlerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */; settings = {ATTRIBUTES = (); }; };
 		173D4F5715BAD3030007F267 /* PGPostgresTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4F5615BAD3030007F267 /* PGPostgresTypes.h */; settings = {ATTRIBUTES = (); }; };
-		173D506A15BB93470007F267 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506915BB93470007F267 /* libssl.dylib */; };
-		173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506F15BB93E40007F267 /* libcrypto.dylib */; };
 		173D508C15BBD98D0007F267 /* PGConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D508B15BBD98D0007F267 /* PGConstants.h */; settings = {ATTRIBUTES = (); }; };
 		173D508F15BBD9BF0007F267 /* PGConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D508E15BBD9BF0007F267 /* PGConstants.m */; };
 		173D513515BBE50D0007F267 /* PGPostgresConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D513415BBE50D0007F267 /* PGPostgresConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -155,8 +153,6 @@
 				17E595F214F3058F0054EE08 /* Foundation.framework in Frameworks */,
 				173D4EE215BACA700007F267 /* libpq.a in Frameworks */,
 				1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */,
-				173D506A15BB93470007F267 /* libssl.dylib in Frameworks */,
-				173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,7 +186,6 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				173D506915BB93470007F267 /* libssl.dylib */,
 				173D506F15BB93E40007F267 /* libcrypto.dylib */,
 				17E595F114F3058F0054EE08 /* Foundation.framework */,
 			);
@@ -699,6 +694,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
 				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -752,6 +751,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
 				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -799,6 +802,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
+				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
