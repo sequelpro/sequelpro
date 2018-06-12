@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionEncoding.m 3825 2012-09-09 00:43:58Z stuart02 $
-//
 //  PGPostgresConnectionEncoding.m
 //  PostgresKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionParameters.m 3848 2012-09-12 12:19:31Z stuart02 $
-//
 //  PGPostgresConnectionParameters.m
 //  PostgresKit
 //

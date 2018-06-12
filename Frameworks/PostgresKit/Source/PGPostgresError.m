@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresError.m 3837 2012-09-09 12:25:03Z stuart02 $
-//
 //  PGPostgresError.m
 //  PostgresKit
 //

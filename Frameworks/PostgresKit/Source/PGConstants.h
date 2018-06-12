@@ -1,6 +1,4 @@
 //
-//  $Id: PGConstants.h 3866 2012-09-26 01:30:28Z stuart02 $
-//
 //  PGConstants.h
 //  PostgresKit
 //

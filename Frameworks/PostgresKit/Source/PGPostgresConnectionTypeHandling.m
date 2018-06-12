@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionTypeHandling.m 3803 2012-09-06 11:00:21Z stuart02 $
-//
 //  PGPostgresConnectionTypeHandling.m
 //  PostgresKit
 //

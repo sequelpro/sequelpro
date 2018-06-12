@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresTypes.h 3861 2012-09-24 12:23:27Z stuart02 $
-//
 //  PGPostgresTypes.h
 //  PostgresKit
 //

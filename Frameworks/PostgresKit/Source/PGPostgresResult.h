@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresResult.h 3860 2012-09-24 11:36:57Z stuart02 $
-//
 //  PGPostgresResult.h
 //  PostgresKit
 //

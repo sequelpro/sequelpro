@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionQueryExecution.h 3793 2012-09-03 10:22:17Z stuart02 $
-//
 //  PGPostgresConnectionQueryExecution.h
 //  PostgresKit
 //

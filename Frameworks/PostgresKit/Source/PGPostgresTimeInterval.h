@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresTimeInterval.h 3827 2012-09-09 00:51:43Z stuart02 $
-//
 //  PGPostgresTimeInterval.h
 //  PostgresKit
 //

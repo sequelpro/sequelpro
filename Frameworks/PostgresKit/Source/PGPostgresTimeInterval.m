@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresTimeInterval.m 3828 2012-09-09 01:10:06Z stuart02 $
-//
 //  PGPostgresTimeInterval.m
 //  PostgresKit
 //

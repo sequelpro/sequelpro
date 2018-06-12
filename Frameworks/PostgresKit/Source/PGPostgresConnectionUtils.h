@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionUtils.h 3793 2012-09-03 10:22:17Z stuart02 $
-//
 //  PGPostgresConnectionUtils.h
 //  PostgresKit
 //

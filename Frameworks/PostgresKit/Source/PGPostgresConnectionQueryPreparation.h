@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionQueryPreparation.h 3806 2012-09-07 09:57:31Z stuart02 $
-//
 //  PGPostgresConnectionQueryPreparation.h
 //  PostgresKit
 //
