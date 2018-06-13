@@ -623,21 +623,23 @@
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
 
-	// If the collapsible subview was collapsed using (for example) a drag,
-	// track the collapse correctly.
-	if (collapsibleSubviewIndex != NSNotFound && !collapsibleSubviewCollapsed) {
-		if ([[[self subviews] objectAtIndex:collapsibleSubviewIndex] isHidden]) {
-			[[[self subviews] objectAtIndex:collapsibleSubviewIndex] setHidden:NO];
-			[self setCollapsibleSubviewCollapsed:YES animate:NO];
+	if (additionalDragHandleView) {
+		// If the collapsible subview was collapsed using (for example) a drag,
+		// track the collapse correctly.
+		if (collapsibleSubviewIndex != NSNotFound && !collapsibleSubviewCollapsed) {
+			if ([[[self subviews] objectAtIndex:collapsibleSubviewIndex] isHidden]) {
+				[[[self subviews] objectAtIndex:collapsibleSubviewIndex] setHidden:NO];
+				[self setCollapsibleSubviewCollapsed:YES animate:NO];
+			}
 		}
-	}
 
-	[self _saveAutoSaveSizes];
+		[self _saveAutoSaveSizes];
 
-	// Do the same for expansions
-	if (collapsibleSubviewIndex != NSNotFound && collapsibleSubviewCollapsed) {
-		if (!animationTimer && [self _lengthOfView:[[self subviews] objectAtIndex:collapsibleSubviewIndex]]) {
-			[self setCollapsibleSubviewCollapsed:NO animate:NO];
+		// Do the same for expansions
+		if (collapsibleSubviewIndex != NSNotFound && collapsibleSubviewCollapsed) {
+			if (!animationTimer && [self _lengthOfView:[[self subviews] objectAtIndex:collapsibleSubviewIndex]]) {
+				[self setCollapsibleSubviewCollapsed:NO animate:NO];
+			}
 		}
 	}
 
