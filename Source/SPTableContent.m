@@ -1245,12 +1245,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
  */
 - (IBAction)filterTable:(id)sender
 {
-	BOOL senderIsPaginationButton = (sender == paginationPreviousButton || sender == paginationNextButton
-#ifndef SP_CODA
-		|| sender == paginationViewController
-#endif
-		);
-
 	// Record whether the filter is being triggered by using delete/backspace in the filter field, which
 	// can trigger the effect of clicking the "clear filter" button in the field.
 	// (Keycode 51 is backspace, 117 is delete.)
