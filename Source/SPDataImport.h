@@ -105,8 +105,9 @@ typedef enum {
 	BOOL importIntoNewTable;
 
 	NSUserDefaults *prefs;
+
 	BOOL progressCancelled;
-	BOOL _mainNibLoaded;
+	BOOL mainNibLoaded;
 
 	NSMutableArray *geometryFields;
 	NSMutableIndexSet *geometryFieldsMapIndex;
@@ -119,6 +120,7 @@ typedef enum {
 // IBAction methods
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
+- (IBAction)changeFormat:(id)sender;
 
 // Import methods
 - (void)importFile;
@@ -126,7 +128,6 @@ typedef enum {
 - (void)importSQLFile:(NSString *)filename;
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
-- (IBAction)changeFormat:(id)sender;
 - (BOOL)buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 
 - (NSString *)mappedValueStringForRowArray:(NSArray *)csvRowArray;
