@@ -73,10 +73,8 @@
 #import "SPGotoDatabaseController.h"
 #import "SPFunctions.h"
 #import "SPCreateDatabaseInfo.h"
-#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
-#endif
 #import "SPTableTriggers.h"
 #import "SPTableStructure.h"
 #import "SPPrintAccessory.h"
@@ -92,10 +90,13 @@
 #include <libkern/OSAtomic.h>
 
 // Constants
-static NSString *SPCopyDatabaseAction = @"SPCopyDatabase";
 static NSString *SPConfirmCopyDatabaseAction = @"SPConfirmCopyDatabase";
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
+static NSString *SPSaveDocumentPreferences = @"SPSaveDocumentPreferences";
+static NSString *SPNewDatabaseDetails = @"SPNewDatabaseDetails";
+static NSString *SPNewDatabaseName = @"SPNewDatabaseName";
+static NSString *SPNewDatabaseCopyContent = @"SPNewDatabaseCopyContent";
 
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
@@ -110,6 +111,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (void)_processDatabaseChangedBundleTriggerActions;
 - (void)_addPreferenceObservers;
 - (void)_removePreferenceObservers;
+
 
 #pragma mark - SPDatabaseViewControllerPrivateAPI
 
@@ -873,9 +875,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSLog(@"=================");
 }
 
-#ifndef SP_CODA /* operations on whole databases */
 /**
- * opens the copy database sheet and copies the databsae
+ * Opens the copy database sheet and copies the databsae.
  */
 - (IBAction)copyDatabase:(id)sender
 {	
@@ -901,13 +902,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[databaseCopyNameField setStringValue:selectedDatabase];
 	[copyDatabaseMessageField setStringValue:selectedDatabase];
 
-	[NSApp beginSheet:databaseCopySheet
-	   modalForWindow:parentWindow
-	    modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-	      contextInfo:SPCopyDatabaseAction];
+	[parentWindow beginSheet:databaseCopySheet completionHandler:^(NSInteger returnCode) {
+		if (returnCode == NSOKButton) {
+			[self _copyDatabase];
+		}
+	}];
 }
-#endif
 
 /**
  * Opens the rename database sheet and renames the databsae.
@@ -1070,9 +1070,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_CODA
 	// Those that are just setting a return code and don't need to order out the sheet. See SPAlertSheets+beginWaitingAlertSheetWithTitle:
-	if ([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+	if ([contextInfo isEqualToString:SPSaveDocumentPreferences]) {
 		saveDocPrefSheetStatus = returnCode;
 		return;
 	}
@@ -1080,7 +1079,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		confirmCopyDatabaseReturnCode = returnCode;
 		return;
 	}
-#endif
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)]) {
@@ -1095,17 +1093,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
 		}
-#ifdef SP_CODA
-		else {
-			// Reset chooseDatabaseButton
-			if ([[self database] length]) {
-				[chooseDatabaseButton selectItemWithTitle:[self database]];
-			}
-			else {
-				[chooseDatabaseButton selectItemAtIndex:0];
-		}
-	}
-#endif
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
@@ -1126,29 +1113,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 				[chooseDatabaseButton selectItemAtIndex:0];
 			}
 		}
-	} 
-#ifndef SP_CODA
-	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
-		if (returnCode == NSOKButton) {
-			[self _copyDatabase];
-		}
 	}
-#endif
 	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];
 		}
-#ifdef SP_CODA
-		else {
-			// Reset chooseDatabaseButton
-			if ([[self database] length]) {
-				[chooseDatabaseButton selectItemWithTitle:[self database]];
-			}
-			else {
-				[chooseDatabaseButton selectItemAtIndex:0];
-		}
-		}
-#endif
 	}
 	else if([contextInfo isEqualToString:SPAlterDatabaseAction]) {
 		[alterDatabaseCharsetHelper setEnabled:NO];
@@ -1156,12 +1125,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[self _alterDatabase];
 		}
 	}
-#ifndef SP_CODA
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
 		if (statusValues) SPClear(statusValues);
 	}
-#endif
 }
 
 #ifndef SP_CODA /* sheetDidEnd: */
@@ -3332,14 +3299,14 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo
 {
 	// Do not save if no connection is/was available
-	if(saveInBackground && ([self mySQLVersion] == nil || ![[self mySQLVersion] length])) return NO;
+	if (saveInBackground && ([self mySQLVersion] == nil || ![[self mySQLVersion] length])) return NO;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
 
-	if(fileName == nil) fileName = [[self fileURL] path];
+	if (fileName == nil) fileName = [[self fileURL] path];
 
 	// Store save panel settings or take them from spfDocData
-	if(!saveInBackground && contextInfo == nil) {
+	if (!saveInBackground && contextInfo == nil) {
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
 		if([[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
 			[spfDocData_temp setObject:[saveConnectionEncryptString stringValue] forKey:@"e_string"];
@@ -3351,16 +3318,17 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length]) {
 			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state] == NSOnState) ? YES : NO] forKey:@"save_editor_content"];
 		}
-	} else {
+	}
+	else {
 		// If contextInfo != nil call came from other SPDatabaseDocument while saving it as bundle
 		[spfDocData_temp addEntriesFromDictionary:(contextInfo == nil ? spfDocData : contextInfo)];
 	}
 
 	// Update only query favourites, history, etc. by reading the file again
-	if(saveOnlyPreferences) {
+	if (saveOnlyPreferences) {
 
 		// Check URL for safety reasons
-		if(![[[self fileURL] path] length] || [self isUntitled]) {
+		if (![[[self fileURL] path] length] || [self isUntitled]) {
 			NSLog(@"Couldn't save data. No file URL found!");
 			NSBeep();
 			return NO;
@@ -3372,13 +3340,13 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			
 			NSData *pData = [NSData dataWithContentsOfFile:fileName options:NSUncachedRead error:&error];
 			
-			if(pData && !error) {
+			if (pData && !error) {
 				NSDictionary *pDict = [NSPropertyListSerialization propertyListWithData:pData
 				                                                                options:NSPropertyListImmutable
 				                                                                 format:NULL
 				                                                                  error:&error];
 
-				if(pDict && !error) {
+				if (pDict && !error) {
 					[spf addEntriesFromDictionary:pDict];
 				}
 			}
@@ -3392,19 +3360,18 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 				                                     docWindow:parentWindow
 				                                 modalDelegate:self
 				                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-				                                   contextInfo:@"saveDocPrefSheetStatus"
+				                                   contextInfo:SPSaveDocumentPreferences
 				                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.\n\nDetails: %@", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent], [error localizedDescription]]
 				                                    returnCode:&saveDocPrefSheetStatus];
 				
-				if(spf) [spf release];
-				if(saveDocPrefSheetStatus == NSAlertAlternateReturn) return YES;
-				
-				return NO;
+				if (spf) [spf release];
+
+				return saveDocPrefSheetStatus == NSAlertAlternateReturn;
 			}
 		}
 
 		// For dispatching later
-		if(![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
+		if (![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
 			NSLog(@"SPF file format is not 'connection'.");
 			[spf release];
 			return NO;
@@ -3423,7 +3390,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		                                                            error:&error];
 
 		[spf release];
-		if(error) {
+
+		if (error) {
 			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")
 			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
 			                               alternateButton:nil
@@ -3436,7 +3404,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		[plist writeToFile:fileName options:NSAtomicWrite error:&error];
-		if(error != nil) {
+
+		if (error != nil) {
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
 			return NO;
@@ -3488,6 +3457,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Determine whether to use encryption when adding the data
 	[spfStructure setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
+
 	if (![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
 
 		// Convert the content selection to encoded data
@@ -3502,7 +3472,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		[spfStructure setObject:spfData forKey:@"data"];
-	} else {
+	}
+	else {
 		NSMutableData *dataToEncrypt = [[[NSMutableData alloc] init] autorelease];
 		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:dataToEncrypt] autorelease];
 		[archiver encodeObject:spfData forKey:@"data"];
@@ -3530,6 +3501,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	[plist writeToFile:fileName options:NSAtomicWrite error:&error];
+
 	if (error != nil){
 		NSAlert *errorAlert = [NSAlert alertWithError:error];
 		[errorAlert runModal];
@@ -6023,46 +5995,76 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 #pragma mark -
 #pragma mark Private API
 
-#ifndef SP_CODA /* whole database operations */
-
 /**
- *
- * This method *MUST* be called from the UI thread!
+ * Copies the current database (and optionally it's content) on a separate thread.
  */
-- (void)_copyDatabase 
+- (void)_copyDatabase
 {
-	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
+	NSString *newDatabaseName = [databaseCopyNameField stringValue];
+
+	if ([newDatabaseName isEqualToString:@""]) {
 		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
-	
-	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
-	
-	[dbActionCopy setConnection:[self getConnection]];
-	[dbActionCopy setMessageWindow:parentWindow];
-	
-	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
-	
-	if ([dbActionCopy copyDatabaseFrom:[self createDatabaseInfo] to:[databaseCopyNameField stringValue] withContent:copyWithContent]) {
-		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
+
+	NSDictionary *databaseDetails = @{
+		SPNewDatabaseDetails : [self createDatabaseInfo],
+		SPNewDatabaseName : newDatabaseName,
+		SPNewDatabaseCopyContent : @([copyDatabaseDataButton state] == NSOnState)
+	};
+
+	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Copying database '%@'...", @"Copying database task description"), [self database]]];
+
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseDocument copy database task", self)
+								   target:self
+								 selector:@selector(_copyDatabaseWithDetails:)
+								   object:databaseDetails];;
 	}
 	else {
-		SPOnewayAlertSheet(
-			NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
-			parentWindow,
-			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]
-		);
+		[self _copyDatabaseWithDetails:databaseDetails];
 	}
-	
-	[dbActionCopy release];
-	
-	// Update DB list
-	[self setDatabases:self];
 }
-#endif
+
+- (void)_copyDatabaseWithDetails:(NSDictionary *)databaseDetails
+{
+	@autoreleasepool
+	{
+		SPDatabaseCopy *databaseCopy = [[SPDatabaseCopy alloc] init];
+
+		[databaseCopy setConnection:[self getConnection]];
+
+		NSString *newDatabaseName = databaseDetails[SPNewDatabaseName];
+
+		BOOL success = [databaseCopy copyDatabaseFrom:databaseDetails[SPNewDatabaseDetails]
+												   to:newDatabaseName
+										  withContent:[databaseDetails[SPNewDatabaseCopyContent] boolValue]];
+
+		[databaseCopy release];
+
+		// Select newly created database
+		[[self onMainThread] selectDatabase:newDatabaseName item:nil];
+
+		// Update database list
+		[[self onMainThread] setDatabases:self];
+
+		[self endTask];
+
+		if (!success) {
+			SPMainQSync(^{
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
+					parentWindow,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"),
+					 [databaseDetails[SPNewDatabaseDetails] databaseName],
+					 newDatabaseName]
+				);
+			});
+		}
+	}
+}
 
 /**
- *
  * This method *MUST* be called from the UI thread!
  */
 - (void)_renameDatabase 
@@ -6093,18 +6095,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 	
 	[dbActionRename release];
-	
-#ifdef SP_CODA
-	if (delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)]) {
-		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
-	}
-
-	if (delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)]) {
-		if ([allDatabases count] > 0 ) {
-			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:newDatabaseName];
-		}
-	}
-#endif
 }
 
 /**
