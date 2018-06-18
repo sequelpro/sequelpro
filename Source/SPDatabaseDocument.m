@@ -624,8 +624,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (IBAction)setDatabases:(id)sender;
 {
-#ifndef SP_CODA /* ui manipulation */
-
 	if (!chooseDatabaseButton) return;
 
 	[chooseDatabaseButton removeAllItems];
@@ -635,7 +633,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
-#endif
 
 	if (allDatabases) SPClear(allDatabases);
 	if (allSystemDatabases) SPClear(allSystemDatabases);
@@ -645,13 +642,14 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	allDatabases = [[NSMutableArray alloc] initWithCapacity:[theDatabaseList count]];
 	allSystemDatabases = [[NSMutableArray alloc] initWithCapacity:2];
 	
-	for (NSString *databaseName in theDatabaseList) {
-		
+	for (NSString *databaseName in theDatabaseList)
+	{
 		// If the database is either information_schema or mysql then it is classed as a
-		// system table; similarly, for 5.5.3+, performance_schema
+		// system database; similarly, performance_schema in 5.5.3+ and sys in 5.7.7+
 		if ([databaseName isEqualToString:SPMySQLDatabase] || 
 			[databaseName isEqualToString:SPMySQLInformationSchemaDatabase] || 
-			[databaseName isEqualToString:SPMySQLPerformanceSchemaDatabase]) {
+			[databaseName isEqualToString:SPMySQLPerformanceSchemaDatabase] ||
+			[databaseName isEqualToString:SPMySQLSysDatabase]) {
  			[allSystemDatabases addObject:databaseName];
 		}
 		else {
@@ -659,11 +657,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 	}
 
-#ifndef SP_CODA /* ui manipulation */
 	// Add system databases
-	for (NSString *db in allSystemDatabases) 
+	for (NSString *database in allSystemDatabases)
 	{
-		[chooseDatabaseButton addItemWithTitle:db];
+		[chooseDatabaseButton addItemWithTitle:database];
 	}
 	
 	// Add a separator between the system and user databases
@@ -672,13 +669,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// Add user databases
-	for (NSString *db in allDatabases) 
+	for (NSString *database in allDatabases)
 	{
-		[chooseDatabaseButton addItemWithTitle:db];
+		[chooseDatabaseButton addItemWithTitle:database];
 	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
-#endif
 }
 
 #ifndef SP_CODA /* chooseDatabase: */
