@@ -90,6 +90,7 @@
 #include <libkern/OSAtomic.h>
 
 // Constants
+static NSString *SPCopyDatabaseAction = @"SPCopyDatabase";
 static NSString *SPConfirmCopyDatabaseAction = @"SPConfirmCopyDatabase";
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
@@ -898,11 +899,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[databaseCopyNameField setStringValue:selectedDatabase];
 	[copyDatabaseMessageField setStringValue:selectedDatabase];
 
-	[parentWindow beginSheet:databaseCopySheet completionHandler:^(NSInteger returnCode) {
-		if (returnCode == NSOKButton) {
-			[self _copyDatabase];
-		}
-	}];
+	[NSApp beginSheet:databaseCopySheet
+	   modalForWindow:parentWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:SPCopyDatabaseAction];
 }
 
 /**
@@ -1110,14 +1111,19 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			}
 		}
 	}
+	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
+		if (returnCode == NSOKButton) {
+			[self _copyDatabase];
+		}
+	}
 	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];
 		}
 	}
-	else if([contextInfo isEqualToString:SPAlterDatabaseAction]) {
+	else if ([contextInfo isEqualToString:SPAlterDatabaseAction]) {
 		[alterDatabaseCharsetHelper setEnabled:NO];
-		if(returnCode == NSOKButton) {
+		if (returnCode == NSOKButton) {
 			[self _alterDatabase];
 		}
 	}
@@ -5993,6 +5999,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Copies the current database (and optionally it's content) on a separate thread.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_copyDatabase
 {
@@ -6030,11 +6038,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 		[databaseCopy setConnection:[self getConnection]];
 
-		NSString *newDatabaseName = databaseDetails[SPNewDatabaseName];
+		NSString *newDatabaseName = [databaseDetails objectForKey:SPNewDatabaseName];
 
-		BOOL success = [databaseCopy copyDatabaseFrom:databaseDetails[SPNewDatabaseDetails]
+		BOOL success = [databaseCopy copyDatabaseFrom:[databaseDetails objectForKey:SPNewDatabaseDetails]
 												   to:newDatabaseName
-										  withContent:[databaseDetails[SPNewDatabaseCopyContent] boolValue]];
+										  withContent:[[databaseDetails objectForKey:SPNewDatabaseCopyContent] boolValue]];
 
 		[databaseCopy release];
 
@@ -6047,15 +6055,13 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[self endTask];
 
 		if (!success) {
-			SPMainQSync(^{
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
-					parentWindow,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"),
-					 [databaseDetails[SPNewDatabaseDetails] databaseName],
-					 newDatabaseName]
-				);
-			});
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
+				parentWindow,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"),
+				 [databaseDetails[SPNewDatabaseDetails] databaseName],
+				 newDatabaseName]
+			);
 		}
 	}
 }
