@@ -6082,7 +6082,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	[dbActionRename setTablesList:tablesListInstance];
 	[dbActionRename setConnection:[self getConnection]];
-	[dbActionRename setMessageWindow:parentWindow];
 	
 	if ([dbActionRename renameDatabaseFrom:[self createDatabaseInfo] to:newDatabaseName]) {
 		[self setDatabases:self];
