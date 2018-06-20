@@ -6803,7 +6803,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 					contentLoaded = YES;
 				}
 				break;
-#ifndef SP_CODA /* case SPTableViewStatus: case SPTableViewTriggers: */
 			case SPTableViewStatus:
 				if (!statusLoaded) {
 					[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -6822,7 +6821,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 					relationsLoaded = YES;
 				}
 				break;
-#endif
+			case SPTableViewCustomQuery:
+			case SPTableViewInvalid:
+				break;
 		}
 
 		[self endTask];
