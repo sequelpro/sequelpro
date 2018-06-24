@@ -65,7 +65,7 @@ typedef enum {
 }
 
 // Master init method
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding;
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding;
 
 // Result set information
 - (NSUInteger)numberOfFields;

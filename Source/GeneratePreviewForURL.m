@@ -67,72 +67,73 @@ static inline NSString *PathForHTMLResource(NSString *named)
 
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
 {
+	@autoreleasepool {
+		NSURL *myURL = (NSURL *)url;
+		NSString *urlExtension = [[[myURL path] pathExtension] lowercaseString];
 
-	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+		NSString *html = nil;
+		NSInteger previewHeight = 280;
 
-	NSURL *myURL = (NSURL *)url;
-	NSString *urlExtension = [[[myURL path] pathExtension] lowercaseString];
-
-	NSString *html = nil;
-	NSInteger previewHeight = 280;
-
-	// Dispatch different file extensions
-	if([urlExtension isEqualToString:@"spf"]) {
-		html = PreviewForSPF(myURL, &previewHeight);
-	}
-	else if([urlExtension isEqualToString:@"spfs"]) {
-		html = PreviewForSPFS(myURL,&previewHeight);
-	}
-	else if([urlExtension isEqualToString:@"sql"]) {
-		html = PreviewForSQL(myURL,&previewHeight,preview);
-	}
-	
-	if(html) {
-		NSImage *iconImage;
-		
-		// Get current Sequel Pro's set of file icons
-		NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
-		
-		// just in case
-		if(!iconImages || [iconImages count] < 1)
-			iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
-		
-		if([iconImages count] > 1)
-			iconImage = [iconImages objectAtIndex:1];
-		else
-			iconImage = [iconImages objectAtIndex:0];
-		
-#warning This can cause a runtime error: "This application is assuming that a particular image contains an NSBitmapImageRep, which is not a good assumption.  We are instantiating a bitmap so that whatever this is keeps working, but please do not do this. (...)  This may break in the future."
-		// TODO: draw the image into a bitmap context and grab the jpeg representation?
-		NSData *image = [iconImage TIFFRepresentation];
-		
-		NSMutableDictionary *props    = [[NSMutableDictionary alloc] initWithCapacity:6];
-		NSMutableDictionary *imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
-		
-		[props setObject:@(previewHeight) forKey:(NSString *)kQLPreviewPropertyHeightKey];
-		[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
-		
-		if(image) {
-			[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
-			[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
+		// Dispatch different file extensions
+		if([urlExtension isEqualToString:@"spf"]) {
+			html = PreviewForSPF(myURL, &previewHeight);
 		}
-		
-		[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
-		[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
-		[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
-		[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
-		
-		QLPreviewRequestSetDataRepresentation(preview,
-											  (CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
-											  kUTTypeHTML,
-											  (CFDictionaryRef)props
-											  );
-		
-		[props release];
-		[imgProps release];
-	}
+		else if([urlExtension isEqualToString:@"spfs"]) {
+			html = PreviewForSPFS(myURL,&previewHeight);
+		}
+		else if([urlExtension isEqualToString:@"sql"]) {
+			html = PreviewForSQL(myURL,&previewHeight,preview);
+		}
 
-	[pool release];
+		if(html) {
+			NSImage *iconImage;
+
+			// Get current Sequel Pro's set of file icons
+			NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
+
+			// just in case
+			if(!iconImages || [iconImages count] < 1) {
+				iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
+			}
+
+			if([iconImages count] > 1) {
+				iconImage = [iconImages objectAtIndex:1];
+			}
+			else {
+				iconImage = [iconImages objectAtIndex:0];
+			}
+
+#warning This can cause a runtime error: "This application is assuming that a particular image contains an NSBitmapImageRep, which is not a good assumption.  We are instantiating a bitmap so that whatever this is keeps working, but please do not do this. (...)  This may break in the future."
+			// TODO: draw the image into a bitmap context and grab the jpeg representation?
+			NSData *image = [iconImage TIFFRepresentation];
+
+			NSMutableDictionary *props    = [[NSMutableDictionary alloc] initWithCapacity:6];
+			NSMutableDictionary *imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
+
+			[props setObject:@(previewHeight) forKey:(NSString *)kQLPreviewPropertyHeightKey];
+			[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
+
+			if(image) {
+				[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+				[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
+			}
+
+			[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
+			[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
+			[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
+			[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+
+			QLPreviewRequestSetDataRepresentation(
+				preview,
+				(CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
+				kUTTypeHTML,
+				(CFDictionaryRef)props
+			);
+
+			[props release];
+			[imgProps release];
+		}
+	}
 
 	return noErr;
 }

@@ -50,7 +50,7 @@ dev_sign_resource()
 {
 	log "Signing resource: $1"
 
-	codesign -f -s 'Sequel Pro Development' "$1" 2> /dev/null
+	codesign -f -s 'Sequel Pro Development' "$1" 2>&1
 }
 
 dist_sign_framework()

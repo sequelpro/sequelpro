@@ -35,6 +35,13 @@
 #import <pthread.h>
 #include <stdio.h>
 
+typedef struct {
+	MYSQL *mySQLConnection;
+	volatile BOOL *keepAlivePingThreadActivePointer;
+	volatile BOOL *keepAliveLastPingSuccessPointer;
+	void *parentId;
+} SPMySQLConnectionPingDetails;
+
 @implementation SPMySQLConnection (Ping_and_KeepAlive)
 
 #pragma mark -
@@ -47,7 +54,6 @@
  */
 - (void)_keepAlive
 {
-
 	// Do nothing if not connected, if keepalive is disabled, or a keepalive is in
 	// progress.
 	if (state != SPMySQLConnected || !useKeepAlive) return;
@@ -81,43 +87,45 @@
  */
 - (void)_threadedKeepAlive
 {
-	@synchronized(self) {
-		if(keepAliveThread) {
-			NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
-		}
-		keepAliveThread = [NSThread currentThread];
-	}
-	
-	[keepAliveThread setName:[NSString stringWithFormat:@"SPMySQL connection keepalive monitor thread (id=%p)", self]];
-
-	// If the maximum number of ping failures has been reached, determine whether to reconnect.
-	if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
-
-		// If the connection has been used within the last fifteen minutes,
-		// attempt a single reconnection in the background
-		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
-			[self _reconnectAfterBackgroundConnectionLoss];
-		}
-		// Otherwise set the state to connection lost for automatic reconnect on
-		// next use.
-		else {
-			state = SPMySQLConnectionLostInBackground;
+	@autoreleasepool {
+		@synchronized(self) {
+			if(keepAliveThread) {
+				NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
+			}
+			keepAliveThread = [NSThread currentThread];
 		}
 
-		// Return as no further ping action required this cycle.
-		goto end_cleanup;
-	}
+		[keepAliveThread setName:[NSString stringWithFormat:@"SPMySQL connection keepalive monitor thread (id=%p)", self]];
 
-	// Otherwise, perform a background ping.
-	BOOL pingResult = [self _pingConnectionUsingLoopDelay:10000];
-	if (pingResult) {
-		keepAlivePingFailures = 0;
-	} else {
-		keepAlivePingFailures++;
-	}
+		// If the maximum number of ping failures has been reached, determine whether to reconnect.
+		if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
+
+			// If the connection has been used within the last fifteen minutes,
+			// attempt a single reconnection in the background
+			if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
+				[self _reconnectAfterBackgroundConnectionLoss];
+			}
+			// Otherwise set the state to connection lost for automatic reconnect on
+			// next use.
+			else {
+				state = SPMySQLConnectionLostInBackground;
+			}
+
+			// Return as no further ping action required this cycle.
+			goto end_cleanup;
+		}
+
+		// Otherwise, perform a background ping.
+		BOOL pingResult = [self _pingConnectionUsingLoopDelay:10000];
+		if (pingResult) {
+			keepAlivePingFailures = 0;
+		} else {
+			keepAlivePingFailures++;
+		}
 end_cleanup:
-	@synchronized(self) {
-		keepAliveThread = nil;
+		@synchronized(self) {
+			keepAliveThread = nil;
+		}
 	}
 }
 
@@ -185,10 +193,11 @@ end_cleanup:
 
 		// If the ping timeout has been exceeded, or the ping thread has been
 		// cancelled, force a timeout; double-check that the thread is still active.
-		if (([[NSThread currentThread] isCancelled] || pingElapsedTime > pingTimeout)
+		if (
+			([[NSThread currentThread] isCancelled] || pingElapsedTime > pingTimeout)
 			&& keepAlivePingThreadActive
-			&& !threadCancelled)
-		{
+			&& !threadCancelled
+		) {
 			pthread_cancel(keepAlivePingThread_t);
 			threadCancelled = YES;
 
@@ -209,7 +218,7 @@ end_cleanup:
 	keepAlivePingThread_t = NULL;
 	pthread_attr_destroy(&attr);
 
-    // Unlock the connection
+	// Unlock the connection
 	[self _unlockConnection];
 
 	return keepAliveLastPingSuccess;
@@ -278,7 +287,6 @@ void _pingThreadCleanup(void *pingDetails)
  */
 - (BOOL)_cancelKeepAlives
 {
-
 	// If no keepalive thread is active, return
 	if (keepAliveThread) {
 

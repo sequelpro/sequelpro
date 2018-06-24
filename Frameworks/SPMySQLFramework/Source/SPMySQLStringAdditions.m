@@ -57,13 +57,13 @@
  */
 + (NSString *) stringForDataBytes:(const void *)dataBytes length:(NSUInteger)dataLength encoding:(NSStringEncoding)aStringEncoding
 {
-    NSString * string = [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
-    
-    if (string == nil) {
-        return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:NSASCIIStringEncoding] autorelease];
-    }
-    
-    return string;
+	NSString *string = [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
+
+	if (string == nil) {
+		return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:NSASCIIStringEncoding] autorelease];
+	}
+
+	return string;
 }
 
 @end

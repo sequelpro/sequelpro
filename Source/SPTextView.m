@@ -50,6 +50,7 @@
 #import "SPCopyTable.h"
 #import "SPEditorTokens.h"
 #import "SPSyntaxParser.h"
+#import "SPHelpViewerClient.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -911,27 +912,24 @@ retry:
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 
 	completionIsOpen = YES;
-	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
-					alreadyTyped:filter 
-					staticPrefix:prefix 
-					additionalWordCharacters:allow 
-					caseSensitive:!caseInsensitive
-					charRange:completionRange
-					parseRange:parseRange
-					inView:self
-					dictMode:isDictMode
-					dbMode:dbBrowseMode
-					tabTriggerMode:[self isSnippetMode]
-					fuzzySearch:fuzzySearch
-					backtickMode:backtickMode
-					withDbName:dbName
-					withTableName:tableName
-					selectedDb:currentDb
-					caretMovedLeft:caretMovedLeft
-					autoComplete:autoCompleteMode
-					oneColumn:isDictMode
-					alias:alias
-					withDBStructureRetriever:[tableDocumentInstance databaseStructureRetrieval]];
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName]
+	                                                   alreadyTyped:filter
+	                                                   staticPrefix:prefix
+	                                       additionalWordCharacters:allow
+	                                                  caseSensitive:!caseInsensitive
+	                                                      charRange:completionRange
+	                                                     parseRange:parseRange
+	                                                         inView:self
+	                                                       dictMode:isDictMode
+	                                                 tabTriggerMode:[self isSnippetMode]
+	                                                    fuzzySearch:fuzzySearch
+	                                                   backtickMode:backtickMode
+	                                                     selectedDb:currentDb
+	                                                 caretMovedLeft:caretMovedLeft
+	                                                   autoComplete:autoCompleteMode
+	                                                      oneColumn:isDictMode
+	                                                          alias:alias
+	                                       withDBStructureRetriever:[tableDocumentInstance databaseStructureRetrieval]];
 
 	completionParseRangeLocation = parseRange.location;
 
@@ -1107,7 +1105,7 @@ retry:
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
 {
-	[customQueryInstance showHelpForCurrentWord:self];
+	[[tableDocumentInstance helpViewerClient] showHelpForCurrentWord:self];
 }
 #endif
 
@@ -1540,27 +1538,24 @@ retry:
 
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 	completionIsOpen = YES;
-	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-					alreadyTyped:@"" 
-					staticPrefix:@"" 
-					additionalWordCharacters:@"_." 
-					caseSensitive:NO
-					charRange:aRange
-					parseRange:aRange
-					inView:self
-					dictMode:NO
-					dbMode:YES
-					tabTriggerMode:[self isSnippetMode]
-					fuzzySearch:fuzzySearchMode
-					backtickMode:NO
-					withDbName:@""
-					withTableName:@""
-					selectedDb:@""
-					caretMovedLeft:NO
-					autoComplete:NO
-					oneColumn:NO
-					alias:nil
-					withDBStructureRetriever:nil];
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
+	                                                   alreadyTyped:@""
+	                                                   staticPrefix:@""
+	                                       additionalWordCharacters:@"_."
+	                                                  caseSensitive:NO
+	                                                      charRange:aRange
+	                                                     parseRange:aRange
+	                                                         inView:self
+	                                                       dictMode:NO
+	                                                 tabTriggerMode:[self isSnippetMode]
+	                                                    fuzzySearch:fuzzySearchMode
+	                                                   backtickMode:NO
+	                                                     selectedDb:@""
+	                                                 caretMovedLeft:NO
+	                                                   autoComplete:NO
+	                                                      oneColumn:NO
+	                                                          alias:nil
+	                                       withDBStructureRetriever:nil];
 
 	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:aRange.location];
 
@@ -1693,27 +1688,24 @@ retry:
 
 							if (completionIsOpen) [completionPopup close], completionPopup = nil;
 							completionIsOpen = YES;
-							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
-											alreadyTyped:@"" 
-											staticPrefix:@"" 
-											additionalWordCharacters:@"_." 
-											caseSensitive:NO
-											charRange:insertRange
-											parseRange:insertRange
-											inView:self
-											dictMode:NO
-											dbMode:NO
-											tabTriggerMode:[self isSnippetMode]
-											fuzzySearch:fuzzySearchMode
-											backtickMode:NO
-											withDbName:@""
-											withTableName:@""
-											selectedDb:@""
-											caretMovedLeft:NO
-											autoComplete:NO
-											oneColumn:YES
-											alias:nil
-											withDBStructureRetriever:nil];
+							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
+							                                                   alreadyTyped:@""
+							                                                   staticPrefix:@""
+							                                       additionalWordCharacters:@"_."
+							                                                  caseSensitive:NO
+							                                                      charRange:insertRange
+							                                                     parseRange:insertRange
+							                                                         inView:self
+							                                                       dictMode:NO
+							                                                 tabTriggerMode:[self isSnippetMode]
+							                                                    fuzzySearch:fuzzySearchMode
+							                                                   backtickMode:NO
+							                                                     selectedDb:@""
+							                                                 caretMovedLeft:NO
+							                                                   autoComplete:NO
+							                                                      oneColumn:YES
+							                                                          alias:nil
+							                                       withDBStructureRetriever:nil];
 
 							[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:r2.location];
 

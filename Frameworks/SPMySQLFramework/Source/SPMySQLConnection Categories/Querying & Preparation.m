@@ -64,7 +64,6 @@
  */
 - (NSString *)escapeString:(NSString *)theString includingQuotes:(BOOL)includeQuotes
 {
-
 	// Return nil strings untouched
 	if (!theString) return theString;
 
@@ -101,6 +100,7 @@
 	NSData *escapedData;
 	if (includeQuotes) {
 
+#warning This code assumes that the encoding cData is in is still ASCII-compatible which may not be the case (e.g. for UTF16, EBCDIC)
 		// Add quotes if requested
 		escBuffer[0] = '\'';
 		escBuffer[escapedLength+1] = '\'';
@@ -137,7 +137,6 @@
  */
 - (NSString *)escapeData:(NSData *)theData includingQuotes:(BOOL)includeQuotes
 {
-
 	// Return nil datas as nil strings
 	if (!theData) return nil;
 
@@ -345,7 +344,7 @@
 
 	} while (--queryAttemptsAllowed > 0);
 
-	id theResult = nil;
+	SPMySQLResult *theResult = nil;
 
 	// On success, if there is a query result, retrieve the result data type
 	if (!queryStatus) {
@@ -549,7 +548,6 @@
  */
 - (void)cancelCurrentQuery
 {
-
 	// If not connected, no action is required
 	if (state != SPMySQLConnected && state != SPMySQLDisconnecting) return;
 
@@ -656,7 +654,6 @@
  */
 - (void)_flushMultipleResultSets
 {
-
 	// Repeat as long as there are results
 	while (!mysql_next_result(mySQLConnection)) {
 		MYSQL_RES *eachResult = mysql_use_result(mySQLConnection);
@@ -691,7 +688,6 @@
  */
 - (void)_updateLastErrorMessage:(NSString *)theErrorMessage
 {
-
 	// If an error message wasn't supplied, select one from the connection
 	if (!theErrorMessage) {
 		theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
@@ -714,7 +710,6 @@
  */
 - (void)_updateLastErrorID:(NSUInteger)theErrorID
 {
-
 	// If NSNotFound was supplied as the ID, ask the connection for the last error
 	if (theErrorID == NSNotFound) {
 		queryErrorID = mysql_errno(mySQLConnection);

@@ -30,13 +30,6 @@
 
 // This class is private to the framework.
 
-typedef struct {
-	MYSQL	*mySQLConnection;
-	volatile BOOL *keepAlivePingThreadActivePointer;
-	volatile BOOL *keepAliveLastPingSuccessPointer;
-	void *parentId;
-} SPMySQLConnectionPingDetails;
-
 @interface SPMySQLConnection (Ping_and_KeepAlive)
 
 // Keepalive ping initialisation

@@ -257,11 +257,10 @@ PRIVATE NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSU
  */
 PRIVATE NSString * _convertStringData(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength)
 {
-
 	// Fast case - if not using a preview length, or if the data length is shorter, return the requested data.
-    if (previewLength == NSNotFound || dataLength <= previewLength) {
-        return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
-    }
+	if (previewLength == NSNotFound || dataLength <= previewLength) {
+		return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
+	}
 
 	NSUInteger i = 0, characterLength = 0, byteLength = previewLength;
 	uint16_t continuationStart, continuationEnd;

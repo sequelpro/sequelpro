@@ -72,17 +72,13 @@
  */
 - (void)main
 {
-	NSAutoreleasePool *pool = nil;
-	@try {
-		pool = [[NSAutoreleasePool alloc] init];
-
-		[self exportOperation];
-	}
-	@catch(NSException *e) {
-		[[NSApp onMainThread] reportException:e]; // will be caught by FeedbackReporter
-	}
-	@finally {
-		[pool release];
+	@autoreleasepool {
+		@try {
+			[self exportOperation];
+		}
+		@catch(NSException *e) {
+			[[NSApp onMainThread] reportException:e]; // will be caught by FeedbackReporter
+		}
 	}
 }
 

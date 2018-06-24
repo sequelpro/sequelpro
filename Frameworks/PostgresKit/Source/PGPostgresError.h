@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresError.h 3800 2012-09-06 09:26:47Z stuart02 $
-//
 //  PGPostgresError.h
 //  PostgresKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionTypeHandling.h 3817 2012-09-08 08:57:46Z stuart02 $
-//
 //  PGPostgresConnectionTypeHandling.h
 //  PostgresKit
 //

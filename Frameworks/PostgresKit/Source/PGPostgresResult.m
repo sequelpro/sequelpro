@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresResult.m 3862 2012-09-24 12:58:47Z stuart02 $
-//
 //  PGPostgresResult.m
 //  PostgresKit
 //

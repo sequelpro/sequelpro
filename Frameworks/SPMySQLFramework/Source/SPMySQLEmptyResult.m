@@ -1,6 +1,4 @@
 //
-//  $$
-//
 //  SPMySQLEmptyResult.m
 //  SPMySQLFramework
 //
@@ -42,14 +40,9 @@
 /**
  * Override the standard SPMySQLResult interface
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
 {
 	return [super init];
-}
-
-- (void)dealloc
-{
-	[super dealloc];
 }
 
 #pragma mark -

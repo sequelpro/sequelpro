@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresTypeNumberHandler.m 3867 2012-09-26 02:45:14Z stuart02 $
-//
 //  PGPostgresTypeNumberHandler.m
 //  PostgresKit
 //

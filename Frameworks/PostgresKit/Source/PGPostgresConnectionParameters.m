@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnectionParameters.m 3848 2012-09-12 12:19:31Z stuart02 $
-//
 //  PGPostgresConnectionParameters.m
 //  PostgresKit
 //
@@ -138,32 +136,30 @@
  */
 - (void)_loadParameters:(id)object
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	pthread_mutex_lock(&_readLock);
-	
-	NSArray *parameters = (NSArray *)object;
-	
-	if (!_parameters) {
-		_parameters = [[NSMutableDictionary alloc] initWithCapacity:[parameters count]];
-	}
-	
-	for (NSString *parameter in parameters) 
-	{
-		const char *value = PQparameterStatus([_connection postgresConnection], [parameter UTF8String]);
-		
-		if (!value) continue;
-		
-		NSString *stringValue = [NSString stringWithUTF8String:value];
+	@autoreleasepool {
+		pthread_mutex_lock(&_readLock);
 
-		id paramObject = [self _isBooleanParameterValue:stringValue] ? (id)[NSNumber numberWithBool:[self _booleanForParameterValue:stringValue]] : stringValue;
-		
-		[_parameters setObject:paramObject forKey:parameter];
+		NSArray *parameters = (NSArray *)object;
+
+		if (!_parameters) {
+			_parameters = [[NSMutableDictionary alloc] initWithCapacity:[parameters count]];
+		}
+
+		for (NSString *parameter in parameters)
+		{
+			const char *value = PQparameterStatus([_connection postgresConnection], [parameter UTF8String]);
+
+			if (!value) continue;
+
+			NSString *stringValue = [NSString stringWithUTF8String:value];
+
+			id paramObject = [self _isBooleanParameterValue:stringValue] ? (id)[NSNumber numberWithBool:[self _booleanForParameterValue:stringValue]] : stringValue;
+
+			[_parameters setObject:paramObject forKey:parameter];
+		}
+
+		pthread_mutex_unlock(&_readLock);
 	}
-	
-	pthread_mutex_unlock(&_readLock);
-	
-	[pool release];
 }
 
 /**

@@ -633,54 +633,51 @@ static NSString * const SPKillIdKey   = @"SPKillId";
  */
 - (void)_getDatabaseProcessListInBackground:(id)object;
 {	
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSUInteger i = 0;
-	
-	// Get processes
-	if ([connection isConnected]) {
-		
-		SPMySQLResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
-		
-		[processList setReturnDataAsStrings:YES];
+	@autoreleasepool {
+		NSUInteger i = 0;
 
-		[[processes onMainThread] removeAllObjects];
-		
-		for (i = 0; i < [processList numberOfRows]; i++) 
-		{
-			//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
-			NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
+		// Get processes
+		if ([connection isConnected]) {
 
-			// The ID can be a 64-bit value on 64-bit servers
-			id idColumn = [rowsFixed objectForKey:@"Id"];
-			if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
-				long long numRaw = [(NSString *)idColumn longLongValue];
-				NSNumber *num = [NSNumber numberWithLongLong:numRaw];
-				[rowsFixed setObject:num forKey:@"Id"];
+			SPMySQLResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
+
+			[processList setReturnDataAsStrings:YES];
+
+			[[processes onMainThread] removeAllObjects];
+
+			for (i = 0; i < [processList numberOfRows]; i++)
+			{
+				//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
+				NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
+
+				// The ID can be a 64-bit value on 64-bit servers
+				id idColumn = [rowsFixed objectForKey:@"Id"];
+				if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
+					long long numRaw = [(NSString *)idColumn longLongValue];
+					NSNumber *num = [NSNumber numberWithLongLong:numRaw];
+					[rowsFixed setObject:num forKey:@"Id"];
+				}
+
+				// Time is a signed int(7) - this is a 32 bit int value
+				id timeColumn = [rowsFixed objectForKey:@"Time"];
+				if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
+					int numRaw = [(NSString *)timeColumn intValue];
+					NSNumber *num = [NSNumber numberWithInt:numRaw];
+					[rowsFixed setObject:num forKey:@"Time"];
+				}
+
+				// This is pretty bad from a performance standpoint, but we must not
+				// interfere with the NSTableView's reload cycle and there is no way
+				// to know when it starts/ends. We only know it will happen on the
+				// main thread, so we have to interlock with that.
+				[[processes onMainThread] addObject:[[rowsFixed copy] autorelease]];
+				[rowsFixed release];
 			}
-
-			// Time is a signed int(7) - this is a 32 bit int value
-			id timeColumn = [rowsFixed objectForKey:@"Time"];
-			if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
-				int numRaw = [(NSString *)timeColumn intValue];
-				NSNumber *num = [NSNumber numberWithInt:numRaw];
-				[rowsFixed setObject:num forKey:@"Time"];
-			}
-			
-			// This is pretty bad from a performance standpoint, but we must not
-			// interfere with the NSTableView's reload cycle and there is no way
-			// to know when it starts/ends. We only know it will happen on the
-			// main thread, so we have to interlock with that.
-			[[processes onMainThread] addObject:[[rowsFixed copy] autorelease]];
-			[rowsFixed release];
 		}
 
+		// Update the UI on the main thread
+		[self performSelectorOnMainThread:@selector(_processListRefreshed) withObject:nil waitUntilDone:NO];
 	}
-	
-	// Update the UI on the main thread
-	[self performSelectorOnMainThread:@selector(_processListRefreshed) withObject:nil waitUntilDone:NO];
-	
-	[pool release];
 }
 
 /**

@@ -41,8 +41,6 @@
 		173D4EE215BACA700007F267 /* libpq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D4EE115BACA700007F267 /* libpq.a */; };
 		173D4F4515BAD22B0007F267 /* PGPostgresTypeHandlerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */; settings = {ATTRIBUTES = (); }; };
 		173D4F5715BAD3030007F267 /* PGPostgresTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4F5615BAD3030007F267 /* PGPostgresTypes.h */; settings = {ATTRIBUTES = (); }; };
-		173D506A15BB93470007F267 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506915BB93470007F267 /* libssl.dylib */; };
-		173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506F15BB93E40007F267 /* libcrypto.dylib */; };
 		173D508C15BBD98D0007F267 /* PGConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D508B15BBD98D0007F267 /* PGConstants.h */; settings = {ATTRIBUTES = (); }; };
 		173D508F15BBD9BF0007F267 /* PGConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D508E15BBD9BF0007F267 /* PGConstants.m */; };
 		173D513515BBE50D0007F267 /* PGPostgresConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D513415BBE50D0007F267 /* PGPostgresConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -112,7 +110,6 @@
 		173D4EE315BACA900007F267 /* libpq-fe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "libpq-fe.h"; sourceTree = "<group>"; };
 		173D4EE415BACA900007F267 /* postgres_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = postgres_ext.h; sourceTree = "<group>"; };
 		173D4F5615BAD3030007F267 /* PGPostgresTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypes.h; sourceTree = "<group>"; };
-		173D506915BB93470007F267 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = usr/lib/libssl.dylib; sourceTree = SDKROOT; };
 		173D506F15BB93E40007F267 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		173D508B15BBD98D0007F267 /* PGConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGConstants.h; sourceTree = "<group>"; };
 		173D508E15BBD9BF0007F267 /* PGConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGConstants.m; sourceTree = "<group>"; };
@@ -130,8 +127,8 @@
 		177AC6AF15C5460C00A3658D /* PGPostgresConnectionQueryPreparation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresConnectionQueryPreparation.m; sourceTree = "<group>"; };
 		177C9BA915CD37E000128642 /* PGPostgresConnectionEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresConnectionEncoding.h; sourceTree = "<group>"; };
 		177C9BAA15CD37E000128642 /* PGPostgresConnectionEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresConnectionEncoding.m; sourceTree = "<group>"; };
+		17DC685B20D029D5003A5E49 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		17F5B77C15C9D092006DA689 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		17F7962F16150C0100E21D82 /* PGPostgresTypeBinaryHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypeBinaryHandler.h; sourceTree = "<group>"; };
 		17F7963016150C0100E21D82 /* PGPostgresTypeBinaryHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresTypeBinaryHandler.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
@@ -155,8 +152,6 @@
 				17E595F214F3058F0054EE08 /* Foundation.framework in Frameworks */,
 				173D4EE215BACA700007F267 /* libpq.a in Frameworks */,
 				1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */,
-				173D506A15BB93470007F267 /* libssl.dylib in Frameworks */,
-				173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,7 +170,7 @@
 		0867D691FE84028FC02AAC07 /* QueryKit */ = {
 			isa = PBXGroup;
 			children = (
-				17F5B77C15C9D092006DA689 /* README */,
+				17DC685B20D029D5003A5E49 /* README.md */,
 				173D4E2F15BAB13C0007F267 /* PostgresKit-Prefix.pch */,
 				173D4E2115BAB0FE0007F267 /* Source */,
 				171D582B1612E00D00F84472 /* Tests */,
@@ -190,7 +185,6 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				173D506915BB93470007F267 /* libssl.dylib */,
 				173D506F15BB93E40007F267 /* libcrypto.dylib */,
 				17E595F114F3058F0054EE08 /* Foundation.framework */,
 			);
@@ -487,7 +481,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0940;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "PostgresKit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -631,12 +625,18 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -699,6 +699,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
 				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -752,6 +756,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
 				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -800,6 +808,10 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Libs\"/**",
 				);
+				OTHER_LDFLAGS = (
+					"-Wl,/usr/lib/libssl.dylib",
+					"-Wl,/usr/lib/libcrypto.dylib",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.postgreskit;
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -812,12 +824,18 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -847,12 +865,18 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

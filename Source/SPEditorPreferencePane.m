@@ -432,8 +432,6 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	if (nameValid) {
 		[colorThemeName setHidden:NO];
 		[colorThemeNameLabel setHidden:NO];
-		
-		return;
 	} 
 	else {
 		[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
@@ -441,12 +439,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		[colorThemeNameLabel setHidden:YES];
 		
 		[self updateColorSchemeSelectionMenu];
-		
-		return;
 	}
-	
-	[colorThemeName setHidden:NO];
-	[colorThemeNameLabel setHidden:NO];
 }
 
 #pragma mark -

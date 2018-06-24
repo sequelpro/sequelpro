@@ -86,43 +86,23 @@
 
 - (void)exportOperation
 {
-	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
-	[sqlTableDataInstance setConnection:connection];
-			
-	SPMySQLResult *queryResult;
-	
-	NSString *tableName;
-	NSDictionary *tableDetails;
-	SPTableType tableType = SPTableTypeTable;
-	
-	id createTableSyntax = nil;
-	NSUInteger j, s;
-	
-	BOOL sqlOutputIncludeStructure;
-	BOOL sqlOutputIncludeContent;
-	BOOL sqlOutputIncludeDropSyntax;
-	
-	NSMutableArray *tables = [NSMutableArray array];
-	NSMutableArray *procs  = [NSMutableArray array];
-	NSMutableArray *funcs  = [NSMutableArray array];
-	
-	NSMutableString *metaString = [NSMutableString string];
+	// used in end_cleanup
 	NSMutableString *errors     = [[NSMutableString alloc] init];
 	NSMutableString *sqlString  = [[NSMutableString alloc] init];
-	
-	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
-			
+	NSString *oldSqlMode        = nil;
+
 	// Check that we have all the required info before starting the export
 	if ((![self sqlExportTables])     || ([[self sqlExportTables] count] == 0)          ||
-		(![self sqlDatabaseHost])     || ([[self sqlDatabaseHost] isEqualToString:@""]) ||
-		(![self sqlDatabaseName])     || ([[self sqlDatabaseName] isEqualToString:@""]) ||
-		(![self sqlDatabaseVersion]   || ([[self sqlDatabaseName] isEqualToString:@""])))
+	    (![self sqlDatabaseHost])     || ([[self sqlDatabaseHost] isEqualToString:@""]) ||
+	    (![self sqlDatabaseName])     || ([[self sqlDatabaseName] isEqualToString:@""]) ||
+	    (![self sqlDatabaseVersion]   || ([[self sqlDatabaseName] isEqualToString:@""])))
 	{
-		[errors release];
-		[sqlString release];
-		return;
+		goto end_cleanup;
 	}
-			
+
+	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
+	[sqlTableDataInstance setConnection:connection];
+
 	// Inform the delegate that the export process is about to begin
 	[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
 	
@@ -132,18 +112,17 @@
 	// Clear errors
 	[self setSqlExportErrors:@""];
 
+	NSMutableArray *tables = [NSMutableArray array];
+	NSMutableArray *procs  = [NSMutableArray array];
+	NSMutableArray *funcs  = [NSMutableArray array];
+
 	// Copy over the selected item names into tables in preparation for iteration
-	NSMutableArray *targetArray;
-	
-	for (NSArray *item in [self sqlExportTables]) 
+	for (NSArray *item in [self sqlExportTables])
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
-		
+		if ([self isCancelled]) goto end_cleanup;
+
+		NSMutableArray *targetArray;
 		switch ([NSArrayObjectAtIndex(item, 4) intValue]) {
 			case SPTableTypeProc:
 				targetArray = procs;
@@ -159,7 +138,9 @@
 		
 		[targetArray addObject:item];
 	}
-			
+
+	NSMutableString *metaString = [NSMutableString string];
+
 	// If required write the UTF-8 Byte Order Mark (BOM)
 	if ([self sqlOutputIncludeUTF8BOM]) {
 		[metaString appendString:@"\xef\xbb\xbf"];
@@ -194,29 +175,96 @@
 		//TODO we should link to a website explaining the risk here
 		[metaString appendString:@"SET NAMES utf8mb4;\n"];
 	}
-	
+
 	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
+
+	/* A note on SQL_MODE:
+	 *
+	 *   BEFORE 3.23.6
+	 *     No supported
+	 *
+	 *   FROM 3.23.6
+	 *     There is a "--ansi" / "-a" CLI argument to mysqld, which is the predecessor to SQL_MODE.
+	 *     It can be queried via "SHOW VARIABLES" -> "ansi_mode" = "OFF" | "ON"
+	 *
+	 *   FROM 3.23.41
+	 *     There is a "--sql-mode=[opt[,opt[...]]]" CLI argument to mysqld.
+	 *     It can be queried via "SHOW VARIABLES" -> "sql_mode" but the result will be a bitfield value with
+	 *         #define MODE_REAL_AS_FLOAT        1 = "REAL_AS_FLOAT"
+	 *         #define MODE_PIPES_AS_CONCAT      2 = "PIPES_AS_CONCAT"
+	 *         #define MODE_ANSI_QUOTES          4 = "ANSI_QUOTES"
+	 *         #define MODE_IGNORE_SPACE         8 = "IGNORE_SPACE"
+	 *         #define MODE_SERIALIZABLE        16 = "SERIALIZE" (!)
+	 *         #define MODE_ONLY_FULL_GROUP_BY  32 = "ONLY_FULL_GROUP_BY"
+	 *     The "--ansi" switch is still supported but mostly equivalent to setting all of the options above
+	 *     (it will also set the transaction isolation level to SERIALIZABLE).
+	 *     "ansi_mode" is no longer returned by SHOW VARIABLES.
+	 *
+	 *   FROM 4.1.0
+	 *     - "sql_mode" can be changed at runtime (global or per session).
+	 *     - "SHOW VARIABLES" now returns a CSV list of named options
+	 *
+	 *   FROM 4.1.1
+	 *     - "SERIALIZE" is no longer supported (must be changed via "SET TRANSACTION ISOLATION LEVEL")
+	 *       (trivia: internally it has become MODE_NOT_USED: 16 = "?")
+	 *
+	 */
+
+	BOOL sqlModeIsValid = NO;
+	//fetch old sql mode to restore it later
+	{
+		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'sql_mode'"];
+		if(![connection queryErrored]) {
+			[result setReturnDataAsStrings:YES];
+			NSArray *row = [result getRowAsArray];
+			oldSqlMode = [[row objectAtIndex:1] unboxNull];
+		}
+	}
+	//set sql mode for export
+	if([@"" isEqualToString:oldSqlMode]) {
+		// the current sql_mode is already the one we want (empty string), no need to change+revert it
+		oldSqlMode = nil;
+		sqlModeIsValid = YES;
+	}
+	else {
+		[connection queryString:@"SET SQL_MODE=''"]; //mysqldump uses a conditional comment for 40100 here, but we want to see the error, since it can't simply be ignored (also ANSI mode is supported before 4.1)
+		if (![connection queryErrored]) {
+			sqlModeIsValid = YES;
+		}
+		else {
+			[errors appendFormat:@"%@ (%@)\n", NSLocalizedString(@"The server's SQL_MODE could not be changed to one suitable for export. The export may be missing important details or may not be importable at all!", @"sql export : 'set @@sql_mode' query failed message"), [connection lastErrorMessage]];
+			[metaString appendFormat:@"# SET SQL_MODE Error: %@\n\n\n", [connection lastErrorMessage]];
+			//if we couldn't change it, we don't need to restore it either
+			oldSqlMode = nil;
+		}
+	}
+	// TODO:
+	// * There is no point in writing out that the file should use a specific SQL mode when we don't even know which one was active during export.
+	// * Triggers, procs/funcs have their own SQL_MODE which is still set/reset below, though.
+	//
+	// But an unknown SQL_MODE (!sqlModeIsValid) could perhaps still affect how MySQL returns the "SHOW CREATE…"
+	// data for those objects (like it does for "SHOW CREATE TABLE") possibly rendering them invalid (need to check that),
+	// so it may be better to flat out refuse to export schema object DDL if we don't have a valid sql_mode.
 	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
+
 	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
 
 	[self writeString:metaString];
-			
+
+	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
+
 	// Loop through the selected tables
 	for (NSArray *table in tables) 
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		[self setSqlCurrentTableExportIndex:[self sqlCurrentTableExportIndex]+1];
-		tableName = NSArrayObjectAtIndex(table, 0);
-					
-		sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(table, 1) boolValue];
-		sqlOutputIncludeContent    = [NSArrayObjectAtIndex(table, 2) boolValue];
-		sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(table, 3) boolValue];
+		NSString *tableName = NSArrayObjectAtIndex(table, 0);
+
+		BOOL sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(table, 1) boolValue];
+		BOOL sqlOutputIncludeContent    = [NSArrayObjectAtIndex(table, 2) boolValue];
+		BOOL sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(table, 3) boolValue];
 
 		// Skip tables if not set to output any detail for them
 		if (!sqlOutputIncludeStructure && !sqlOutputIncludeContent && !sqlOutputIncludeDropSyntax) {
@@ -233,34 +281,38 @@
 		
 		// Add the name of table
 		[self writeString:[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName]];
-		
+
+		id createTableSyntax = nil;
+		SPTableType tableType = SPTableTypeTable;
 		// Determine whether this table is a table or a view via the CREATE TABLE command, and keep the create table syntax
-		queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numberOfRows]) {
-			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
-			
-			if ([tableDetails objectForKey:@"Create View"]) {
-				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
-				createTableSyntax = [self _createViewPlaceholderSyntaxForView:tableName];
-				tableType = SPTableTypeView;
-			} 
-			else {
-				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
-				tableType = SPTableTypeTable;
+		{
+			SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+
+			[queryResult setReturnDataAsStrings:YES];
+
+			if ([queryResult numberOfRows]) {
+				NSDictionary *tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
+
+				if ([tableDetails objectForKey:@"Create View"]) {
+					[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
+					createTableSyntax = [self _createViewPlaceholderSyntaxForView:tableName];
+					tableType = SPTableTypeView;
+				}
+				else {
+					createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
+					tableType = SPTableTypeTable;
+				}
+
+				[tableDetails release];
 			}
-			
-			[tableDetails release];
-		}
-					
-		if ([connection queryErrored]) {
-			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
-			
-			[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]]];
-			
-			continue;
+
+			if ([connection queryErrored]) {
+				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
+
+				[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]]];
+
+				continue;
+			}
 		}
 		
 		// Add a 'DROP TABLE' command if required
@@ -270,8 +322,9 @@
 		
 		// Add the create syntax for the table if specified in the export dialog
 		if (sqlOutputIncludeStructure && createTableSyntax) {
-							
+
 			if ([createTableSyntax isKindOfClass:[NSData class]]) {
+#warning This doesn't make sense. If the NSData really contains a string it would be in utf8, utf8mb4 or a mysql pre-4.1 legacy charset, but not in the export output charset. This whole if() is likely a side effect of the BINARY flag confusion (#2700)
 				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:[self exportOutputEncoding]] autorelease];
 			}
 			
@@ -283,22 +336,21 @@
 			[self writeUTF8String:createTableSyntax];
 			[self writeUTF8String:@";\n\n"];
 		}
-					
+
 		// Add the table content if required
 		if (sqlOutputIncludeContent && (tableType == SPTableTypeTable)) {
-			
 			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-			tableDetails = [NSDictionary dictionaryWithDictionary:[sqlTableDataInstance informationForTable:tableName]];
-							
+			NSDictionary *tableDetails = [NSDictionary dictionaryWithDictionary:[sqlTableDataInstance informationForTable:tableName]];
+
 			NSUInteger colCount = [[tableDetails objectForKey:@"columns"] count];
 			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
 			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
 			BOOL *useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
 			BOOL *useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
-							
+
 			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
-			for (j = 0; j < colCount; j++) 
+			for (NSUInteger j = 0; j < colCount; j++)
 			{
 				NSDictionary *theColumnDetail = NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j);
 				NSString *theTypeGrouping = [theColumnDetail objectForKey:@"typegrouping"];
@@ -332,7 +384,7 @@
 					[queryColumnDetails addObject:[[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]];
 				}
 			}
-																			
+
 			// Retrieve the number of rows in the table for progress bar drawing
 			NSArray *rowArray = [[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] getRowAsArray];
 			
@@ -345,9 +397,8 @@
 			}
 			
 			NSUInteger rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
-						
-			if (rowCount) {
 
+			if (rowCount) {
 				// Set up a result set in streaming mode
 				SPMySQLStreamingResult *streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
 
@@ -384,12 +435,10 @@
 						[streamingResult cancelResultLoad];
 						[streamingResult release];
 						[sqlExportPool release];
-						[errors release];
-						[sqlString release];
 						free(useRawDataForColumnAtIndex);
 						free(useRawHexDataForColumnAtIndex);
 
-						return;
+						goto end_cleanup;
 					}
 
 					// Update the progress
@@ -402,7 +451,6 @@
 						// Inform the delegate that the export's progress has been updated
 						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 					}
-
 
 					// Set up the new row as appropriate.  If a new INSERT statement should be created,
 					// set one up; otherwise, set up a new row
@@ -468,7 +516,7 @@
 							if ([self sqlOutputEncodeBLOBasHex]) {
 								[sqlString appendString:[connection escapeAndQuoteData:object]];
 							}
-							else {								
+							else {
 								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
@@ -493,7 +541,7 @@
 
 					[sqlString appendString:@")"];
 					queryLength += [sqlString length];
-										
+
 					// Write this row to the file
 					[self writeUTF8String:sqlString];
 
@@ -538,7 +586,7 @@
 
 		// Add triggers if the structure export was enabled
 		if (sqlOutputIncludeStructure) {
-			queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", [tableName tickQuotedString]]];
+			SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", [tableName tickQuotedString]]];
 			
 			[queryResult setReturnDataAsStrings:YES];
 			
@@ -547,14 +595,10 @@
 				[metaString setString:@"\n"];
 				[metaString appendString:@"DELIMITER ;;\n"];
 				
-				for (s = 0; s < [queryResult numberOfRows]; s++) 
+				for (NSUInteger s = 0; s < [queryResult numberOfRows]; s++)
 				{
 					// Check for cancellation flag
-					if ([self isCancelled]) {
-						[errors release];
-						[sqlString release];
-						return;
-					}
+					if ([self isCancelled]) goto end_cleanup;
 					
 					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 					
@@ -563,14 +607,13 @@
 					
 					[metaString appendFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n/*!50003 CREATE */ ", [triggers objectForKey:@"sql_mode"]];
 					[metaString appendFormat:@"/*!50017 DEFINER=%@@%@ */ /*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
-											  [NSArrayObjectAtIndex(triggersDefiner, 0) backtickQuotedString],
-											  [NSArrayObjectAtIndex(triggersDefiner, 1) backtickQuotedString],
-											  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
-											  [triggers objectForKey:@"Timing"],
-											  [triggers objectForKey:@"Event"],
-											  [[triggers objectForKey:@"Table"] backtickQuotedString],
-											  [triggers objectForKey:@"Statement"]
-											  ];
+					                         [NSArrayObjectAtIndex(triggersDefiner, 0) backtickQuotedString],
+					                         [NSArrayObjectAtIndex(triggersDefiner, 1) backtickQuotedString],
+					                         [[triggers objectForKey:@"Trigger"] backtickQuotedString],
+					                         [triggers objectForKey:@"Timing"],
+					                         [triggers objectForKey:@"Event"],
+					                         [[triggers objectForKey:@"Table"] backtickQuotedString],
+					                         [triggers objectForKey:@"Statement"]];
 					
 					[triggers release];
 				}
@@ -589,26 +632,22 @@
 			}
 		}
 		
-		// Add an additional separat or between tables
+		// Add an additional separator between tables
 		[self writeUTF8String:@"\n\n"];
 	}
 	
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
-	for (tableName in viewSyntaxes) 
+	for (NSString *viewName in viewSyntaxes)
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		[metaString setString:@"\n\n"];
 
 		// Add the name of table
-		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", tableName];
-		[metaString appendFormat:@"DROP TABLE %@;\n\n", [tableName backtickQuotedString]];
-		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
+		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", viewName];
+		[metaString appendFormat:@"DROP TABLE %@;\n\n", [viewName backtickQuotedString]];
+		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:viewName]];
 
 		[self writeUTF8String:metaString];
 	}
@@ -617,11 +656,7 @@
 	for (NSString *procedureType in @[@"PROCEDURE", @"FUNCTION"])
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		// Retrieve the array of selected procedures or functions, and skip export if not selected
 		NSMutableArray *items;
@@ -632,8 +667,8 @@
 		if ([items count] == 0) continue;
 		
 		// Retrieve the definitions
-		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */", procedureType,
-											   [[self sqlDatabaseName] tickQuotedString]]];
+		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */", procedureType,
+		                                                                                [[self sqlDatabaseName] tickQuotedString]]];
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
@@ -641,38 +676,32 @@
 			
 			[metaString setString:@"\n"];
 			[metaString appendFormat:@"--\n-- Dumping routines (%@) for database %@\n--\nDELIMITER ;;\n\n", procedureType,
-									  [[self sqlDatabaseName] tickQuotedString]];
-			
-			
+			                         [[self sqlDatabaseName] tickQuotedString]];
+
 			// Loop through the definitions, exporting if enabled
-			for (s = 0; s < [queryResult numberOfRows]; s++) 
+			for (NSUInteger s = 0; s < [queryResult numberOfRows]; s++)
 			{
 				// Check for cancellation flag
-				if ([self isCancelled]) {
-					[errors release];
-					[sqlString release];
-					return;
-				}
+				if ([self isCancelled]) goto end_cleanup;
 
 				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
 
 				// Only proceed if the item is in the list of items
 				BOOL itemFound = NO;
+				BOOL sqlOutputIncludeStructure = NO;
+				BOOL sqlOutputIncludeDropSyntax = NO;
 				for (NSArray *item in items)
 				{
 					// Check for cancellation flag
 					if ([self isCancelled]) {
 						[proceduresList release];
-						[errors release];
-						[sqlString release];
-						return;
+						goto end_cleanup;
 					}
 					
 					if ([NSArrayObjectAtIndex(item, 0) isEqualToString:procedureName]) {
 						itemFound = YES;
 						sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(item, 1) boolValue];
-						sqlOutputIncludeContent    = [NSArrayObjectAtIndex(item, 2) boolValue];
 						sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(item, 3) boolValue];
 						break;
 					}
@@ -688,7 +717,7 @@
 				// Add the 'DROP' command if required
 				if (sqlOutputIncludeDropSyntax) {
 					[metaString appendFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", procedureType,
-											  [procedureName backtickQuotedString]];
+					                         [procedureName backtickQuotedString]];
 				}
 				
 				// Only continue if the 'CREATE SYNTAX' is required
@@ -699,14 +728,13 @@
 				
 				// Definer is user@host but we need to escape it to `user`@`host`
 				NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-				
-				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-											[NSArrayObjectAtIndex(procedureDefiner, 0) backtickQuotedString],
-											[NSArrayObjectAtIndex(procedureDefiner, 1) backtickQuotedString]
-											];
+
+				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@",
+				                                                      [NSArrayObjectAtIndex(procedureDefiner, 0) backtickQuotedString],
+				                                                      [NSArrayObjectAtIndex(procedureDefiner, 1) backtickQuotedString]];
 				
 				SPMySQLResult *createProcedureResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */", procedureType,
-																			[procedureName backtickQuotedString]]];
+				                                                                                          [procedureName backtickQuotedString]]];
 				[createProcedureResult setReturnDataAsStrings:YES];
 				if ([connection queryErrored]) {
 					[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
@@ -779,13 +807,10 @@
 	
 	// Write footer-type information to the file
 	[self writeUTF8String:metaString];
-			
+
 	// Set export errors
 	[self setSqlExportErrors:errors];
-			
-	[errors release];
-	[sqlString release];
-	
+
 	// Close the file
 	[[self exportOutputFile] close];
 	
@@ -794,6 +819,13 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
+
+end_cleanup:
+	if(oldSqlMode) {
+		[connection queryString:[NSString stringWithFormat:@"SET SQL_MODE=%@",[oldSqlMode tickQuotedString]]];
+	}
+	[errors release];
+	[sqlString release];
 }
 
 /**

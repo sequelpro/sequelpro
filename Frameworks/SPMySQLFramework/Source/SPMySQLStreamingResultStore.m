@@ -30,7 +30,6 @@
 
 #import "SPMySQLStreamingResultStore.h"
 #import "SPMySQL Private APIs.h"
-#import "SPMySQLArrayAdditions.h"
 #include <pthread.h>
 
 static id NSNullPointer;
@@ -92,7 +91,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 + (void)initialize
 {
-
 	// Cached NSNull singleton reference
 	if (!NSNullPointer) NSNullPointer = [NSNull null];
 }
@@ -105,9 +103,8 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  * The download of results is not started at once - instead, it must be triggered manually
  * via -startDownload, which allows assignment of a result set to replace before use.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
 {
-
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
@@ -177,11 +174,9 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 				// the large memory savings for small rows make this extra work worth it.
 				switch (sizeOfMetadata) {
 					case SPMySQLStoreMetadataAsChar:
-
 						// The length of the data is stored in the last end-position slot
 						dataLength = ((unsigned char *)(oldRow + 1))[previousNumberOfFields - 1];
 						break;
-
 					case SPMySQLStoreMetadataAsShort:
 						dataLength = ((unsigned short *)(oldRow + 1))[previousNumberOfFields - 1];
 						break;
@@ -270,7 +265,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void)dealloc
 {
-
 	// Ensure all data is processed and the parent connection is unlocked
 	[self cancelResultLoad];
 
@@ -311,7 +305,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (NSMutableArray *)rowContentsAtIndex:(NSUInteger)rowIndex
 {
-
 	// Throw an exception if the index is out of bounds
 	if (rowIndex >= numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)rowIndex, (unsigned long long)numberOfRows];
@@ -336,7 +329,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (id)cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
-
 	// Wrap the preview method, passing in a length limit of NSNotFound
 	return SPMySQLResultStorePreviewAtRowAndColumn(self, rowIndex, columnIndex, NSNotFound);
 }
@@ -404,7 +396,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 				dataLength = ((unsigned long *)rowData)[columnIndex] - dataStart;
 				break;
 		}
-
 	}
 
 	// If the data length is empty, check whether the cell is null and return null if so
@@ -451,7 +442,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 
 	// Check whether the cell is null
 	return (((BOOL *)(rowData + (sizeOfMetadata * numberOfFields)))[columnIndex]);
-
 }
 
 #pragma mark - Data retrieval overrides
@@ -463,14 +453,17 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 }
+
 - (NSArray *)getRowAsArray
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsArray);
 }
+
 - (NSDictionary *)getRowAsDictionary
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDictionary);
 }
+
 - (id)getRowAsType:(SPMySQLResultRowType)theType
 {
 	[NSException raise:NSInternalInconsistencyException format:@"Streaming SPMySQL result store sets should be used directly as result stores."];
@@ -483,7 +476,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void)cancelResultLoad
 {
-
 	// Track that loading has been cancelled, allowing faster result download without processing
 	loadCancelled = YES;
 
@@ -533,7 +525,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) addDummyRow
 {
-
 	// Currently only support editing after loading is finished; thi could be addressed by checking rowDownloadIterator vs numberOfRows etc
 	if (!dataDownloaded) {
 		[NSException raise:NSInternalInconsistencyException format:@"Streaming SPMySQL result editing is currently only supported once loading is complete."];
@@ -600,7 +591,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeRowAtIndex:(NSUInteger)anIndex
 {
-
 	// Throw an exception if the index is out of bounds
 	if (anIndex > numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, (unsigned long long)numberOfRows];
@@ -628,7 +618,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeRowsInRange:(NSRange)rangeToRemove
 {
-
 	// Throw an exception if the range is out of bounds
 	if (NSMaxRange(rangeToRemove) > numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), (unsigned long long)numberOfRows];
@@ -658,7 +647,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeAllRows
 {
-
 	// Lock the data mutex
 	pthread_mutex_lock(&dataLock);
 
@@ -684,150 +672,147 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void)_downloadAllData
 {
-	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
-	MYSQL_ROW theRow;
-	unsigned long *fieldLengths;
-	NSUInteger i, dataCopiedLength, rowDataLength;
-	SPMySQLStreamingResultStoreRowData *newRowStore;
+	@autoreleasepool {
+		MYSQL_ROW theRow;
+		unsigned long *fieldLengths;
+		NSUInteger i, dataCopiedLength, rowDataLength;
+		SPMySQLStreamingResultStoreRowData *newRowStore;
 
-	[[NSThread currentThread] setName:@"SPMySQLStreamingResultStore data download thread"];
+		[[NSThread currentThread] setName:@"SPMySQLStreamingResultStore data download thread"];
 
-	size_t sizeOfMetadata, lengthOfMetadata;
-	size_t lengthOfNullRecords = (size_t)(sizeof(BOOL) * numberOfFields);
-	size_t sizeOfChar = sizeof(char);
+		size_t sizeOfMetadata, lengthOfMetadata;
+		size_t lengthOfNullRecords = (size_t)(sizeof(BOOL) * numberOfFields);
+		size_t sizeOfChar = sizeof(char);
 
-	// Loop through the rows until the end of the data is reached - indicated via a NULL
-	while (
-		   (*isConnectedPtr)(parentConnection, isConnectedSelector)
-		   && (theRow = mysql_fetch_row(resultSet))
-		   )
-	{
+		// Loop through the rows until the end of the data is reached - indicated via a NULL
+		while (
+			(*isConnectedPtr)(parentConnection, isConnectedSelector)
+				&& (theRow = mysql_fetch_row(resultSet))
+			) {
+			// If the load has been cancelled, skip any processing - we're only interested
+			// in ensuring that mysql_fetch_row is called for all rows.
+			if (loadCancelled) {
+				continue;
+			}
 
-		// If the load has been cancelled, skip any processing - we're only interested
-		// in ensuring that mysql_fetch_row is called for all rows.
-		if (loadCancelled) {
-			continue;
-		}
+			// The row store is a single block of memory.  It's made up of four blocks of data:
+			// Firstly, a single char containing the type of data used to store positions.
+			// Secondly, a series of those types recording the *end position* of each field
+			// Thirdly, a series of BOOLs recording whether the fields are NULLS - which can't just be from length
+			// Finally, a char sequence comprising the actual cell data, which can be looked up by position/length.
 
-		// The row store is a single block of memory.  It's made up of four blocks of data:
-		// Firstly, a single char containing the type of data used to store positions.
-		// Secondly, a series of those types recording the *end position* of each field
-		// Thirdly, a series of BOOLs recording whether the fields are NULLS - which can't just be from length
-		// Finally, a char sequence comprising the actual cell data, which can be looked up by position/length.
-
-		// Retrieve the lengths of the returned data, and calculate the overall length of data
-		fieldLengths = mysql_fetch_lengths(resultSet);
-		rowDataLength = 0;
-		for (i = 0; i < numberOfFields; i++) {
-			rowDataLength += fieldLengths[i];
-		}
-
-		// Depending on the length of the row, vary the metadata size appropriately.  This
-		// makes defining the data processing much lengthier, but is worth it to reduce the
-		// overhead for small rows.
-		if (rowDataLength <= UCHAR_MAX) {
-			sizeOfMetadata = SPMySQLStoreMetadataAsChar;
-		} else if (rowDataLength <= USHRT_MAX) {
-			sizeOfMetadata = SPMySQLStoreMetadataAsShort;
-		} else {
-			sizeOfMetadata = SPMySQLStoreMetadataAsLong;
-		}
-		lengthOfMetadata = sizeOfMetadata * numberOfFields;
-
-		// Allocate the memory for the row and set the type marker
-		newRowStore = malloc_zone_malloc(storageMallocZone, 1 + lengthOfMetadata + lengthOfNullRecords + (rowDataLength * sizeOfChar));
-		newRowStore[0] = sizeOfMetadata;
-
-		// Set the data end positions.  Manually unroll the logic for the different cases; messy
-		// but again worth the large memory savings for smaller rows
-		rowDataLength = 0;
-		switch (sizeOfMetadata) {
-			case SPMySQLStoreMetadataAsLong:
-				for (i = 0; i < numberOfFields; i++) {
-					rowDataLength += fieldLengths[i];
-					((unsigned long *)(newRowStore + 1))[i] = rowDataLength;
-					((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
-				}
-				break;
-			case SPMySQLStoreMetadataAsShort:
-				for (i = 0; i < numberOfFields; i++) {
-					rowDataLength += fieldLengths[i];
-					((unsigned short *)(newRowStore + 1))[i] = rowDataLength;
-					((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
-				}
-				break;
-			case SPMySQLStoreMetadataAsChar:
-				for (i = 0; i < numberOfFields; i++) {
-					rowDataLength += fieldLengths[i];
-					((unsigned char *)(newRowStore + 1))[i] = rowDataLength;
-					((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
-				}
-				break;
-		}
-
-		// If the row has content, copy it in
-		if (rowDataLength) {
-			dataCopiedLength = 1 + lengthOfMetadata + lengthOfNullRecords;
+			// Retrieve the lengths of the returned data, and calculate the overall length of data
+			fieldLengths = mysql_fetch_lengths(resultSet);
+			rowDataLength = 0;
 			for (i = 0; i < numberOfFields; i++) {
-				if (theRow[i] != NULL) {
-					memcpy(newRowStore + dataCopiedLength, theRow[i], fieldLengths[i]);
-					dataCopiedLength += fieldLengths[i];
+				rowDataLength += fieldLengths[i];
+			}
+
+			// Depending on the length of the row, vary the metadata size appropriately.  This
+			// makes defining the data processing much lengthier, but is worth it to reduce the
+			// overhead for small rows.
+			if (rowDataLength <= UCHAR_MAX) {
+				sizeOfMetadata = SPMySQLStoreMetadataAsChar;
+			} else if (rowDataLength <= USHRT_MAX) {
+				sizeOfMetadata = SPMySQLStoreMetadataAsShort;
+			} else {
+				sizeOfMetadata = SPMySQLStoreMetadataAsLong;
+			}
+			lengthOfMetadata = sizeOfMetadata * numberOfFields;
+
+			// Allocate the memory for the row and set the type marker
+			newRowStore = malloc_zone_malloc(storageMallocZone, 1 + lengthOfMetadata + lengthOfNullRecords + (rowDataLength * sizeOfChar));
+			newRowStore[0] = sizeOfMetadata;
+
+			// Set the data end positions.  Manually unroll the logic for the different cases; messy
+			// but again worth the large memory savings for smaller rows
+			rowDataLength = 0;
+			switch (sizeOfMetadata) {
+				case SPMySQLStoreMetadataAsLong:
+					for (i = 0; i < numberOfFields; i++) {
+						rowDataLength += fieldLengths[i];
+						((unsigned long *)(newRowStore + 1))[i] = rowDataLength;
+						((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
+					}
+					break;
+				case SPMySQLStoreMetadataAsShort:
+					for (i = 0; i < numberOfFields; i++) {
+						rowDataLength += fieldLengths[i];
+						((unsigned short *)(newRowStore + 1))[i] = rowDataLength;
+						((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
+					}
+					break;
+				case SPMySQLStoreMetadataAsChar:
+					for (i = 0; i < numberOfFields; i++) {
+						rowDataLength += fieldLengths[i];
+						((unsigned char *)(newRowStore + 1))[i] = rowDataLength;
+						((BOOL *)(newRowStore + 1 + lengthOfMetadata))[i] = (theRow[i] == NULL);
+					}
+					break;
+			}
+
+			// If the row has content, copy it in
+			if (rowDataLength) {
+				dataCopiedLength = 1 + lengthOfMetadata + lengthOfNullRecords;
+				for (i = 0; i < numberOfFields; i++) {
+					if (theRow[i] != NULL) {
+						memcpy(newRowStore + dataCopiedLength, theRow[i], fieldLengths[i]);
+						dataCopiedLength += fieldLengths[i];
+					}
 				}
 			}
+
+			// Lock the data mutex
+			pthread_mutex_lock(&dataLock);
+
+			// Ensure that sufficient capacity is available
+			SPMySQLStreamingResultStoreEnsureCapacityForAdditionalRowCount(self, 1);
+
+			// Add the newly allocated row to the storage
+			if (rowDownloadIterator < numberOfRows) {
+				SPMySQLStreamingResultStoreFreeRowData(dataStorage[rowDownloadIterator]);
+			}
+			dataStorage[rowDownloadIterator] = newRowStore;
+			rowDownloadIterator++;
+
+			// Update the total row count if exceeded
+			if (rowDownloadIterator > numberOfRows) {
+				numberOfRows++;
+			}
+
+			// Unlock the mutex
+			pthread_mutex_unlock(&dataLock);
 		}
 
-		// Lock the data mutex
-		pthread_mutex_lock(&dataLock);
-
-		// Ensure that sufficient capacity is available
-		SPMySQLStreamingResultStoreEnsureCapacityForAdditionalRowCount(self, 1);
-
-		// Add the newly allocated row to the storage
-		if (rowDownloadIterator < numberOfRows) {
-			SPMySQLStreamingResultStoreFreeRowData(dataStorage[rowDownloadIterator]);
-		}
-		dataStorage[rowDownloadIterator] = newRowStore;
-		rowDownloadIterator++;
-
-		// Update the total row count if exceeded
-		if (rowDownloadIterator > numberOfRows) {
-			numberOfRows++;
+		// Update the total number of rows in the result set now download
+		// is complete, freeing extra rows from a previous result set
+		if (numberOfRows > rowDownloadIterator) {
+			pthread_mutex_lock(&dataLock);
+			while (numberOfRows > rowDownloadIterator) {
+				SPMySQLStreamingResultStoreFreeRowData(dataStorage[--numberOfRows]);
+			}
+			pthread_mutex_unlock(&dataLock);
 		}
 
-		// Unlock the mutex
-		pthread_mutex_unlock(&dataLock);
-	}
+		// Update the connection's error statuses to reflect any errors during the content download
+		[parentConnection _updateLastErrorInfos];
 
-	// Update the total number of rows in the result set now download
-	// is complete, freeing extra rows from a previous result set
-	if (numberOfRows > rowDownloadIterator) {
-		pthread_mutex_lock(&dataLock);
-		while (numberOfRows > rowDownloadIterator) {
-			SPMySQLStreamingResultStoreFreeRowData(dataStorage[--numberOfRows]);
+		// Unlock the parent connection now all data has been retrieved
+		[parentConnection _unlockConnection];
+		connectionUnlocked = YES;
+
+		// If the connection query may have been cancelled with a query kill, double-check connection
+		if ([parentConnection lastQueryWasCancelled] && [parentConnection serverMajorVersion] < 5) {
+			[parentConnection checkConnection];
 		}
-		pthread_mutex_unlock(&dataLock);
+
+		dataDownloaded = YES;
+
+		// Inform the delegate the download was completed
+		if ([delegate respondsToSelector:@selector(resultStoreDidFinishLoadingData:)]) {
+			[delegate resultStoreDidFinishLoadingData:self];
+		}
 	}
-
-	// Update the connection's error statuses to reflect any errors during the content download
-	[parentConnection _updateLastErrorInfos];
-
-	// Unlock the parent connection now all data has been retrieved
-	[parentConnection _unlockConnection];
-	connectionUnlocked = YES;
-
-	// If the connection query may have been cancelled with a query kill, double-check connection
-	if ([parentConnection lastQueryWasCancelled] && [parentConnection serverMajorVersion] < 5) {
-		[parentConnection checkConnection];
-	}
-
-	dataDownloaded = YES;
-
-	// Inform the delegate the download was completed
-	if ([delegate respondsToSelector:@selector(resultStoreDidFinishLoadingData:)]) {
-		[delegate resultStoreDidFinishLoadingData:self];
-	}
-
-	[downloadPool drain];
 }
 
 /**

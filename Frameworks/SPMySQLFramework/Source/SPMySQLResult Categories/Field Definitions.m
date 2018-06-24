@@ -46,8 +46,10 @@
 const SPMySQLResultCharset SPMySQLCharsetMap[] =
 {
 	{1,   "big5","big5_chinese_ci", 1, 2},
+	{2,   "latin2", "latin2_czech_cs", 1, 1},
 	{3,   "dec8", "dec8_swedisch_ci", 1, 1},
 	{4,   "cp850", "cp850_general_ci", 1, 1},
+	{5,   "latin1", "latin1_german1_ci", 1, 1},
 	{6,   "hp8", "hp8_english_ci", 1, 1},
 	{7,   "koi8r", "koi8r_general_ci", 1, 1},
 	{8,   "latin1", "latin1_swedish_ci", 1, 1},
@@ -56,17 +58,27 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{11,  "ascii", "ascii_general_ci", 1, 1},
 	{12,  "ujis", "ujis_japanese_ci", 1, 3},
 	{13,  "sjis", "sjis_japanese_ci", 1, 2},
+	{14,  "cp1251", "cp1251_bulgarian_ci", 1, 1},
+	{15,  "latin1", "latin1_danish_ci", 1, 1},
 	{16,  "hebrew", "hebrew_general_ci", 1, 1},
+	{17,  "filename", "filename", 1, 5},
 	{18,  "tis620", "tis620_thai_ci", 1, 1},
 	{19,  "euckr", "euckr_korean_ci", 1, 2},
+	{20,  "latin7", "latin7_estonian_cs", 1, 1},
+	{21,  "latin2", "latin2_hungarian_ci", 1, 1},
 	{22,  "koi8u", "koi8u_general_ci", 1, 1},
+	{23,  "cp1251", "cp1251_ukrainian_ci", 1, 1},
 	{24,  "gb2312", "gb2312_chinese_ci", 1, 2},
 	{25,  "greek", "greek_general_ci", 1, 1},
 	{26,  "cp1250", "cp1250_general_ci", 1, 1},
+	{27,  "latin2", "latin2_croatian_ci", 1, 1},
 	{28,  "gbk", "gbk_chinese_ci", 1, 2},
+	{29,  "cp1257", "cp1257_lithunian_ci", 1, 1},
 	{30,  "latin5", "latin5_turkish_ci", 1, 1},
+	{31,  "latin1", "latin1_german2_ci", 1, 1},
 	{32,  "armscii8", "armscii8_general_ci", 1, 1},
-	{33,  "utf8", "utf8_general_ci", 1, 3},
+	{33,  "utf8", "utf8_general_ci", 1, 3}, //mb3
+	{34,  "cp1250", "cp1250_czech_cs", 1, 1},
 	{35,  "ucs2", "ucs2_general_ci", 2, 2},
 	{36,  "cp866", "cp866_general_ci", 1, 1},
 	{37,  "keybcs2", "keybcs2_general_ci", 1, 1},
@@ -74,38 +86,27 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{39,  "macroman", "macroman_general_ci", 1, 1},
 	{40,  "cp852", "cp852_general_ci", 1, 1},
 	{41,  "latin7", "latin7_general_ci", 1, 1},
-	{51,  "cp1251", "cp1251_general_ci", 1, 1},
-	{57,  "cp1256", "cp1256_general_ci", 1, 1},
-	{59,  "cp1257", "cp1257_general_ci", 1, 1},
-	{63,  "binary", "binary", 1, 1},
-	{92,  "geostd8", "geostd8_general_ci", 1, 1},
-	{95,  "cp932", "cp932_japanese_ci", 1, 2},
-	{97,  "eucjpms", "eucjpms_japanese_ci", 1, 3},
-	{2,   "latin2", "latin2_czech_cs", 1, 1},
-	{5,   "latin1", "latin1_german1_ci", 1, 1},
-	{14,  "cp1251", "cp1251_bulgarian_ci", 1, 1},
-	{15,  "latin1", "latin1_danish_ci", 1, 1},
-	{17,  "filename", "filename", 1, 5},
-	{20,  "latin7", "latin7_estonian_cs", 1, 1},
-	{21,  "latin2", "latin2_hungarian_ci", 1, 1},
-	{23,  "cp1251", "cp1251_ukrainian_ci", 1, 1},
-	{27,  "latin2", "latin2_croatian_ci", 1, 1},
-	{29,  "cp1257", "cp1257_lithunian_ci", 1, 1},
-	{31,  "latin1", "latin1_german2_ci", 1, 1},
-	{34,  "cp1250", "cp1250_czech_cs", 1, 1},
 	{42,  "latin7", "latin7_general_cs", 1, 1},
 	{43,  "macce", "macce_bin", 1, 1},
 	{44,  "cp1250", "cp1250_croatian_ci", 1, 1},
-	{45,  "utf8", "utf8_general_ci", 1, 1},
-	{46,  "utf8", "utf8_bin", 1, 1},
+	{45,  "utf8", "utf8_general_ci", 1, 4}, //mb4
+	{46,  "utf8", "utf8_bin", 1, 4}, //mb4
 	{47,  "latin1", "latin1_bin", 1, 1},
 	{48,  "latin1", "latin1_general_ci", 1, 1},
 	{49,  "latin1", "latin1_general_cs", 1, 1},
 	{50,  "cp1251", "cp1251_bin", 1, 1},
+	{51,  "cp1251", "cp1251_general_ci", 1, 1},
 	{52,  "cp1251", "cp1251_general_cs", 1, 1},
 	{53,  "macroman", "macroman_bin", 1, 1},
+
+	{57,  "cp1256", "cp1256_general_ci", 1, 1},
 	{58,  "cp1257", "cp1257_bin", 1, 1},
+	{59,  "cp1257", "cp1257_general_ci", 1, 1},
+#warning 60 is "utf32_general_ci" and "armascii8" is at 64 in mysql 5.5.59!?
 	{60,  "armascii8", "armascii8_bin", 1, 1},
+
+	{63,  "binary", "binary", 1, 1},
+
 	{65,  "ascii", "ascii_bin", 1, 1},
 	{66,  "cp1250", "cp1250_bin", 1, 1},
 	{67,  "cp1256", "cp1256_bin", 1, 1},
@@ -117,13 +118,13 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{73,  "keybcs2", "keybcs2_bin", 1, 1},
 	{74,  "koi8r", "koi8r_bin", 1, 1},
 	{75,  "koi8u", "koi8u_bin", 1, 1},
+
 	{77,  "latin2", "latin2_bin", 1, 1},
 	{78,  "latin5", "latin5_bin", 1, 1},
 	{79,  "latin7", "latin7_bin", 1, 1},
 	{80,  "cp850", "cp850_bin", 1, 1},
 	{81,  "cp852", "cp852_bin", 1, 1},
 	{82,  "swe7", "swe7_bin", 1, 1},
-	{93,  "geostd8", "geostd8_bin", 1, 1},
 	{83,  "utf8", "utf8_bin", 1, 3},
 	{84,  "big5", "big5_bin", 1, 2},
 	{85,  "euckr", "euckr_bin", 1, 2},
@@ -133,10 +134,15 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{89,  "tis620", "tis620_bin", 1, 1},
 	{90,  "ucs2", "ucs2_bin", 2, 2},
 	{91,  "ujis", "ujis_bin", 1, 3},
+	{92,  "geostd8", "geostd8_general_ci", 1, 1},
+	{93,  "geostd8", "geostd8_bin", 1, 1},
 	{94,  "latin1", "latin1_spanish_ci", 1, 1},
+	{95,  "cp932", "cp932_japanese_ci", 1, 2},
 	{96,  "cp932", "cp932_bin", 1, 2},
-	{99,  "cp1250", "cp1250_polish_ci", 1, 1},
+	{97,  "eucjpms", "eucjpms_japanese_ci", 1, 3},
 	{98,  "eucjpms", "eucjpms_bin", 1, 3},
+	{99,  "cp1250", "cp1250_polish_ci", 1, 1},
+
 	{128, "ucs2", "ucs2_unicode_ci", 2, 2},
 	{129, "ucs2", "ucs2_icelandic_ci", 2, 2},
 	{130, "ucs2", "ucs2_latvian_ci", 2, 2},
@@ -157,6 +163,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{145, "ucs2", "ucs2_esperanto_ci", 2, 2},
 	{146, "ucs2", "ucs2_hungarian_ci", 2, 2},
 	{147, "ucs2", "ucs2_sinhala_ci", 2, 2},
+
 	{192, "utf8mb3", "utf8mb3_general_ci", 1, 3},
 	{193, "utf8mb3", "utf8mb3_icelandic_ci", 1, 3},
 	{194, "utf8mb3", "utf8mb3_latvian_ci", 1, 3},
@@ -164,7 +171,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{196, "utf8mb3", "utf8mb3_slovenian_ci", 1, 3},
 	{197, "utf8mb3", "utf8mb3_polish_ci", 1, 3},
 	{198, "utf8mb3", "utf8mb3_estonian_ci", 1, 3},
-	{119, "utf8mb3", "utf8mb3_spanish_ci", 1, 3},
+	{199, "utf8mb3", "utf8mb3_spanish_ci", 1, 3},
 	{200, "utf8mb3", "utf8mb3_swedish_ci", 1, 3},
 	{201, "utf8mb3", "utf8mb3_turkish_ci", 1, 3},
 	{202, "utf8mb3", "utf8mb3_czech_ci", 1, 3},
@@ -177,27 +184,30 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{209, "utf8mb3", "utf8mb3_esperanto_ci", 1, 3},
 	{210, "utf8mb3", "utf8mb3_hungarian_ci", 1, 3},
 	{211, "utf8mb3", "utf8mb3_sinhala_ci", 1, 3},
-	{224, "utf8", "utf8_unicode_ci", 1, 3},
-	{225, "utf8", "utf8_icelandic_ci", 1, 3},
-	{226, "utf8", "utf8_latvian_ci", 1, 3},
-	{227, "utf8", "utf8_romanian_ci", 1, 3},
-	{228, "utf8", "utf8_slovenian_ci", 1, 3},
-	{229, "utf8", "utf8_polish_ci", 1, 3},
-	{230, "utf8", "utf8_estonian_ci", 1, 3},
-	{231, "utf8", "utf8_spanish_ci", 1, 3},
-	{232, "utf8", "utf8_swedish_ci", 1, 3},
-	{233, "utf8", "utf8_turkish_ci", 1, 3},
-	{234, "utf8", "utf8_czech_ci", 1, 3},
-	{235, "utf8", "utf8_danish_ci", 1, 3},
-	{236, "utf8", "utf8_lithuanian_ci", 1, 3},
-	{237, "utf8", "utf8_slovak_ci", 1, 3},
-	{238, "utf8", "utf8_spanish2_ci", 1, 3},
-	{239, "utf8", "utf8_roman_ci", 1, 3},
-	{240, "utf8", "utf8_persian_ci", 1, 3},
-	{241, "utf8", "utf8_esperanto_ci", 1, 3},
-	{242, "utf8", "utf8_hungarian_ci", 1, 3},
-	{243, "utf8", "utf8_sinhala_ci", 1, 3},
+
+	{224, "utf8", "utf8_unicode_ci", 1, 4}, //mb4
+	{225, "utf8", "utf8_icelandic_ci", 1, 4}, //mb4
+	{226, "utf8", "utf8_latvian_ci", 1, 4}, //mb4
+	{227, "utf8", "utf8_romanian_ci", 1, 4}, //mb4
+	{228, "utf8", "utf8_slovenian_ci", 1, 4}, //mb4
+	{229, "utf8", "utf8_polish_ci", 1, 4}, //mb4
+	{230, "utf8", "utf8_estonian_ci", 1, 4}, //mb4
+	{231, "utf8", "utf8_spanish_ci", 1, 4}, //mb4
+	{232, "utf8", "utf8_swedish_ci", 1, 4}, //mb4
+	{233, "utf8", "utf8_turkish_ci", 1, 4}, //mb4
+	{234, "utf8", "utf8_czech_ci", 1, 4}, //mb4
+	{235, "utf8", "utf8_danish_ci", 1, 4}, //mb4
+	{236, "utf8", "utf8_lithuanian_ci", 1, 4}, //mb4
+	{237, "utf8", "utf8_slovak_ci", 1, 4}, //mb4
+	{238, "utf8", "utf8_spanish2_ci", 1, 4}, //mb4
+	{239, "utf8", "utf8_roman_ci", 1, 4}, //mb4
+	{240, "utf8", "utf8_persian_ci", 1, 4}, //mb4
+	{241, "utf8", "utf8_esperanto_ci", 1, 4}, //mb4
+	{242, "utf8", "utf8_hungarian_ci", 1, 4}, //mb4
+	{243, "utf8", "utf8_sinhala_ci", 1, 4}, //mb4
+
 	{254, "utf8mb3", "utf8mb3_general_cs", 1, 3},
+
 	{0, NULL, NULL, 0, 0}
 };
 
@@ -289,18 +299,18 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 		[eachField setObject:[self _charsetNameForMySQLNumber:mysqlField.charsetnr] forKey:@"charset_name"];
 		[eachField setObject:[self _charsetCollationForMySQLNumber:mysqlField.charsetnr] forKey:@"charset_collation"];
 
-		/* Table type */
+		// Table type
 		[eachField setObject:[self _mysqlTypeToStringForType:mysqlField.type
-											   withCharsetNr:mysqlField.charsetnr
-												   withFlags:mysqlField.flags
-												  withLength:mysqlField.length
-							 ] forKey:@"type"];
+		                                       withCharsetNr:mysqlField.charsetnr
+		                                           withFlags:mysqlField.flags
+		                                          withLength:mysqlField.length]
+		              forKey:@"type"];
 
-		/* Table type group*/
+		// Table type group
 		[eachField setObject:[self _mysqlTypeToGroupForType:mysqlField.type
-											  withCharsetNr:mysqlField.charsetnr
-												  withFlags:mysqlField.flags
-							 ] forKey:@"typegrouping"];
+		                                      withCharsetNr:mysqlField.charsetnr
+		                                          withFlags:mysqlField.flags]
+		              forKey:@"typegrouping"];
 
 		[theFieldDefinitions addObject:eachField];
 	}
@@ -324,8 +334,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	const SPMySQLResultCharset *c = SPMySQLCharsetMap;
 
 	do {
-		if (c->nr == charsetnr)
-			return c->char_maxlen;
+		if (c->nr == charsetnr) return c->char_maxlen;
 		++c;
 	} while (c[0].nr != 0);
 
@@ -340,8 +349,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	const SPMySQLResultCharset *c = SPMySQLCharsetMap;
 
 	do {
-		if (c->nr == charsetnr)
-			return [NSString stringWithCString:c->name encoding:stringEncoding];
+		if (c->nr == charsetnr) return [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
 		++c;
 	} while (c[0].nr != 0);
 
@@ -356,8 +364,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	const SPMySQLResultCharset *c = SPMySQLCharsetMap;
 
 	do {
-		if (c->nr == charsetnr)
-			return [NSString stringWithCString:c->collation encoding:stringEncoding];
+		if (c->nr == charsetnr) return [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding];
 		++c;
 	} while (c[0].nr != 0);
 
@@ -369,7 +376,6 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
  */
 - (NSString *)_mysqlTypeToStringForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags withLength:(unsigned long long)length
 {
-
 	switch (type) {
 
 		case MYSQL_TYPE_BIT:
@@ -491,7 +497,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 {
 	switch(type){
 
-		case FIELD_TYPE_BIT:
+		case MYSQL_TYPE_BIT:
 			return @"bit";
 
 		case MYSQL_TYPE_TINY:

@@ -384,84 +384,82 @@ end_cleanup:
  */
 - (void)_saveFavoritesData:(NSDictionary *)data
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	pthread_mutex_lock(&writeLock);
-	
-	if (!favoritesTree) {
-		goto end_cleanup;
-	}
-	
-	NSError *error = nil;
+	@autoreleasepool {
+		pthread_mutex_lock(&writeLock);
 
-	// Before starting the file actions, attempt to create a dictionary
-	// from the current favourites tree and convert it to a dictionary representation
-	// to create the plist data.  This is done before file changes as it can sometimes
-	// be terminated during shutdown.
-	NSDictionary *dictionary = @{SPFavoritesRootKey : data};
-	
-	NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
-																   format:NSPropertyListXMLFormat_v1_0
-																  options:0
-																	error:&error];
-	if (error) {
-		NSLog(@"Error converting favorites data to plist format: %@", error);
-		goto end_cleanup;
-	}
-
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
-	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
-	
-	if (error) {
-		NSLog(@"Error retrieving data directory path: %@", [error localizedDescription]);
-		goto end_cleanup;
-	}
-	
-	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
-	NSString *favoritesBackupFile = [dataPath stringByAppendingPathComponent:[NSString stringWithNewUUID]];
-	
-	// If the favorites data file already exists, attempt to move it to keep as a backup
-	if ([fileManager fileExistsAtPath:favoritesFile]) {
-		[fileManager moveItemAtPath:favoritesFile toPath:favoritesBackupFile error:&error];
-	}
-	
-	if (error) {
-		NSLog(@"Unable to backup (move) existing favorites data file during save. Deleting instead: %@", [error localizedDescription]);
-		
-		error = nil;
-		
-		// We can't move it so try and delete it
-		if (![fileManager removeItemAtPath:favoritesFile error:&error] && error) {
-			NSLog(@"Unable to delete existing favorites data file during save. Something is wrong, permissions perhaps: %@", [error localizedDescription]);
+		if (!favoritesTree) {
 			goto end_cleanup;
 		}
-	}
 
-	// Write the converted data to the favourites file
-	[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+		NSError *error = nil;
 
-	if (error) {
-		NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
-		
-		// Restore the original data file
-		error = nil;
-		
-		[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:&error];
-		
+		// Before starting the file actions, attempt to create a dictionary
+		// from the current favourites tree and convert it to a dictionary representation
+		// to create the plist data.  This is done before file changes as it can sometimes
+		// be terminated during shutdown.
+		NSDictionary *dictionary = @{SPFavoritesRootKey : data};
+
+		NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
+		                                                               format:NSPropertyListXMLFormat_v1_0
+		                                                              options:0
+		                                                                error:&error];
 		if (error) {
-			NSLog(@"Could not restore backup; favorites.plist left renamed as %@ due to error (%@)", favoritesBackupFile, [error localizedDescription]);
+			NSLog(@"Error converting favorites data to plist format: %@", error);
+			goto end_cleanup;
 		}
-	}
-	else {
-		// Remove the original backup
-		[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
-	}
-	
+
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+
+		NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
+
+		if (error) {
+			NSLog(@"Error retrieving data directory path: %@", [error localizedDescription]);
+			goto end_cleanup;
+		}
+
+		NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
+		NSString *favoritesBackupFile = [dataPath stringByAppendingPathComponent:[NSString stringWithNewUUID]];
+
+		// If the favorites data file already exists, attempt to move it to keep as a backup
+		if ([fileManager fileExistsAtPath:favoritesFile]) {
+			[fileManager moveItemAtPath:favoritesFile toPath:favoritesBackupFile error:&error];
+		}
+
+		if (error) {
+			NSLog(@"Unable to backup (move) existing favorites data file during save. Deleting instead: %@", [error localizedDescription]);
+
+			error = nil;
+
+			// We can't move it so try and delete it
+			if (![fileManager removeItemAtPath:favoritesFile error:&error] && error) {
+				NSLog(@"Unable to delete existing favorites data file during save. Something is wrong, permissions perhaps: %@", [error localizedDescription]);
+				goto end_cleanup;
+			}
+		}
+
+		// Write the converted data to the favourites file
+		[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+
+		if (error) {
+			NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
+
+			// Restore the original data file
+			error = nil;
+
+			[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:&error];
+
+			if (error) {
+				NSLog(@"Could not restore backup; favorites.plist left renamed as %@ due to error (%@)", favoritesBackupFile, [error localizedDescription]);
+			}
+		}
+		else {
+			// Remove the original backup
+			[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
+		}
+
 end_cleanup:
-	pthread_mutex_unlock(&writeLock);
-	
-	[pool release];
+		pthread_mutex_unlock(&writeLock);
+	}
 }
 
 /**

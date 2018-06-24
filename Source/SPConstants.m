@@ -40,6 +40,7 @@ NSString *SPDefaultMonospacedFontName            = @"Monaco";
 NSString *SPMySQLDatabase                        = @"mysql";
 NSString *SPMySQLInformationSchemaDatabase       = @"information_schema";
 NSString *SPMySQLPerformanceSchemaDatabase       = @"performance_schema";
+NSString *SPMySQLSysDatabase                     = @"sys";
 
 // Table view drag types
 NSString *SPDefaultPasteboardDragType            = @"SequelProPasteboard";

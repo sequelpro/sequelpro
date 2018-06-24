@@ -28,14 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-/*
- * Define the length of the character cache to use when parsing instead of accessing
- * via characterAtIndex:.  There is a balance here between updating the cache very
- * often and access penalties; 1500 appears a reasonable compromise.
- */
-#define CHARACTER_CACHE_LENGTH 1500
-
-/*
+/**
  * This class provides a string class intended for SQL parsing.  It extends NSMutableString,
  * with the intention that as a string is parsed the parsed content is removed.  This also
  * allows parsing to occur in "streaming" mode, with parseable content being pulled off the
@@ -57,8 +50,9 @@
  *
  * It is anticipated that characterAtIndex: is currently the parsing weak point, and that in future
  * this class could be further optimised by working with the underlying object/characters directly.
+ *
+ * This class is NOT thread safe!
  */
-
 @interface SPSQLParser : NSMutableString
 {
 	NSMutableString *string;
@@ -69,6 +63,7 @@
 	NSInteger charCacheEnd;
 	BOOL ignoreCommentStrings;
 	BOOL containsCRs;
+	BOOL noBackslashEscapes;
 
 	BOOL supportDelimiters;
 	NSString *delimiter;
@@ -76,7 +71,7 @@
 	BOOL lastMatchIsDelimiter;
 }
 
-typedef enum _SPCommentTypes {
+typedef enum {
 	SPHashComment = 0,
 	SPDoubleDashComment = 1,
 	SPCStyleComment = 2
@@ -108,6 +103,15 @@ typedef enum _SPCommentTypes {
 - (void) setDelimiterSupport:(BOOL)shouldSupportDelimiters;
 
 /**
+ * This setting controls the parser equivalent of the NO_BACKSLASH_ESCAPES
+ * SQL mode.
+ * If set to YES, the backslash character will not have any special meaning in strings
+ * and will be treated as a regular character. This also includes the self escape sequence ("\\").
+ * Escaping single quotes/double quotes/backticks by doubling them is not affected by this.
+ */
+- (void) setNoBackslashEscapes:(BOOL)ignoreBackslashEscapes;
+
+/**
  * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
  */
 - (void) deleteComments;
@@ -123,6 +127,14 @@ typedef enum _SPCommentTypes {
 /**
  * Normalise a string, readying it for queries - trims whitespace from both
  * ends, and ensures line endings which aren't in quotes are LF.
+ * The setting of noBackslashEscapes controls whether backslash characters can function
+ * as escape characters for single or double quotes in strings.
+ */
++ (NSString *) normaliseQueryForExecution:(NSString *)queryString noBackslashEscapes:(BOOL)noBackslashEscapes;
+
+/**
+ * Convenience overload of the method above with noBackslashEscapes set to NO (i.e.
+ * backslashes can be used for escaping quotes in strings)
  */
 + (NSString *) normaliseQueryForExecution:(NSString *)queryString;
 

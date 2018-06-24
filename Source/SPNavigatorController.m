@@ -720,12 +720,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (void)reloadAfterFiltering
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	isFiltering = YES;
-	[outlineSchema2 reloadData];
-	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
-	isFiltering = NO;
-	[pool release];
+	@autoreleasepool {
+		isFiltering = YES;
+		[outlineSchema2 reloadData];
+		[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
+		isFiltering = NO;
+	}
 }
 
 - (IBAction)syncButtonAction:(id)sender

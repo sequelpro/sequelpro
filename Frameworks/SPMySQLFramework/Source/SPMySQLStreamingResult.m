@@ -51,7 +51,7 @@
 /**
  * Prevent SPMySQLStreamingResults from being init'd as SPMySQLResults.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
 {
 	[NSException raise:NSInternalInconsistencyException format:@"SPMySQLFullStreamingResults should not be init'd as SPMySQLResults; use initWithMySQLResult:stringEncoding:connection:withFullStreaming: instead."];
 	return nil;
@@ -63,9 +63,8 @@
  * As opposed to SPMySQLResult, defaults to returning rows as arrays, as the result
  * sets are likely to be larger and processed in loops.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
 {
-
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
@@ -94,7 +93,6 @@
  */
 - (void)dealloc
 {
-
 	// Ensure all data is processed and the parent connection is unlocked
 	[self cancelResultLoad];
 
@@ -140,10 +138,12 @@
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 }
+
 - (NSArray *)getRowAsArray
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsArray);
 }
+
 - (NSDictionary *)getRowAsDictionary
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDictionary);
@@ -160,7 +160,6 @@
 
 	// Ensure that the connection is still up before performing a row fetch
 	if ((*isConnectedPtr)(parentConnection, isConnectedSelector)) {
-
 		// The core of result fetching in streaming mode is still based around mysql_fetch_row,
 		// so use the super to perform normal processing.
 		theRow = [super getRowAsType:theType];
@@ -193,7 +192,6 @@
  */
 - (void)cancelResultLoad
 {
-
 	// If data has already been downloaded successfully, no further action is required
 	if (dataDownloaded) return;
 
@@ -227,7 +225,6 @@
  */
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
-
 	// If all rows have been retrieved, return 0 to stop iteration.
 	if (dataDownloaded) return 0;
 

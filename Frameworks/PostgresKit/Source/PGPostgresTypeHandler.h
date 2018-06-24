@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresTypeHandler.h 3848 2012-09-12 12:19:31Z stuart02 $
-//
 //  PGPostgresTypeHandler.h
 //  PostgresKit
 //

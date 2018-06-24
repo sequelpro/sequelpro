@@ -31,7 +31,6 @@
 #import "SPIndexesController.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
-#import "SPTableContent.h"
 #import "SPTableData.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -777,109 +776,106 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (void)_addIndexUsingDetails:(NSDictionary *)indexDetails
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Check whether a save of the current fields row is required.
+		if (![[tableStructure onMainThread] saveRowOnDeselect]) return;
 
-	// Check whether a save of the current fields row is required.
-	if (![[tableStructure onMainThread] saveRowOnDeselect]) return;
+		// Retrieve index details
+		NSString *indexName         = [indexDetails objectForKey:SPNewIndexIndexName];
+		NSString *indexType         = [indexDetails objectForKey:SPNewIndexIndexType];
+		NSString *indexStorageType  = [indexDetails objectForKey:SPNewIndexStorageType];
+		NSNumber *indexKeyBlockSize = [indexDetails objectForKey:SPNewIndexKeyBlockSize];
+		NSArray  *indexedColumns    = [indexDetails objectForKey:SPNewIndexIndexedColumns];
 
-	// Retrieve index details
-	NSString *indexName         = [indexDetails objectForKey:SPNewIndexIndexName];
-	NSString *indexType         = [indexDetails objectForKey:SPNewIndexIndexType];
-	NSString *indexStorageType  = [indexDetails objectForKey:SPNewIndexStorageType];
-	NSNumber *indexKeyBlockSize = [indexDetails objectForKey:SPNewIndexKeyBlockSize];
-	NSArray *indexedColumns     = [indexDetails objectForKey:SPNewIndexIndexedColumns];
+		// Interface validation should prevent this, but just to be safe
+		if ([indexedColumns count] > 0) {
 
-	// Interface validation should prevent this, but just to be safe
-	if ([indexedColumns count] > 0) {
+			NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
 
-		NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
-
-		if ([indexType isEqualToString:@"PRIMARY KEY"]) {
-			indexName = @"";
-		}
-		else {
-			indexName = ([indexName isEqualToString:@""]) ? @"" : [indexName backtickQuotedString];
-		}
-
-		// For each column add it to the temp array and check if size is required
-		for (NSDictionary *column in indexedColumns)
-		{
-			NSString *columnName = [column objectForKey:@"name"];
-			NSString *columnType = [column objectForKey:@"type"];
-
-			if ((![columnName length]) || (![columnType length])) continue;
-
-			BOOL isFullTextType = [indexType isEqualToString:@"FULLTEXT"];
-			
-			// If this field type requires a length and one hasn't been specified (interface validation
-			// should ensure this doesn't happen), then skip it.
-			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length]) && !isFullTextType) continue;
-
-			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType] && !isFullTextType) {
-
-				[tempIndexedColumns addObject:[NSString stringWithFormat:@"%@ (%@)", [columnName backtickQuotedString], [column objectForKey:@"Size"]]];
+			if ([indexType isEqualToString:@"PRIMARY KEY"]) {
+				indexName = @"";
 			}
 			else {
-				[tempIndexedColumns addObject:[columnName backtickQuotedString]];
+				indexName = ([indexName isEqualToString:@""]) ? @"" : [indexName backtickQuotedString];
 			}
+
+			// For each column add it to the temp array and check if size is required
+			for (NSDictionary *column in indexedColumns)
+			{
+				NSString *columnName = [column objectForKey:@"name"];
+				NSString *columnType = [column objectForKey:@"type"];
+
+				if ((![columnName length]) || (![columnType length])) continue;
+
+				BOOL isFullTextType = [indexType isEqualToString:@"FULLTEXT"];
+
+				// If this field type requires a length and one hasn't been specified (interface validation
+				// should ensure this doesn't happen), then skip it.
+				if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length]) && !isFullTextType) continue;
+
+				if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType] && !isFullTextType) {
+					[tempIndexedColumns addObject:[NSString stringWithFormat:@"%@ (%@)", [columnName backtickQuotedString], [column objectForKey:@"Size"]]];
+				}
+				else {
+					[tempIndexedColumns addObject:[columnName backtickQuotedString]];
+				}
+			}
+
+			if ([tempIndexedColumns count]) {
+
+				if ((![indexType isEqualToString:@"INDEX"]) && (![indexType isEqualToString:@"PRIMARY KEY"])) indexType = [indexType stringByAppendingFormat:@" INDEX"];
+
+				// Build the query
+				NSMutableString *query = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@", [table backtickQuotedString], indexType];
+
+				// If supplied specify the index's name
+				if ([indexName length]) {
+					[query appendString:@" "];
+					[query appendString:indexName];
+				}
+
+				// If supplied specify the index's storage type
+				if (indexStorageType) {
+					[query appendString:@" USING "];
+					[query appendString:indexStorageType];
+				}
+
+				// Add the columns
+				[query appendFormat:@" (%@)", [tempIndexedColumns componentsJoinedByCommas]];
+
+				// If supplied specify the index's key block size
+				if (indexKeyBlockSize) {
+					[query appendFormat:@" KEY_BLOCK_SIZE = %ld", (long)[indexKeyBlockSize integerValue]];
+				}
+
+				// Execute the query
+				[connection queryString:query];
+
+				// Check for errors, but only if the query wasn't cancelled
+				if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Unable to add index", @"add index error message"),
+						[dbDocument parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection lastErrorMessage]]
+					);
+				}
+				else {
+					[tableData resetAllData];
+					[dbDocument setStatusRequiresReload:YES];
+
+					[tableStructure loadTable:table];
+				}
+			}
+
+			[tempIndexedColumns release];
 		}
 
-		if ([tempIndexedColumns count]) {
+		// Reset indexed fields to default
+		[indexedFields removeAllObjects];
+		[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
 
-			if ((![indexType isEqualToString:@"INDEX"]) && (![indexType isEqualToString:@"PRIMARY KEY"])) indexType = [indexType stringByAppendingFormat:@" INDEX"];
-
-			// Build the query
-			NSMutableString *query = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@", [table backtickQuotedString], indexType];
-
-			// If supplied specify the index's name
-			if ([indexName length]) {
-				[query appendString:@" "];
-				[query appendString:indexName];
-			}
-
-			// If supplied specify the index's storage type
-			if (indexStorageType) {
-				[query appendString:@" USING "];
-				[query appendString:indexStorageType];
-			}
-
-			// Add the columns
-			[query appendFormat:@" (%@)", [tempIndexedColumns componentsJoinedByCommas]];
-
-			// If supplied specify the index's key block size
-			if (indexKeyBlockSize) {
-				[query appendFormat:@" KEY_BLOCK_SIZE = %ld", (long)[indexKeyBlockSize integerValue]];
-			}
-
-			// Execute the query
-			[connection queryString:query];
-
-			// Check for errors, but only if the query wasn't cancelled
-			if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
-				SPOnewayAlertSheet(
-								   NSLocalizedString(@"Unable to add index", @"add index error message"),
-								   [dbDocument parentWindow],
-								   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection lastErrorMessage]]
-								   );
-			}
-			else {
-				[tableData resetAllData];
-				[dbDocument setStatusRequiresReload:YES];
-				
-				[tableStructure loadTable:table];
-			}
-		}
-
-		SPClear(tempIndexedColumns);
+		[dbDocument endTask];
 	}
-
-	// Reset indexed fields to default
-	[indexedFields removeAllObjects];
-	[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
-
-	[dbDocument endTask];
-
-	[pool drain];
 }
 
 /**
@@ -889,61 +885,62 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (void)_removeIndexUsingDetails:(NSDictionary *)indexDetails
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		NSString *index   = [indexDetails objectForKey:@"Key_name"];
+		NSString *fkName  = [indexDetails objectForKey:@"ForeignKey"];
 
-	NSString *index   = [indexDetails objectForKey:@"Key_name"];
-	NSString *fkName  = [indexDetails objectForKey:@"ForeignKey"];
+		// Remove the foreign key dependency before the index if required
+		if ([fkName length]) {
 
-	// Remove the foreign key dependency before the index if required
-	if ([fkName length]) {
+			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [table backtickQuotedString], [fkName backtickQuotedString]]];
 
-		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [table backtickQuotedString], [fkName backtickQuotedString]]];
+			// Check for errors, but only if the query wasn't cancelled
+			if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
+				NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+
+				[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
+				[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), fkName, [connection lastErrorMessage]] forKey:@"message"];
+
+				[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
+			}
+		}
+
+		if ([index isEqualToString:@"PRIMARY"]) {
+			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [table backtickQuotedString]]];
+		}
+		else {
+			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
+			                                                   [table backtickQuotedString], [index backtickQuotedString]]];
+		}
 
 		// Check for errors, but only if the query wasn't cancelled
 		if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
-			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+			//if the last error was 1553 and we did not already try to remove a FK beforehand, we have to request to remove the foreign key before we can remove the index
+			if([connection lastErrorID] == 1553 /* ER_DROP_INDEX_FK */ && ![fkName length]) {
+				NSDictionary *details = @{
+					@"Key_name": index,
+					@"error": SPBoxNil([connection lastErrorMessage])
+				};
+				[self performSelectorOnMainThread:@selector(_removingIndexFailedWithForeignKeyError:) withObject:details waitUntilDone:NO];
+			}
+			else {
+				NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), fkName, [connection lastErrorMessage]] forKey:@"message"];
+				[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
+				[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection lastErrorMessage]] forKey:@"message"];
 
-			[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
-		}
-	}
-
-	if ([index isEqualToString:@"PRIMARY"]) {
-		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [table backtickQuotedString]]];
-	}
-	else {
-		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
-								 [table backtickQuotedString], [index backtickQuotedString]]];
-	}
-
-	// Check for errors, but only if the query wasn't cancelled
-	if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
-		//if the last error was 1553 and we did not already try to remove a FK beforehand, we have to request to remove the foreign key before we can remove the index
-		if([connection lastErrorID] == 1553 /* ER_DROP_INDEX_FK */ && ![fkName length]) {
-			NSDictionary *details = @{@"Key_name": index, @"error": SPBoxNil([connection lastErrorMessage])};
-			[self performSelectorOnMainThread:@selector(_removingIndexFailedWithForeignKeyError:) withObject:details waitUntilDone:NO];
+				[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
+			}
 		}
 		else {
-			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection lastErrorMessage]] forKey:@"message"];
-			
-			[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
+			[tableData resetAllData];
+			[dbDocument setStatusRequiresReload:YES];
+
+			[tableStructure loadTable:table];
 		}
+
+		[dbDocument endTask];
 	}
-	else {
-		[tableData resetAllData];
-		[dbDocument setStatusRequiresReload:YES];
-
-		[tableStructure loadTable:table];
-	}
-
-	[dbDocument endTask];
-
-	[pool drain];
 }
 
 /**

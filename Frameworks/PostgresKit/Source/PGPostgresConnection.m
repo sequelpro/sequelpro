@@ -1,6 +1,4 @@
 //
-//  $Id: PGPostgresConnection.m 3848 2012-09-12 12:19:31Z stuart02 $
-//
 //  PGPostgresConnection.m
 //  PostgresKit
 //
@@ -297,64 +295,61 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
  */
 - (void)_pollConnection:(NSNumber *)isReset
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	BOOL reset = isReset && [isReset boolValue];
-	
-	int sock = PQsocket(_connection);
-	
-	if (sock == -1) {
-		[pool release];
-		return;
-	}
-	
-	struct pollfd fdinfo[1];
-	
-	fdinfo[0].fd = sock;
-	fdinfo[0].events = POLLIN|POLLOUT;
-	
-	PostgresPollingStatusType status;
-	
-	do
-	{
-		status = reset ? PQresetPoll(_connection) : PQconnectPoll(_connection);
-		
-		if (status == PGRES_POLLING_READING || status == PGRES_POLLING_WRITING) {			
-			if (poll(fdinfo, 1, -1) < 0) break;
+	@autoreleasepool {
+		BOOL reset = isReset && [isReset boolValue];
+
+		int sock = PQsocket(_connection);
+
+		if (sock == -1) {
+			return;
 		}
-	}
-	while (status != PGRES_POLLING_OK && status != PGRES_POLLING_FAILED);
-	
-	if (status == PGRES_POLLING_OK && [self isConnected]) {
-		
-		// Increase error verbosity
-		PQsetErrorVerbosity(_connection, PQERRORS_VERBOSE);
-		
-		// Set notice processor
-		PQsetNoticeProcessor(_connection, _PGPostgresConnectionNoticeProcessor, self);
-		
-		// Register or clear type extensions
-		NSInteger success = reset ? PQclearTypes(_connection) : PQinitTypes(_connection);
-		
-		if (!success) {
-			NSLog(@"PostgresKit: Error: Failed to initialise or clear type extensions. Connection might return unexpected results!");
-		}
-		
-		[self _loadDatabaseParameters];
-		
-		if (reset) {
-			if (_delegate && [_delegate respondsToSelector:@selector(connectionReset:)]) {
-				[_delegate performSelectorOnMainThread:@selector(connectionReset:) withObject:self waitUntilDone:NO];
+
+		struct pollfd fdinfo[1];
+
+		fdinfo[0].fd = sock;
+		fdinfo[0].events = POLLIN|POLLOUT;
+
+		PostgresPollingStatusType status;
+
+		do
+		{
+			status = reset ? PQresetPoll(_connection) : PQconnectPoll(_connection);
+
+			if (status == PGRES_POLLING_READING || status == PGRES_POLLING_WRITING) {
+				if (poll(fdinfo, 1, -1) < 0) break;
 			}
 		}
-		else {
-			if (_delegate && [_delegate respondsToSelector:@selector(connectionEstablished:)]) {
-				[_delegate performSelectorOnMainThread:@selector(connectionEstablished:) withObject:self waitUntilDone:NO];
+		while (status != PGRES_POLLING_OK && status != PGRES_POLLING_FAILED);
+
+		if (status == PGRES_POLLING_OK && [self isConnected]) {
+
+			// Increase error verbosity
+			PQsetErrorVerbosity(_connection, PQERRORS_VERBOSE);
+
+			// Set notice processor
+			PQsetNoticeProcessor(_connection, _PGPostgresConnectionNoticeProcessor, self);
+
+			// Register or clear type extensions
+			NSInteger success = reset ? PQclearTypes(_connection) : PQinitTypes(_connection);
+
+			if (!success) {
+				NSLog(@"PostgresKit: Error: Failed to initialise or clear type extensions. Connection might return unexpected results!");
+			}
+
+			[self _loadDatabaseParameters];
+
+			if (reset) {
+				if (_delegate && [_delegate respondsToSelector:@selector(connectionReset:)]) {
+					[_delegate performSelectorOnMainThread:@selector(connectionReset:) withObject:self waitUntilDone:NO];
+				}
+			}
+			else {
+				if (_delegate && [_delegate respondsToSelector:@selector(connectionEstablished:)]) {
+					[_delegate performSelectorOnMainThread:@selector(connectionEstablished:) withObject:self waitUntilDone:NO];
+				}
 			}
 		}
 	}
-		
-	[pool release];
 }
 
 /**

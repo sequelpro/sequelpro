@@ -97,7 +97,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 + (void)initialize
 {
-
 	// Set up a pthread thread-specific data key to be used across all classes and threads
 	pthread_key_create(&mySQLThreadInitFlagKey, NULL);
 	mySQLThreadFlag = malloc(1);
@@ -312,7 +311,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)isConnected
 {
-
 	// If the connection has been allowed to drop in the background, restore it if posslbe
 	if (state == SPMySQLConnectionLostInBackground) {
 		[self _reconnectAllowingRetries:YES];
@@ -389,7 +387,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)checkConnectionIfNecessary
 {
-	
 	// If the connection has been dropped in the background, trigger a
 	// reconnect and return the success state here
 	if (state == SPMySQLConnectionLostInBackground) {
@@ -436,25 +433,24 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	NSArray *possibleSocketLocations = @[
-			@"/tmp/mysql.sock",                                     // Default
-			@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
-			@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
-			@"/var/mysql/mysql.sock",                               // Mac OS X Server default
-			@"/opt/local/var/run/mysqld/mysqld.sock",               // MacPorts MySQL
-			@"/opt/local/var/run/mysql4/mysqld.sock",               // MacPorts MySQL 4
-			@"/opt/local/var/run/mysql5/mysqld.sock",               // MacPorts MySQL 5
-			@"/opt/local/var/run/mariadb-10.0/mysqld.sock",         // MacPorts MariaDB 10.0
-			@"/opt/local/var/run/mariadb-10.1/mysqld.sock",         // MacPorts MariaDB 11.0
-			@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
-			@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
-			@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
-			@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
-			@"/opt/local/lib/mysql/mysql.sock"
+		@"/tmp/mysql.sock",                                     // Default
+		@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
+		@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
+		@"/var/mysql/mysql.sock",                               // Mac OS X Server default
+		@"/opt/local/var/run/mysqld/mysqld.sock",               // MacPorts MySQL
+		@"/opt/local/var/run/mysql4/mysqld.sock",               // MacPorts MySQL 4
+		@"/opt/local/var/run/mysql5/mysqld.sock",               // MacPorts MySQL 5
+		@"/opt/local/var/run/mariadb-10.0/mysqld.sock",         // MacPorts MariaDB 10.0
+		@"/opt/local/var/run/mariadb-10.1/mysqld.sock",         // MacPorts MariaDB 11.0
+		@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
+		@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
+		@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
+		@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
+		@"/opt/local/lib/mysql/mysql.sock"
 	];
 
-	for (NSUInteger i = 0; i < [possibleSocketLocations count]; i++) {
-		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
-			return [possibleSocketLocations objectAtIndex:i];
+	for(NSString *path in possibleSocketLocations) {
+		if([fileManager fileExistsAtPath:path]) return path;
 	}
 
 	return nil;
@@ -477,7 +473,6 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (BOOL)_connect
 {
-
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
 		@synchronized (self) {
@@ -686,7 +681,6 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// If the connection failed, return NULL
 	if (theConnection != connectionStatus) {
-
 		// If the connection is the master connection, record the error state
 		if (isMaster) {
 			// <TODO>
@@ -741,184 +735,181 @@ asm(".desc ___crashreporter_info__, 0x10");
 	if (userTriggeredDisconnect) return NO;
 	BOOL reconnectSucceeded = NO;
 
-	NSAutoreleasePool *reconnectionPool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Check whether a reconnection attempt is already being made - if so, wait
+		// and return the status of that reconnection attempt.  This improves threaded
+		// use of the connection by preventing reconnect races.
+		if (reconnectingThread && !pthread_equal(reconnectingThread, pthread_self())) {
 
-	// Check whether a reconnection attempt is already being made - if so, wait
-	// and return the status of that reconnection attempt.  This improves threaded
-	// use of the connection by preventing reconnect races.
-	if (reconnectingThread && !pthread_equal(reconnectingThread, pthread_self())) {
+			// Loop in a panel runloop mode until the reconnection has processed; if an iteration
+			// takes less than the requested 0.1s, sleep instead.
+			while (reconnectingThread) {
+				uint64_t loopIterationStart_t = mach_absolute_time();
 
-		// Loop in a panel runloop mode until the reconnection has processed; if an iteration
-		// takes less than the requested 0.1s, sleep instead.
-		while (reconnectingThread) {
-			uint64_t loopIterationStart_t = mach_absolute_time();
-
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
-			if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.1) {
-				usleep(100000 - (useconds_t)(1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t)));
-			}
-		}
-
-		// Continue only if the reconnection being waited on was a background attempt
-		if (!(state == SPMySQLConnectionLostInBackground && canRetry)) {
-			[reconnectionPool drain];
-			return (state == SPMySQLConnected);
-		}
-	}
-
-	if ([[NSThread currentThread] isCancelled]) {
-		[reconnectionPool release];
-		return NO;
-	}
-
-	reconnectingThread = pthread_self();
-
-	// Store certain details about the connection, so that if the reconnection is successful
-	// they can be restored.  This has to be treated separately from _restoreConnectionDetails
-	// as a full connection reinitialises certain values from the server.
-	if (!encodingToRestore) {
-		encodingToRestore = [encoding copy];
-		encodingUsesLatin1TransportToRestore = encodingUsesLatin1Transport;
-		databaseToRestore = [database copy];
-	}
-
-	// If there is a connection proxy, temporarily disassociate the state change action
-	if (proxy) proxyStateChangeNotificationsIgnored = YES;
-
-	// Close the connection if it's active
-	[self _disconnect];
-
-	// Lock the connection while waiting for network and proxy
-	[self _lockConnection];
-
-	// If no network is present, wait for a short time for one to become available
-	[self _waitForNetworkConnectionWithTimeout:10];
-
-	if ([[NSThread currentThread] isCancelled]) {
-		[self _unlockConnection];
-		reconnectingThread = NULL;
-		[reconnectionPool release];
-		return NO;
-	}
-
-	// If there is a proxy, attempt to reconnect it in blocking fashion
-	if (proxy) {
-		uint64_t loopIterationStart_t, proxyWaitStart_t;
-
-		// If the proxy is not yet idle after requesting a disconnect, wait for a short time
-		// to allow it to disconnect.
-		if ([proxy state] != SPMySQLProxyIdle) {
-
-			proxyWaitStart_t = mach_absolute_time();
-			while ([proxy state] != SPMySQLProxyIdle) {
-				loopIterationStart_t = mach_absolute_time();
-
-				// If the connection timeout has passed, break out of the loop
-				if (_elapsedSecondsSinceAbsoluteTime(proxyWaitStart_t) > timeout) break;
-
-				// Allow events to process for 0.25s, sleeping to completion on early return
-				[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
-				if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.25) {
-					usleep(250000 - (useconds_t)(1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t)));
+				[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+				if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.1) {
+					usleep(100000 - (useconds_t)(1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t)));
 				}
 			}
-		}
 
-		// Request that the proxy re-establishes its connection
-		[proxy connect];
-
-		// Wait while the proxy connects
-		proxyWaitStart_t = mach_absolute_time();
-		while (1) {
-			loopIterationStart_t = mach_absolute_time();
-
-			// If the proxy has connected, record the new local port and break out of the loop
-			if ([proxy state] == SPMySQLProxyConnected) {
-				port = [proxy localPort];
-				break;
-			}
-
-			// If the proxy connection attempt time has exceeded the timeout, break of of the loop.
-			if (_elapsedSecondsSinceAbsoluteTime(proxyWaitStart_t) > (timeout + 1)) {
-				[proxy disconnect];
-				break;
-			}
-			
-			// Process events for a short time, allowing dialogs to be shown but waiting for
-			// the proxy. Capture how long this interface action took, standardising the
-			// overall time.
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
-			if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.25) {
-				usleep((useconds_t)(250000 - (1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t))));
-			}
-
-			// Extend the connection timeout by any interface time
-			if ([proxy state] == SPMySQLProxyWaitingForAuth) {
-				proxyWaitStart_t += mach_absolute_time() - loopIterationStart_t;
+			// Continue only if the reconnection being waited on was a background attempt
+			if (!(state == SPMySQLConnectionLostInBackground && canRetry)) {
+				return (state == SPMySQLConnected);
 			}
 		}
 
-		// Having in theory performed the proxy connect, update state
-		previousProxyState = [proxy state];
-		proxyStateChangeNotificationsIgnored = NO;
-	}
-
-	// Unlock the connection
-	[self _unlockConnection];
-
-	// If not using a proxy, or if the proxy successfully connected, trigger a connection
-	if (!proxy || [proxy state] == SPMySQLProxyConnected) {
-		[self _connect];
-	}
-
-	// If the reconnection succeeded, restore the connection state as appropriate
-	if (state == SPMySQLConnected && ![[NSThread currentThread] isCancelled]) {
-		reconnectSucceeded = YES;
-		if (databaseToRestore) {
-			[self selectDatabase:databaseToRestore];
-			[databaseToRestore release], databaseToRestore = nil;
-		}
-		if (encodingToRestore) {
-			[self setEncoding:encodingToRestore];
-			[self setEncodingUsesLatin1Transport:encodingUsesLatin1TransportToRestore];
-			[encodingToRestore release], encodingToRestore = nil;
+		if ([[NSThread currentThread] isCancelled]) {
+			return NO;
 		}
 
-	// If the connection failed and the connection is permitted to retry,
-	// then retry the reconnection.
-	} else if (canRetry && ![[NSThread currentThread] isCancelled]) {
+		reconnectingThread = pthread_self();
 
-		// Default to attempting another reconnect
-		SPMySQLConnectionLostDecision connectionLostDecision = SPMySQLConnectionLostReconnect;
+		// Store certain details about the connection, so that if the reconnection is successful
+		// they can be restored.  This has to be treated separately from _restoreConnectionDetails
+		// as a full connection reinitialises certain values from the server.
+		if (!encodingToRestore) {
+			encodingToRestore = [encoding copy];
+			encodingUsesLatin1TransportToRestore = encodingUsesLatin1Transport;
+			databaseToRestore = [database copy];
+		}
 
-		// If the delegate supports the decision process, ask it how to proceed
-		if (delegateSupportsConnectionLost) {
-			connectionLostDecision = [self _delegateDecisionForLostConnection];
+		// If there is a connection proxy, temporarily disassociate the state change action
+		if (proxy) proxyStateChangeNotificationsIgnored = YES;
 
-		// Otherwise default to reconnect, but only a set number of times to prevent a runaway loop
-		} else {
-			if (reconnectionRetryAttempts < 5) {
-				connectionLostDecision = SPMySQLConnectionLostReconnect;
-			} else {
-				connectionLostDecision = SPMySQLConnectionLostDisconnect;
+		// Close the connection if it's active
+		[self _disconnect];
+
+		// Lock the connection while waiting for network and proxy
+		[self _lockConnection];
+
+		// If no network is present, wait for a short time for one to become available
+		[self _waitForNetworkConnectionWithTimeout:10];
+
+		if ([[NSThread currentThread] isCancelled]) {
+			[self _unlockConnection];
+			reconnectingThread = NULL;
+			return NO;
+		}
+
+		// If there is a proxy, attempt to reconnect it in blocking fashion
+		if (proxy) {
+			uint64_t loopIterationStart_t, proxyWaitStart_t;
+
+			// If the proxy is not yet idle after requesting a disconnect, wait for a short time
+			// to allow it to disconnect.
+			if ([proxy state] != SPMySQLProxyIdle) {
+
+				proxyWaitStart_t = mach_absolute_time();
+				while ([proxy state] != SPMySQLProxyIdle) {
+					loopIterationStart_t = mach_absolute_time();
+
+					// If the connection timeout has passed, break out of the loop
+					if (_elapsedSecondsSinceAbsoluteTime(proxyWaitStart_t) > timeout) break;
+
+					// Allow events to process for 0.25s, sleeping to completion on early return
+					[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+					if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.25) {
+						usleep(250000 - (useconds_t)(1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t)));
+					}
+				}
 			}
-			reconnectionRetryAttempts++;
-		}
-		
-		switch (connectionLostDecision) {
-			case SPMySQLConnectionLostDisconnect:
-				[self _updateLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
-				userTriggeredDisconnect = YES;
 
-			// By default attempt a reconnect
-			default:
-				reconnectingThread = NULL;
-				reconnectSucceeded = [self _reconnectAllowingRetries:YES];
+			// Request that the proxy re-establishes its connection
+			[proxy connect];
+
+			// Wait while the proxy connects
+			proxyWaitStart_t = mach_absolute_time();
+			while (1) {
+				loopIterationStart_t = mach_absolute_time();
+
+				// If the proxy has connected, record the new local port and break out of the loop
+				if ([proxy state] == SPMySQLProxyConnected) {
+					port = [proxy localPort];
+					break;
+				}
+
+				// If the proxy connection attempt time has exceeded the timeout, break of of the loop.
+				if (_elapsedSecondsSinceAbsoluteTime(proxyWaitStart_t) > (timeout + 1)) {
+					[proxy disconnect];
+					break;
+				}
+
+				// Process events for a short time, allowing dialogs to be shown but waiting for
+				// the proxy. Capture how long this interface action took, standardising the
+				// overall time.
+				[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+				if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.25) {
+					usleep((useconds_t)(250000 - (1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t))));
+				}
+
+				// Extend the connection timeout by any interface time
+				if ([proxy state] == SPMySQLProxyWaitingForAuth) {
+					proxyWaitStart_t += mach_absolute_time() - loopIterationStart_t;
+				}
+			}
+
+			// Having in theory performed the proxy connect, update state
+			previousProxyState = [proxy state];
+			proxyStateChangeNotificationsIgnored = NO;
+		}
+
+		// Unlock the connection
+		[self _unlockConnection];
+
+		// If not using a proxy, or if the proxy successfully connected, trigger a connection
+		if (!proxy || [proxy state] == SPMySQLProxyConnected) {
+			[self _connect];
+		}
+
+		// If the reconnection succeeded, restore the connection state as appropriate
+		if (state == SPMySQLConnected && ![[NSThread currentThread] isCancelled]) {
+			reconnectSucceeded = YES;
+			if (databaseToRestore) {
+				[self selectDatabase:databaseToRestore];
+				[databaseToRestore release], databaseToRestore = nil;
+			}
+			if (encodingToRestore) {
+				[self setEncoding:encodingToRestore];
+				[self setEncodingUsesLatin1Transport:encodingUsesLatin1TransportToRestore];
+				[encodingToRestore release], encodingToRestore = nil;
+			}
+		}
+			// If the connection failed and the connection is permitted to retry,
+			// then retry the reconnection.
+		else if (canRetry && ![[NSThread currentThread] isCancelled]) {
+
+			// Default to attempting another reconnect
+			SPMySQLConnectionLostDecision connectionLostDecision = SPMySQLConnectionLostReconnect;
+
+			// If the delegate supports the decision process, ask it how to proceed
+			if (delegateSupportsConnectionLost) {
+				connectionLostDecision = [self _delegateDecisionForLostConnection];
+			}
+				// Otherwise default to reconnect, but only a set number of times to prevent a runaway loop
+			else {
+				if (reconnectionRetryAttempts < 5) {
+					connectionLostDecision = SPMySQLConnectionLostReconnect;
+				} else {
+					connectionLostDecision = SPMySQLConnectionLostDisconnect;
+				}
+				reconnectionRetryAttempts++;
+			}
+
+			switch (connectionLostDecision) {
+				case SPMySQLConnectionLostDisconnect:
+					[self _updateLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
+					userTriggeredDisconnect = YES;
+					break;
+
+					// By default attempt a reconnect
+				default:
+					reconnectingThread = NULL;
+					reconnectSucceeded = [self _reconnectAllowingRetries:YES];
+			}
 		}
 	}
 
 	reconnectingThread = NULL;
-	[reconnectionPool release];
 	return reconnectSucceeded;
 }
 
@@ -928,13 +919,9 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (BOOL)_reconnectAfterBackgroundConnectionLoss
 {
-	NSAutoreleasePool *reconnectionPool = [[NSAutoreleasePool alloc] init];
-
 	if (![self _reconnectAllowingRetries:NO]) {
 		state = SPMySQLConnectionLostInBackground;
 	}
-
-	[reconnectionPool release];
 
 	return (state == SPMySQLConnected);
 }
@@ -946,31 +933,28 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (BOOL)_waitForNetworkConnectionWithTimeout:(double)timeoutSeconds
 {
-	BOOL hostReachable;
-	Boolean flagsValid;
-	SCNetworkReachabilityRef reachabilityTarget;
-	SCNetworkConnectionFlags reachabilityStatus;
-
 	// Set up the reachability target - the host is not important, and is not connected to.
-	reachabilityTarget = SCNetworkReachabilityCreateWithName(NULL, "dev.mysql.com");
+	SCNetworkReachabilityRef reachabilityTarget = SCNetworkReachabilityCreateWithName(NULL, "dev.mysql.com");
 
+	BOOL hostReachable;
 	// In a loop until success or the timeout, test reachability
 	uint64_t loopStart_t = mach_absolute_time();
 	while (1) {
+		SCNetworkReachabilityFlags reachabilityStatus;
 
 		// Check reachability
-		flagsValid = SCNetworkReachabilityGetFlags(reachabilityTarget, &reachabilityStatus);
+		Boolean flagsValid = SCNetworkReachabilityGetFlags(reachabilityTarget, &reachabilityStatus);
 
 		hostReachable = flagsValid ? YES : NO;
 
 		// Ensure that the network is reachable
-		if (hostReachable && !(reachabilityStatus & kSCNetworkFlagsReachable)) hostReachable = NO;
+		if (hostReachable && !(reachabilityStatus & kSCNetworkReachabilityFlagsReachable)) hostReachable = NO;
 
 		// Ensure that Airport is up/connected if present
-		if (hostReachable && (reachabilityStatus & kSCNetworkFlagsConnectionRequired)) hostReachable = NO;
+		if (hostReachable && (reachabilityStatus & kSCNetworkReachabilityFlagsConnectionRequired)) hostReachable = NO;
 
 		// If the host *is* reachable, return success
-		if (hostReachable) return YES;
+		if (hostReachable) break;
 
 		// If the timeout has been exceeded, break out of the loop
 		if (_elapsedSecondsSinceAbsoluteTime(loopStart_t) >= timeoutSeconds) break;
@@ -979,8 +963,8 @@ asm(".desc ___crashreporter_info__, 0x10");
 		usleep(250000);
 	}
 
-	// All checks failed - return failure
-	return NO;
+	CFRelease(reachabilityTarget);
+	return hostReachable;
 }
 
 /**
@@ -988,7 +972,6 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (void)_disconnect
 {
-
 	// If state is connection lost, set state directly to disconnected.
 	if (state == SPMySQLConnectionLostInBackground) {
 		state = SPMySQLDisconnected;

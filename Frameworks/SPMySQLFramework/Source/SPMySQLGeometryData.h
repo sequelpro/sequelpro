@@ -28,7 +28,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 
-@interface SPMySQLGeometryData : NSObject
+@interface SPMySQLGeometryData : NSObject <NSCopying>
 {
 	// Holds the WKB bytes coming from SQL server
 	Byte *geoBuffer;
@@ -38,8 +38,8 @@
 
 }
 
-- (id)initWithBytes:(const void *)geoData length:(NSUInteger)length;
-+ (id)dataWithBytes:(const void *)geoData length:(NSUInteger)length;
+- (instancetype)initWithBytes:(const void *)geoData length:(NSUInteger)length;
++ (instancetype)dataWithBytes:(const void *)geoData length:(NSUInteger)length;
 - (NSString *)description;
 - (NSUInteger)length;
 - (NSData *)data;
