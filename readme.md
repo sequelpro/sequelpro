@@ -11,7 +11,7 @@ Build Instructions
 ==================
 
  * Install the [latest version of Xcode](https://itunes.apple.com/au/app/xcode/id497799835)
- * Install [GitHub for Mac](https://desktop.github.com/) (or [Tower](https://www.git-tower.com/), or [SourceTree](https://www.sourcetreeapp.com/), or […](http://git-scm.com/downloads/guis))
+ * Install [GitHub for Mac](https://desktop.github.com/) (or [SourceTree](https://www.sourcetreeapp.com/), or […](http://git-scm.com/downloads/guis))
  * Click "Clone in Desktop" on the right sidebar of our [GitHub page](https://github.com/sequelpro/sequelpro)
  * Open `sequel-pro.xcodeproj`
  * Click the `Run` button in the toolbar
