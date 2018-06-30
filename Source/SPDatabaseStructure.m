@@ -359,6 +359,7 @@
 
 			// Retrieve the column details (only those we need so we don't fetch the whole function body which might be huge)
 			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT SPECIFIC_NAME, ROUTINE_TYPE, DTD_IDENTIFIER, IS_DETERMINISTIC, SQL_DATA_ACCESS, SECURITY_TYPE, DEFINER FROM `information_schema`.`ROUTINES` WHERE `ROUTINE_SCHEMA` = %@", [currentDatabase tickQuotedString]]];
+			[theResult setReturnDataAsStrings:YES]; //TODO workaround for #2700 with mysql 8.0 (see #2699)
 			[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
 			// Loop through the rows and extract the function details
