@@ -157,10 +157,9 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 
-	NSColor *blackColor;
-	NSColor *lightGrayColor;
-	NSColor *blueColor;
-	NSColor *whiteColor;
+	NSColor *textForegroundColor;
+	NSColor *nullHighlightColor;
+	NSColor *binhexHighlightColor;
 
 	SPFieldEditorController *fieldEditor;
 

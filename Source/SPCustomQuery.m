@@ -2112,7 +2112,7 @@
 			showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 		}
 
-		[cell setTextColor:showCellAsGray ? [NSColor lightGrayColor] : [NSColor blackColor]];
+		[cell setTextColor:showCellAsGray ? [NSColor lightGrayColor] : [NSColor controlTextColor]];
 	}
 }
 
@@ -3403,7 +3403,8 @@
 	}
 
 	// Set editing color to black for NULL values while editing
-	[aFieldEditor setTextColor:[NSColor blackColor]];
+	// TODO: This method won't be called until the user actually starts typing. The tableView's willDisplayCell delegate call is the proper place to update this (see SPTableContent)
+	[aFieldEditor setTextColor:[NSColor controlTextColor]];
 
 	return shouldBeginEditing;
 }
