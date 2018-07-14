@@ -121,6 +121,14 @@ typedef struct {
 @protocol WebFrameLoadDelegate <NSObject>
 @end
 
+// formal protocol since 10.11, NSObject category before
+@protocol WebPolicyDelegate <NSObject>
+@end
+
+// formal protocol since 10.11, NSObject category before
+@protocol WebUIDelegate <NSObject>
+@end
+
 @interface NSOpenPanel (ElCapitan)
 
 @property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed;
