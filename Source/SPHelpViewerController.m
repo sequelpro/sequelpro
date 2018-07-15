@@ -31,6 +31,7 @@
 
 #import "SPHelpViewerController.h"
 
+#import "SPOSInfo.h"
 #import <WebKit/WebKit.h>
 
 NSString * const SPHelpViewerSearchTOC = @"contents";
@@ -44,6 +45,7 @@ typedef NS_ENUM(NSInteger, HelpNavButton) {
 };
 
 static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
+static BOOL isOSAtLeast10_14 = NO;
 
 @interface SPHelpViewerController () <WebPolicyDelegate, WebUIDelegate, NSWindowDelegate>
 - (IBAction)showHelpForSearchString:(id)sender;
@@ -58,6 +60,7 @@ static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
 - (IBAction)showHelpForWebViewSelection:(id)sender;
 - (IBAction)searchInDocForWebViewSelection:(id)sender;
 - (void)helpTargetValidation;
+- (void)themeChanged;
 - (void)updateWindowTitle;
 @end
 
@@ -66,6 +69,11 @@ static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
 @implementation SPHelpViewerController
 
 @synthesize dataSource = dataSource;
+
++ (void)initialize
+{
+	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+}
 
 - (instancetype)init
 {
@@ -79,6 +87,9 @@ static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
 - (void)dealloc
 {
 	[helpWebView removeObserver:self forKeyPath:@"mainFrameTitle"]; //TODO: update to ...context: variant after 10.6
+	if(isOSAtLeast10_14) {
+		[[self window] removeObserver:self forKeyPath:@"effectiveAppearance" context:HelpViewerControllerKVOContext];
+	}
 	[super dealloc];
 }
 
@@ -91,6 +102,9 @@ static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
 	[self updateWindowTitle];
 
 	[helpWebView addObserver:self forKeyPath:@"mainFrameTitle" options:0 context:HelpViewerControllerKVOContext];
+	if(isOSAtLeast10_14) {
+		[[self window] addObserver:self forKeyPath:@"effectiveAppearance" options:0 context:HelpViewerControllerKVOContext];
+	}
 }
 
 - (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context
@@ -99,10 +113,31 @@ static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
 		if([@"mainFrameTitle" isEqualToString:keyPath] && object == helpWebView) {
 			[self updateWindowTitle];
 		}
+		else if([@"effectiveAppearance" isEqualToString:keyPath]) {
+			// Apple says to not do stuff here that could take some time or it may interrupt animations
+			[self performSelector:@selector(themeChanged) withObject:nil afterDelay:0.0];
+		}
 	}
 	else {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 	}
+}
+
+- (void)themeChanged
+{
+	if(!isOSAtLeast10_14) return;
+
+	NSString *match = [[[self window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+	NSString *newTheme = @"unknown";
+	if([NSAppearanceNameAqua isEqualToString:match]) {
+		newTheme = @"light";
+	}
+	else if([NSAppearanceNameDarkAqua isEqualToString:match]) {
+		newTheme = @"dark";
+	}
+
+	NSString *eval = [NSString stringWithFormat:@"window.onThemeChange('%@')", newTheme];
+	[helpWebView stringByEvaluatingJavaScriptFromString:eval];
 }
 
 - (void)updateWindowTitle

@@ -35,6 +35,9 @@
 #import "RegexKitLite.h"
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
+#import "SPOSInfo.h"
+
+static BOOL isOSAtLeast10_14 = NO;
 
 @interface SPHelpViewerClient () <SPHelpViewerDataSource>
 
@@ -45,6 +48,11 @@
 @end
 
 @implementation SPHelpViewerClient
+
++ (void)initialize
+{
+	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+}
 
 - (instancetype)init
 {
@@ -220,10 +228,23 @@
 	[tableDetails release];
 
 generate_help:
-	return [engine processTemplate:helpHTMLTemplate withVariables:@{
-		@"title": theTitle,
-		@"body": theHelp,
-	}];
+	{ // C syntax disallows a new variable directly following a label…
+		NSString *addBodyClass = @"";
+		// Add CSS class if running in dark UI mode (10.14+)
+		if (isOSAtLeast10_14) {
+			NSString *match = [[[controller window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+			// aqua is already the default theme
+			if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
+				addBodyClass = @"dark";
+			}
+		}
+
+		return [engine processTemplate:helpHTMLTemplate withVariables:@{
+			@"bodyClass": addBodyClass,
+			@"title": theTitle,
+			@"body": theHelp,
+		}];
+	}
 }
 
 + (NSString *)linkToHelpTopic:(NSString *)aTopic
