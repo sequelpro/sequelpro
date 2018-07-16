@@ -202,6 +202,13 @@
 			NSBeep();
 			return;
 		}
+		
+		if ([prefs boolForKey:SPSaveQueryToLog] == YES) {
+			NSLog(@"Save Query to log: YES");
+			
+			[self doSaveQueryToLogFile:query];
+		}
+		
 		queries = @[[SPSQLParser normaliseQueryForExecution:query]];
 
 	// Otherwise, run the selected text.
@@ -3250,6 +3257,117 @@
 - (NSRange)fieldEditorSelectedRange
 {
 	return [customQueryView fieldEditorSelectedRange];
+}
+
+
+/**
+ * Save query to log file in Documents folder
+ */
+-(void)doSaveQueryToLogFile:(NSString *)queryText{
+	
+	NSURL *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+	NSString *documentDirectoryPath = [documentsDirectory relativePath];
+
+	documentDirectoryPath = [documentDirectoryPath stringByAppendingString:@"/sequelpro"];
+	
+	NSFileManager *fileManager = [[NSFileManager alloc] init];
+	
+	BOOL isDirectory = true;
+	BOOL directoryExists = [fileManager fileExistsAtPath:documentDirectoryPath isDirectory:&isDirectory];
+
+	NSError *error = nil;
+
+	if(directoryExists == false){
+		NSLog(@"directory not exists");
+		
+		if (![fileManager createDirectoryAtPath:documentDirectoryPath withIntermediateDirectories:YES attributes:nil error:&error]){
+
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+			[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
+			[alert setInformativeText:NSLocalizedString(@"Directory cannot be created",@"Directory cannot be created")];
+			[alert setAlertStyle:NSWarningAlertStyle];
+			NSUInteger returnCode = [alert runModal];
+			[alert release];
+			
+			if (returnCode == NSAlertFirstButtonReturn){
+				return;
+			}
+
+			return;
+		}
+	}
+
+	NSDate *currentDate = [NSDate date];
+	NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+	[dateFormat setDateFormat:@"/YYYY-MM-dd"];
+
+	NSString *todaysLogingFileName = [dateFormat stringFromDate:currentDate];
+	todaysLogingFileName = [todaysLogingFileName stringByAppendingString:@".sql"];
+	NSLog(@"todaysLogingFileName: %@", todaysLogingFileName);
+
+	documentDirectoryPath = [documentDirectoryPath stringByAppendingString:todaysLogingFileName];
+
+	BOOL fileExists = [fileManager fileExistsAtPath:documentDirectoryPath isDirectory:NO];
+	NSString *contents = [[NSString alloc] init];
+	
+	if (fileExists == true){
+		
+		error = nil;
+		contents = [NSString stringWithContentsOfFile:documentDirectoryPath encoding:(NSUnicodeStringEncoding) error:&error];
+
+		if (error != nil){
+
+			NSLog(@"error reading file: %@", [error localizedDescription]);
+
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+			[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Cannot read file",@"Cannot read file"), documentDirectoryPath]];
+			[alert setAlertStyle:NSWarningAlertStyle];
+			NSUInteger returnCode = [alert runModal];
+			[alert release];
+			
+			if (returnCode == NSAlertFirstButtonReturn){
+				return;
+			}
+			
+			return;
+		}
+		
+		contents = [contents stringByAppendingString:@"\r\n\r\n"];
+	}
+	
+	[dateFormat setDateFormat:@"YYYY-MM-dd HH:MM:ss"];
+	NSString *dateTimeStamp = [dateFormat stringFromDate:currentDate];
+	contents = [contents stringByAppendingString:dateTimeStamp];
+	contents = [contents stringByAppendingString:@"\r\n"];
+
+	contents = [contents stringByAppendingString:queryText];
+
+	error = nil;
+	[contents writeToFile:documentDirectoryPath atomically:YES encoding: NSUnicodeStringEncoding error:&error];
+
+	if (error != nil){
+
+		NSAlert *alert = [[NSAlert alloc] init];
+		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+		[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Cannot write to file",@"Cannot write to file"), documentDirectoryPath]];
+		[alert setAlertStyle:NSWarningAlertStyle];
+		NSUInteger returnCode = [alert runModal];
+		[alert release];
+		
+		if (returnCode == NSAlertFirstButtonReturn){
+			return;
+		}
+		
+		return;
+
+	}
+	
+	NSLog(@"passed");
+	
 }
 
 #pragma mark -

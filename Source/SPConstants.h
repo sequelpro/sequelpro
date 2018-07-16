@@ -365,6 +365,7 @@ extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 extern NSString *SPCustomQueryEditorThemeName;
+extern NSString *SPSaveQueryToLog;
 extern NSString *SPCustomQuerySoftIndent;
 extern NSString *SPCustomQuerySoftIndentWidth;
 
