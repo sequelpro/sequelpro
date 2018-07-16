@@ -3776,7 +3776,7 @@
 	[dateFormat setDateFormat:@"/YYYY-MM-dd"];
 
 	NSString *todaysLogingFileName = [dateFormat stringFromDate:currentDate];
-	todaysLogingFileName = [todaysLogingFileName stringByAppendingString:@".txt"];
+	todaysLogingFileName = [todaysLogingFileName stringByAppendingString:@".sql"];
 	NSLog(@"todaysLogingFileName: %@", todaysLogingFileName);
 
 	documentDirectoryPath = [documentDirectoryPath stringByAppendingString:todaysLogingFileName];
