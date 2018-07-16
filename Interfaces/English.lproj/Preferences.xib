@@ -1181,7 +1181,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                 <button toolTip="Reset the cipher list to the default configuration" verticalHuggingPriority="750" id="jJw-LF-gtW">
                     <rect key="frame" x="226" y="22" width="32" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="reset" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7JN-Nf-GsD">
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="resetTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7JN-Nf-GsD">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -1731,6 +1731,6 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
         <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_duplicate" width="33" height="23"/>
         <image name="button_remove" width="32" height="23"/>
-        <image name="reset" width="16" height="16"/>
+        <image name="resetTemplate" width="16" height="16"/>
     </resources>
 </document>
