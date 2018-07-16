@@ -61,7 +61,7 @@ static NSString *SPRemoveTable    = @"SPRemoveTable";
 static NSString *SPTruncateTable  = @"SPTruncateTable";
 static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
-@interface SPTablesList ()
+@interface SPTablesList () <NSSplitViewDelegate, NSTableViewDataSource>
 
 - (void)_removeTable:(BOOL)force;
 - (void)_truncateTable;
