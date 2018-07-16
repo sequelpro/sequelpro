@@ -3806,7 +3806,6 @@
 			}
 			
 			return;
-
 		}
 		
 		contents = [contents stringByAppendingString:@"\r\n\r\n"];
