@@ -3753,7 +3753,7 @@
 	if(directoryExists == false){
 		NSLog(@"directory not exists");
 		
-		if(![fileManager createDirectoryAtPath:documentDirectoryPath withIntermediateDirectories:YES attributes:nil error:&error]){
+		if (![fileManager createDirectoryAtPath:documentDirectoryPath withIntermediateDirectories:YES attributes:nil error:&error]){
 
 			NSAlert *alert = [[NSAlert alloc] init];
 			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
@@ -3784,7 +3784,7 @@
 	BOOL fileExists = [fileManager fileExistsAtPath:documentDirectoryPath isDirectory:NO];
 	NSString *contents = [[NSString alloc] init];
 	
-	if(fileExists == true){
+	if (fileExists == true){
 		
 		error = nil;
 		contents = [NSString stringWithContentsOfFile:documentDirectoryPath encoding:(NSUnicodeStringEncoding) error:&error];
@@ -3809,7 +3809,6 @@
 		}
 		
 		contents = [contents stringByAppendingString:@"\r\n\r\n"];
-
 	}
 	
 	[dateFormat setDateFormat:@"YYYY-MM-dd HH:MM:ss"];
