@@ -1,0 +1,6 @@
+language: objective-c
+os: osx
+xcode_project: sequel-pro.xcodeproj
+xcode_scheme: Sequel Pro
+script: make
+
