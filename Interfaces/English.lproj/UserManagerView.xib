@@ -52,8 +52,8 @@
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="28">
                                         <rect key="frame" x="0.0" y="23" width="177" height="483"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <rect key="frame" x="0.0" y="17" width="177" height="466"/>
                                         <clipView key="contentView" drawsBackground="NO" id="VfC-c0-tv4">
+                                            <rect key="frame" x="0.0" y="0.0" width="177" height="483"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" headerView="923" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="33" id="31" customClass="SPOutlineView">
@@ -107,11 +107,10 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
-                                    <imageView id="1001">
-                                        <rect key="frame" x="1" y="0.0" width="176" height="23"/>
+                                    <customView id="laV-2i-ttS" customClass="SPButtonBar">
+                                        <rect key="frame" x="0.0" y="0.0" width="177" height="23"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="1002"/>
-                                    </imageView>
+                                    </customView>
                                     <popUpButton id="1006">
                                         <rect key="frame" x="60" y="0.0" width="36" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1366,7 +1365,6 @@ DQ
         <image name="button_action" width="16" height="16"/>
         <image name="button_add" width="16" height="16"/>
         <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_remove" width="32" height="23"/>
     </resources>
 </document>
