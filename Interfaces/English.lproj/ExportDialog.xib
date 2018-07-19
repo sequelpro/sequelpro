@@ -323,8 +323,6 @@ Gw
                                     <size key="minSize" width="363" height="178"/>
                                     <size key="maxSize" width="717" height="10000000"/>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <size key="minSize" width="363" height="178"/>
-                                    <size key="maxSize" width="717" height="10000000"/>
                                 </textView>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1054,17 +1052,16 @@ Gw
                     </connections>
                 </popUpButton>
                 <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" id="1408">
-                    <rect key="frame" x="21" y="20" width="414" height="23"/>
+                    <rect key="frame" x="21" y="19" width="414" height="24"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                    <view key="contentView">
-                        <rect key="frame" x="1" y="1" width="412" height="21"/>
+                    <view key="contentView" id="IX4-NU-oQu">
+                        <rect key="frame" x="1" y="1" width="412" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView id="1399">
-                                <rect key="frame" x="0.0" y="0.0" width="413" height="22"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="1400"/>
-                            </imageView>
+                            <customView id="veN-mv-ORW" customClass="SPButtonBar">
+                                <rect key="frame" x="0.0" y="0.0" width="412" height="23"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                            </customView>
                             <button toolTip="Refresh table list" id="1404">
                                 <rect key="frame" x="-1" y="-1" width="32" height="25"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1077,7 +1074,7 @@ Gw
                                 </connections>
                             </button>
                             <button toolTip="Mark all tables" tag="1" id="1410">
-                                <rect key="frame" x="381" y="-2" width="32" height="25"/>
+                                <rect key="frame" x="381" y="-1" width="32" height="25"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_select_all" imagePosition="overlaps" alignment="center" inset="2" id="1411">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1088,7 +1085,7 @@ Gw
                                 </connections>
                             </button>
                             <button toolTip="Unmark all tables" id="1414">
-                                <rect key="frame" x="350" y="-2" width="32" height="25"/>
+                                <rect key="frame" x="350" y="-1" width="32" height="25"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_select_none" imagePosition="overlaps" alignment="center" inset="2" id="1415">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1132,7 +1129,6 @@ Gw
     </objects>
     <resources>
         <image name="NSApplicationIcon" width="128" height="128"/>
-        <image name="button_bar_spacer" width="10" height="23"/>
         <image name="button_refresh" width="30" height="22"/>
         <image name="button_select_all" width="30" height="22"/>
         <image name="button_select_none" width="30" height="22"/>

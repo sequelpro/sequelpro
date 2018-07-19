@@ -96,13 +96,11 @@ void init(SPButtonBar *obj)
 
 - (void)drawRect:(NSRect)dirtyRect
 {
-    [super drawRect:dirtyRect];
-    
 	NSImage *img = ([self isInDarkMode] ? darkImage : lightImage);
-	NSRect drawFrame = [self frame];
+	NSRect drawFrame = [self bounds];
 	drawFrame.origin.x = dirtyRect.origin.x;
 	drawFrame.size.width = dirtyRect.size.width;
-	[img drawInRect:drawFrame fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.0];
+	[img drawInRect:drawFrame fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 }
 
 @end

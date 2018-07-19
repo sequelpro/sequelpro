@@ -51,11 +51,10 @@
                                 <rect key="frame" x="0.0" y="0.0" width="213" height="361"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <imageView id="380">
+                                    <customView id="yka-k0-BGx" customClass="SPButtonBar">
                                         <rect key="frame" x="0.0" y="0.0" width="213" height="23"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="381"/>
-                                    </imageView>
+                                    </customView>
                                     <imageView id="382">
                                         <rect key="frame" x="198" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
@@ -314,8 +313,6 @@ Gw
                                                     <size key="minSize" width="244" height="82"/>
                                                     <size key="maxSize" width="592" height="10000000"/>
                                                     <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <size key="minSize" width="244" height="82"/>
-                                                    <size key="maxSize" width="592" height="10000000"/>
                                                     <connections>
                                                         <binding destination="143" name="font" keyPath="values.CustomQueryEditorFont" id="306">
                                                             <dictionary key="options">
@@ -415,7 +412,6 @@ Gw
         <image name="button_action" width="16" height="16"/>
         <image name="button_add" width="16" height="16"/>
         <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_remove" width="32" height="23"/>
     </resources>
 </document>

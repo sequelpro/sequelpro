@@ -275,19 +275,18 @@ Gw
                         </connections>
                     </button>
                     <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" id="140">
-                        <rect key="frame" x="-1" y="75" width="336" height="23"/>
+                        <rect key="frame" x="-1" y="74" width="332" height="24"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <view key="contentView">
-                            <rect key="frame" x="1" y="1" width="334" height="21"/>
+                        <view key="contentView" id="bO7-Je-F0l">
+                            <rect key="frame" x="1" y="1" width="330" height="22"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <imageView id="141">
-                                    <rect key="frame" x="-2" y="0.0" width="333" height="22"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="142"/>
-                                </imageView>
+                                <customView id="DDC-T5-PcI" customClass="SPButtonBar">
+                                    <rect key="frame" x="0.0" y="0.0" width="330" height="23"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                </customView>
                                 <button toolTip="Remove indexed field" id="143">
-                                    <rect key="frame" x="30" y="-1" width="32" height="25"/>
+                                    <rect key="frame" x="30" y="0.0" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="146">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -298,7 +297,7 @@ Gw
                                     </connections>
                                 </button>
                                 <button toolTip="Add indexed field" id="144">
-                                    <rect key="frame" x="-1" y="-1" width="32" height="25"/>
+                                    <rect key="frame" x="-1" y="0.0" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="145">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -332,7 +331,6 @@ Gw
     </objects>
     <resources>
         <image name="button_add" width="16" height="16"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_remove" width="32" height="23"/>
     </resources>
 </document>
