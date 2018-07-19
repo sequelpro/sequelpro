@@ -76,11 +76,10 @@
                             <rect key="frame" x="0.0" y="0.0" width="200" height="513"/>
                             <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                             <subviews>
-                                <imageView id="5822">
+                                <customView id="Eax-vh-nTp" customClass="SPButtonBar">
                                     <rect key="frame" x="0.0" y="0.0" width="200" height="23"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5823"/>
-                                </imageView>
+                                </customView>
                                 <popUpButton id="5824">
                                     <rect key="frame" x="2" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -223,7 +222,7 @@
                                     </scroller>
                                 </scrollView>
                                 <button id="5853">
-                                    <rect key="frame" x="69" y="1" width="34" height="23"/>
+                                    <rect key="frame" x="69" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add" imagePosition="overlaps" alignment="center" alternateImage="button_add" inset="2" id="5854">
                                         <behavior key="behavior" lightByContents="YES"/>
@@ -234,7 +233,7 @@
                                     </connections>
                                 </button>
                                 <button id="5851">
-                                    <rect key="frame" x="35" y="1" width="34" height="23"/>
+                                    <rect key="frame" x="35" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folder" imagePosition="only" alignment="center" alternateImage="button_add_folder" inset="2" id="5852">
                                         <behavior key="behavior" lightByContents="YES"/>
@@ -2596,7 +2595,6 @@ DQ
         <image name="button_add" width="30" height="22"/>
         <image name="button_add_folder" width="30" height="22"/>
         <image name="button_bar_handle" width="15" height="23"/>
-        <image name="button_bar_spacer" width="11" height="23"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
     </resources>
