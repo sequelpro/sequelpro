@@ -884,7 +884,7 @@ Gw
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="cv6-Te-MPL">
-                    <rect key="frame" x="202" y="174" width="360" height="28"/>
+                    <rect key="frame" x="202" y="172" width="360" height="30"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" id="JMS-lH-5Te">
                         <font key="font" metaFont="smallSystem"/>
