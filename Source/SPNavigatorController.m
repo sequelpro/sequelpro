@@ -48,6 +48,10 @@
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
+@interface SPNavigatorController () <NSOutlineViewDataSource, NSOutlineViewDelegate>
+
+@end
+
 @implementation SPNavigatorController
 
 #ifndef SP_CODA /* unused sort func */
@@ -681,12 +685,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 					[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 				}
 
-				if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "])
-					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-						[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "] forKey:@"  struct_type  "];
-				else
-					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-						@0 forKey:@"  struct_type  "];
+				id srcType = [[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "];
+				NSMutableDictionary *targetDict = [[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id];
+				[targetDict setObject:(srcType ? srcType : @(SPTableTypeTable)) forKey:@"  struct_type  "];
 
 				if([a count] > 3) {
 					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id,SPUniqueSchemaDelimiter,[a objectAtIndex:3]];
@@ -860,7 +861,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 {
 	if([item isKindOfClass:NSDictionaryClass]) {
 		// Suppress expanding for PROCEDUREs and FUNCTIONs
-		if([[item objectForKey:@"  struct_type  "] intValue] > 1) {
+		if((SPTableType)[[item objectForKey:@"  struct_type  "] intValue] > SPTableTypeView) {
 			return NO;
 		}
 		return YES;
@@ -920,20 +921,21 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		if ([parentObject isKindOfClass:NSDictionaryClass]) {
 			if([item isKindOfClass:NSDictionaryClass]) {
-				if([item objectForKey:@"  struct_type  "]) {
-					switch([[item objectForKey:@"  struct_type  "] intValue]) {
-						case 0:
-						[[tableColumn dataCell] setImage:tableIcon];
-						break;
-						case 1:
-						[[tableColumn dataCell] setImage:viewIcon];
-						break;
-						case 2:
-						[[tableColumn dataCell] setImage:procedureIcon];
-						break;
-						case 3:
-						[[tableColumn dataCell] setImage:functionIcon];
-						break;
+				NSNumber *type = [item objectForKey:@"  struct_type  "];
+				if(type) {
+					switch((SPTableType)[type intValue]) {
+						case SPTableTypeTable:
+							[[tableColumn dataCell] setImage:tableIcon];
+							break;
+						case SPTableTypeView:
+							[[tableColumn dataCell] setImage:viewIcon];
+							break;
+						case SPTableTypeProc:
+							[[tableColumn dataCell] setImage:procedureIcon];
+							break;
+						case SPTableTypeFunc:
+							[[tableColumn dataCell] setImage:functionIcon];
+							break;
 					}
 				} else {
 					[[tableColumn dataCell] setImage:databaseIcon];
@@ -1066,15 +1068,15 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				NSString *item = NSArrayObjectAtIndex(selectedItem, i);
 				if([item isNSNull] || ![item length]) continue;
 				[infoArray addObject:[NSString stringWithFormat:@"%@: %@", 
-					[self tableInfoLabelForIndex:i ofType:0], 
+					[self tableInfoLabelForIndex:i ofType:SPTableTypeTable],
 					[item stringByReplacingOccurrencesOfString:@"," withString:@", "]]];
 			}
 		}
 
 		// check if selected item is a PROCEDURE or FUNCTION
-		else if([selectedItem isKindOfClass:NSDictionaryClass] && [selectedItem objectForKey:@"  struct_type  "] && [[selectedItem objectForKey:@"  struct_type  "] intValue] > 1) {
+		else if([selectedItem isKindOfClass:NSDictionaryClass] && [selectedItem objectForKey:@"  struct_type  "] && (SPTableType)[[selectedItem objectForKey:@"  struct_type  "] intValue] > SPTableTypeView) {
 			NSInteger i = 0;
-			NSInteger type = [[selectedItem objectForKey:@"  struct_type  "] intValue];
+			SPTableType type = (SPTableType)[[selectedItem objectForKey:@"  struct_type  "] intValue];
 			NSArray *keys = [selectedItem allKeys];
 			NSInteger keyIndex = 0;
 			if(keys && [keys count] == 2) {
@@ -1212,57 +1214,58 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 #pragma mark -
 #pragma mark others
 
-- (NSString*)tableInfoLabelForIndex:(NSInteger)anIndex ofType:(NSInteger)type
+- (NSString*)tableInfoLabelForIndex:(NSInteger)anIndex ofType:(SPTableType)type
 {
-
-	if(type == 0 || type == 1) // TABLE / VIEW
-		switch(anIndex) {
+	if(type == SPTableTypeTable || type == SPTableTypeView) {
+		switch (anIndex) {
 			case 0:
-			return NSLocalizedString(@"Type", @"type label (Navigator)");
+				return NSLocalizedString(@"Type", @"type label (Navigator)");
 			case 1:
-			return NSLocalizedString(@"Default", @"default label");
+				return NSLocalizedString(@"Default", @"default label");
 			case 2:
-			return NSLocalizedString(@"Is Nullable", @"is nullable label (Navigator)");
+				return NSLocalizedString(@"Is Nullable", @"is nullable label (Navigator)");
 			case 3:
-			return NSLocalizedString(@"Encoding", @"encoding label (Navigator)");
+				return NSLocalizedString(@"Encoding", @"encoding label (Navigator)");
 			case 4:
-			return NSLocalizedString(@"Collation", @"collation label (Navigator)");
+				return NSLocalizedString(@"Collation", @"collation label (Navigator)");
 			case 5:
-			return NSLocalizedString(@"Key", @"key label (Navigator)");
+				return NSLocalizedString(@"Key", @"key label (Navigator)");
 			case 6:
-			return NSLocalizedString(@"Extra", @"extra label (Navigator)");
+				return NSLocalizedString(@"Extra", @"extra label (Navigator)");
 			case 7:
-			return NSLocalizedString(@"Privileges", @"privileges label (Navigator)");
+				return NSLocalizedString(@"Privileges", @"privileges label (Navigator)");
 			case 8:
-			return NSLocalizedString(@"Comment", @"comment label");
+				return NSLocalizedString(@"Comment", @"comment label");
 		}
-
-	if(type == 2) // PROCEDURE
-		switch(anIndex) {
+	}
+	else if(type == SPTableTypeProc) {
+		switch (anIndex) {
 			case 0:
-			return NSLocalizedString(@"DTD Identifier",@"dtd identifier label (Navigator)");
+				return NSLocalizedString(@"DTD Identifier", @"dtd identifier label (Navigator)");
 			case 1:
-			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
+				return NSLocalizedString(@"SQL Data Access", @"sql data access label (Navigator)");
 			case 2:
-			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
+				return NSLocalizedString(@"Is Deterministic", @"is deterministic label (Navigator)");
 			case 3:
-			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
+				return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
+				return NSLocalizedString(@"Definer", @"definer label (Navigator)");
 		}
-	if(type == 3) // FUNCTION
-		switch(anIndex) {
+	}
+	else if(type == SPTableTypeFunc) {
+		switch (anIndex) {
 			case 0:
-			return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
+				return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
 			case 1:
-			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
+				return NSLocalizedString(@"SQL Data Access", @"sql data access label (Navigator)");
 			case 2:
-			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
+				return NSLocalizedString(@"Is Deterministic", @"is deterministic label (Navigator)");
 			case 3:
-			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
+				return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
+				return NSLocalizedString(@"Definer", @"definer label (Navigator)");
 		}
+	}
 	return @"";
 }
 #endif

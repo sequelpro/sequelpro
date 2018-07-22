@@ -80,7 +80,7 @@
 - (IBAction)syncButtonAction:(id)sender;
 
 - (void)updateEntriesForConnection:(SPDatabaseDocument *)doc;
-- (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
+- (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(SPTableType)type;
 
 - (void)updateNavigator:(NSNotification *)aNotification;
 #endif

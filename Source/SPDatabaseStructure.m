@@ -239,14 +239,14 @@
 		for (id aTable in [[delegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
 			NSDictionary *aTableDict = [NSDictionary dictionaryWithObjectsAndKeys:
 				aTable, @"name",
-				@"0", @"type",
+				@(SPTableTypeTable), @"type",
 					nil];
 			[tablesAndViews addObject:aTableDict];
 		}
 		for (id aView in [[delegate valueForKeyPath:@"tablesListInstance"] allViewNames]) {
 			NSDictionary *aViewDict = [NSDictionary dictionaryWithObjectsAndKeys:
 				aView, @"name",
-				@"1", @"type",
+				@(SPTableTypeView), @"type",
 					nil];
 			[tablesAndViews addObject:aViewDict];
 		}
@@ -365,7 +365,7 @@
 			// Loop through the rows and extract the function details
 			for (NSArray *row in theResult) {
 				NSString *fname         =   [row objectAtIndex:0];
-				NSString *type          = ([[row objectAtIndex:1] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
+				NSNumber *type          = ([[row objectAtIndex:1] isEqualToString:@"FUNCTION"]) ? @(SPTableTypeFunc) : @(SPTableTypeProc);
 				NSString *dtd           =   [row objectAtIndex:2];
 				NSString *det           =   [row objectAtIndex:3];
 				NSString *dataaccess    =   [row objectAtIndex:4];

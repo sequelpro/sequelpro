@@ -517,24 +517,24 @@ retry:
 					NSDictionary *theTable = [[dbs objectForKey:db] objectForKey:table];
 					NSString *tablepath = [table substringFromIndex:[table rangeOfString:SPUniqueSchemaDelimiter].location];
 					NSArray *allFields = [theTable allKeys];
-					NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+					SPTableType structtype = (SPTableType)[[theTable objectForKey:@"  struct_type  "] intValue];
 					BOOL breakFlag = NO;
 					if(!aTableNameExists)
 						switch(structtype) {
-							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
-							break;
-							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
-							break;
-							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
-							breakFlag = YES;
-							break;
-							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
-							breakFlag = YES;
-							break;
+							case SPTableTypeTable:
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
+								break;
+							case SPTableTypeView:
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
+								break;
+							case SPTableTypeProc:
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
+								breakFlag = YES;
+								break;
+							case SPTableTypeFunc:
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
+								breakFlag = YES;
+								break;
 						}
 					if(!breakFlag) {
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
@@ -1443,12 +1443,12 @@ retry:
 		// 	[desc release];
 		// 	for(id table in sortedTables) {
 		// 		NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
-		// 		NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+		// 		SPTableType structtype = (SPTableType)[[theTable objectForKey:@"  struct_type  "] intValue];
 		// 		switch(structtype) {
-		// 			case 0:
+		// 			case SPTableTypeTable:
 		// 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
 		// 			break;
-		// 			case 1:
+		// 			case SPTableTypeView:
 		// 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
 		// 			break;
 		// 		}
