@@ -1428,12 +1428,12 @@ retry:
 
 	NSArray *arr = nil;
 	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
-		NSString *currentDb = nil;
-
-		if (tablesListInstance && [tablesListInstance selectedDatabase])
-			currentDb = [tablesListInstance selectedDatabase];
-
 		// TODO HansJB
+		// NSString *currentDb = nil;
+		//
+		// if (tablesListInstance && [tablesListInstance selectedDatabase])
+		// 	currentDb = [tablesListInstance selectedDatabase];
+		//
 		// NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 		// 
 		// if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {

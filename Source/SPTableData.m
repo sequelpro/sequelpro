@@ -1007,8 +1007,8 @@
 	else if ([tableListInstance tableType] == SPTableTypeTable) {
 		[escapedTableName replaceOccurrencesOfRegex:@"\\\\(?=\\Z|[^\'])" withString:@"\\\\\\\\"];
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
-		[tableStatusResult setReturnDataAsStrings:YES];
 	}
+	[tableStatusResult setReturnDataAsStrings:YES]; //TODO: workaround for #2700 (#2699)
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if ([mySQLConnection queryErrored]) {
