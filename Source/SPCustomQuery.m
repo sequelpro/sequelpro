@@ -3811,12 +3811,13 @@
 		contents = [contents stringByAppendingString:@"\r\n\r\n"];
 	}
 	
-	[dateFormat setDateFormat:@"YYYY-MM-dd HH:MM:ss"];
+	[dateFormat setDateFormat:@"#YYYY-MM-dd HH:MM:ss"];
 	NSString *dateTimeStamp = [dateFormat stringFromDate:currentDate];
 	contents = [contents stringByAppendingString:dateTimeStamp];
 	contents = [contents stringByAppendingString:@"\r\n"];
 
 	contents = [contents stringByAppendingString:queryText];
+	contents = [contents stringByAppendingString:@";"];
 
 	error = nil;
 	[contents writeToFile:documentDirectoryPath atomically:YES encoding: NSUnicodeStringEncoding error:&error];
