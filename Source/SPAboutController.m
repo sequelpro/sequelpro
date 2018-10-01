@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPAboutController.h"
+#import "SPOSInfo.h"
 
 static NSString *SPSnapshotBuildIndicator = @"Snapshot";
 
@@ -38,15 +39,26 @@ static NSString *SPLicenseFilename = @"License";
 static NSString *SPAboutPanelNibName = @"AboutPanel";
 static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 
+static BOOL isOSAtLeast10_14 = NO;
+
 @interface SPAboutController ()
 
+- (BOOL)_isInDarkMode;
 - (void)_setVersionLabel:(BOOL)isNightly;
+- (NSAttributedString *)_getCreditsText;
+- (NSAttributedString *)_getLicenseText;
+- (NSAttributedString *)_applyTextAttributes:(NSMutableAttributedString *)text;
 
 @end
 
 @implementation SPAboutController
 
 #pragma mark -
+
++ (void)initialize
+{
+	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+}
 
 - (id)init
 {
@@ -59,24 +71,19 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	
 	// If the version string has a prefix of 'Nightly' then this is obviously a nighly build.
 	NSRange matchRange = [version rangeOfString:SPSnapshotBuildIndicator];
-	BOOL isSnapshotBuild = (matchRange.location != NSNotFound);
+
+	BOOL isSnapshotBuild = matchRange.location != NSNotFound;
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
 	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
 
 	[self _setVersionLabel:isSnapshotBuild];
-
-	// Get the credits file contents
-	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
-
-	// Get the license file contents
-	NSAttributedString *license = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPLicenseFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
 	
 	// Set the credits
-	[[appCreditsTextView textStorage] appendAttributedString:credits];
+	[[appCreditsTextView textStorage] appendAttributedString:[self _getCreditsText]];
 	
 	// Set the license
-	[[appLicenseTextView textStorage] appendAttributedString:license];
+	[[appLicenseTextView textStorage] appendAttributedString:[self _getLicenseText]];
 }
 
 #pragma mark -
@@ -101,6 +108,19 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 
 #pragma mark -
 #pragma mark Private API
+
+- (BOOL)_isInDarkMode
+{
+	if (isOSAtLeast10_14) {
+		NSString *match = [[NSAppearance currentAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+
+		if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
+			return YES;
+		}
+	}
+
+	return NO;
+}
 
 /**
  * Set the UI version labels.
@@ -131,6 +151,38 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	}
 
 	[appBuildVersionTextField setStringValue:textFieldString];
+}
+
+/**
+ * Returns the credits string to display in the about dialog.
+ */
+- (NSAttributedString *)_getCreditsText
+{
+	NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil];
+
+	return [[self _applyTextAttributes:credits] autorelease];
+}
+
+/**
+ * Returns the license string to display in the about dialog.
+ */
+- (NSAttributedString *)_getLicenseText
+{
+	NSMutableAttributedString *license = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPLicenseFilename ofType:@"rtf"] documentAttributes:nil];
+
+	return [[self _applyTextAttributes:license] autorelease];
+}
+
+/**
+ *
+ */
+- (NSAttributedString *)_applyTextAttributes:(NSMutableAttributedString *)text
+{
+	if ([self _isInDarkMode]) {
+		[text addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [text length])];
+	}
+
+	return text;
 }
 
 @end
