@@ -108,11 +108,11 @@ php -r '$infoplistloc = "'$BUILD_DIR'/Sequel Pro.app/Contents/Info.plist";
 
 # Update versions in localised string files
 php -r '$englishstringsloc = "/'$BUILD_DIR'/Sequel Pro.app/Contents/Resources/English.lproj/InfoPlist.strings";
-	$englishstrings = file_get_contents($englishstringsloc);
-	$englishstrings = mb_convert_encoding($englishstrings, "UTF-8", "UTF-16");
-	$englishstrings = preg_replace("/version [^\,\"]+/iu", "nightly build for r'$SHORT_HASH'", $englishstrings);
-        $englishstrings = mb_convert_encoding($englishstrings, "UTF-16", "UTF-8");
-	file_put_contents($englishstringsloc, $englishstrings);'
+    $englishstrings = file_get_contents($englishstringsloc);
+    $englishstrings = mb_convert_encoding($englishstrings, "UTF-8", "UTF-16");
+    $englishstrings = preg_replace("/version [^\,\"]+/iu", "nightly build for r'$SHORT_HASH'", $englishstrings);
+    $englishstrings = mb_convert_encoding($englishstrings, "UTF-16", "UTF-8");
+    file_put_contents($englishstringsloc, $englishstrings);'
 
 echo "Signing build..."
 
