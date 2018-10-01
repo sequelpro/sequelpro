@@ -58,25 +58,73 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <splitView focusRingType="none" autosaveName="SPBundleEditorSplitView" dividerStyle="thin" vertical="YES" id="683" customClass="SPSplitView">
-                        <rect key="frame" x="0.0" y="-2" width="900" height="552"/>
+                        <rect key="frame" x="0.0" y="0.0" width="900" height="550"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view id="685" userLabel="Bundle Table View">
-                                <rect key="frame" x="0.0" y="0.0" width="142" height="552"/>
+                                <rect key="frame" x="0.0" y="0.0" width="142" height="550"/>
                                 <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                                 <subviews>
-                                    <imageView id="1245">
-                                        <rect key="frame" x="0.0" y="1" width="142" height="23"/>
+                                    <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="962">
+                                        <rect key="frame" x="-2" y="22" width="145" height="529"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" id="SvP-QH-EgG">
+                                            <rect key="frame" x="1" y="1" width="143" height="527"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" multipleSelection="NO" emptySelection="NO" autosaveName="SPBundleEditorOutlineView" rowHeight="20" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="967" id="965" customClass="SPOutlineView">
+                                                    <rect key="frame" x="0.0" y="0.0" width="143" height="527"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <size key="intercellSpacing" width="3" height="0.0"/>
+                                                    <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                    <tableColumns>
+                                                        <tableColumn identifier="bundleName" width="140" minWidth="16" maxWidth="1000" id="967">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="970">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="982" name="value" keyPath="arrangedObjects.bundleName" id="985"/>
+                                                            </connections>
+                                                        </tableColumn>
+                                                    </tableColumns>
+                                                    <connections>
+                                                        <outlet property="dataSource" destination="-2" id="976"/>
+                                                        <outlet property="delegate" destination="-2" id="977"/>
+                                                        <outlet property="menu" destination="899" id="991"/>
+                                                    </connections>
+                                                </outlineView>
+                                            </subviews>
+                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="964">
+                                            <rect key="frame" x="-100" y="-100" width="192" height="15"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="963">
+                                            <rect key="frame" x="-100" y="-100" width="15" height="102"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                    </scrollView>
+                                    <customView id="EH8-5R-IBc" customClass="SPButtonBar">
+                                        <rect key="frame" x="0.0" y="0.0" width="142" height="23"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="1246"/>
-                                    </imageView>
+                                    </customView>
                                     <imageView id="1267">
-                                        <rect key="frame" x="127" y="1" width="15" height="23"/>
+                                        <rect key="frame" x="127" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="1268"/>
                                     </imageView>
                                     <popUpButton id="1247">
-                                        <rect key="frame" x="60" y="1" width="36" height="23"/>
+                                        <rect key="frame" x="60" y="0.0" width="36" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="1250" id="1248">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -118,7 +166,7 @@
                                         </popUpButtonCell>
                                     </popUpButton>
                                     <button toolTip="Remove selected Bundle (⌘⌫)" id="732">
-                                        <rect key="frame" x="30" y="0.0" width="32" height="25"/>
+                                        <rect key="frame" x="30" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="735">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -130,57 +178,8 @@
                                             <action selector="removeCommandBundle:" target="-2" id="828"/>
                                         </connections>
                                     </button>
-                                    <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="962">
-                                        <rect key="frame" x="-2" y="23" width="145" height="530"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <clipView key="contentView" id="SvP-QH-EgG">
-                                            <rect key="frame" x="1" y="1" width="143" height="528"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <subviews>
-                                                <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" multipleSelection="NO" emptySelection="NO" autosaveName="SPBundleEditorOutlineView" rowHeight="20" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="967" id="965" customClass="SPOutlineView">
-                                                    <rect key="frame" x="0.0" y="0.0" width="143" height="528"/>
-                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                    <size key="intercellSpacing" width="3" height="0.0"/>
-                                                    <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
-                                                    <tableColumns>
-                                                        <tableColumn identifier="bundleName" width="140" minWidth="16" maxWidth="1000" id="967">
-                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                                                <font key="font" metaFont="smallSystem"/>
-                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
-                                                            </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="970">
-                                                                <font key="font" metaFont="smallSystem"/>
-                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                            </textFieldCell>
-                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                            <connections>
-                                                                <binding destination="982" name="value" keyPath="arrangedObjects.bundleName" id="985"/>
-                                                            </connections>
-                                                        </tableColumn>
-                                                    </tableColumns>
-                                                    <connections>
-                                                        <outlet property="dataSource" destination="-2" id="976"/>
-                                                        <outlet property="delegate" destination="-2" id="977"/>
-                                                        <outlet property="menu" destination="899" id="991"/>
-                                                    </connections>
-                                                </outlineView>
-                                            </subviews>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                        </clipView>
-                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="964">
-                                            <rect key="frame" x="-100" y="-100" width="192" height="15"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </scroller>
-                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="963">
-                                            <rect key="frame" x="-100" y="-100" width="15" height="102"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </scroller>
-                                    </scrollView>
                                     <button toolTip="Add Bundle (⌥⌘A)" id="733">
-                                        <rect key="frame" x="-1" y="0.0" width="32" height="25"/>
+                                        <rect key="frame" x="-1" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="734">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -196,25 +195,23 @@
                                 </subviews>
                             </view>
                             <view focusRingType="none" id="686" userLabel="Bundle Content View">
-                                <rect key="frame" x="143" y="0.0" width="757" height="552"/>
+                                <rect key="frame" x="143" y="0.0" width="757" height="550"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="1214">
-                                        <rect key="frame" x="20" y="52" width="717" height="291"/>
+                                        <rect key="frame" x="20" y="52" width="717" height="289"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <clipView key="contentView" id="p0q-lB-EBP">
-                                            <rect key="frame" x="1" y="1" width="715" height="289"/>
+                                            <rect key="frame" x="1" y="1" width="715" height="287"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <textView drawsBackground="NO" importsGraphics="NO" richText="NO" findStyle="panel" allowsUndo="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" id="1217" customClass="SPBundleCommandTextView">
-                                                    <rect key="frame" x="0.0" y="0.0" width="715" height="289"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="715" height="287"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <size key="minSize" width="715" height="289"/>
+                                                    <size key="minSize" width="715" height="287"/>
                                                     <size key="maxSize" width="10000000" height="10000000"/>
                                                     <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <size key="minSize" width="715" height="289"/>
-                                                    <size key="maxSize" width="10000000" height="10000000"/>
                                                     <connections>
                                                         <binding destination="982" name="editable" keyPath="selection.disabled" id="1244">
                                                             <dictionary key="options">
@@ -240,7 +237,7 @@
                                         </scroller>
                                     </scrollView>
                                     <textField verticalHuggingPriority="750" id="1171">
-                                        <rect key="frame" x="23" y="518" width="556" height="14"/>
+                                        <rect key="frame" x="23" y="516" width="556" height="14"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="left" title="[bundle summary]" id="1172">
                                             <font key="font" metaFont="smallSystem"/>
@@ -249,7 +246,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <button verticalHuggingPriority="750" id="1156">
-                                        <rect key="frame" x="579" y="510" width="163" height="28"/>
+                                        <rect key="frame" x="579" y="508" width="163" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="push" title="Bundle Info" bezelStyle="rounded" alignment="center" controlSize="small" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1157">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -260,7 +257,7 @@
                                         </connections>
                                     </button>
                                     <popUpButton verticalHuggingPriority="750" id="1077">
-                                        <rect key="frame" x="411" y="487" width="159" height="22"/>
+                                        <rect key="frame" x="411" y="485" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="1078">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -317,7 +314,7 @@
                                         </connections>
                                     </button>
                                     <control verticalHuggingPriority="750" id="804" customClass="SRRecorderControl">
-                                        <rect key="frame" x="127" y="436" width="157" height="22"/>
+                                        <rect key="frame" x="127" y="434" width="157" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <string key="toolTip">Click to record a shortcut for the Bundle command (Please note, not every shortcut will work due to global or Sequel Pro key bindings)</string>
                                         <actionCell key="cell" controlSize="mini" alignment="left" id="824" customClass="SRRecorderCell">
@@ -334,7 +331,7 @@
                                         </connections>
                                     </control>
                                     <popUpButton toolTip="Choose the handling of BLOB fields" verticalHuggingPriority="750" id="1091" userLabel="Pop Up Button (Input Fallback)">
-                                        <rect key="frame" x="411" y="394" width="159" height="22"/>
+                                        <rect key="frame" x="411" y="392" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="1092">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -351,7 +348,7 @@
                                         </connections>
                                     </popUpButton>
                                     <popUpButton toolTip="Choose the fallback input source if nothing was selected" verticalHuggingPriority="750" id="780" userLabel="Pop Up Button (Input Fallback)">
-                                        <rect key="frame" x="411" y="394" width="159" height="22"/>
+                                        <rect key="frame" x="411" y="392" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="781">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -363,7 +360,7 @@
                                         </connections>
                                     </popUpButton>
                                     <popUpButton toolTip="Choose the output action of the Bundle command" verticalHuggingPriority="750" id="774" userLabel="Pop Up Button (Output)">
-                                        <rect key="frame" x="126" y="369" width="159" height="22"/>
+                                        <rect key="frame" x="126" y="367" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="775">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -380,7 +377,7 @@
                                         </connections>
                                     </popUpButton>
                                     <popUpButton toolTip="Choose the scope on which the Bundle command will run" verticalHuggingPriority="750" id="932" userLabel="Pop Up Button (Input)">
-                                        <rect key="frame" x="126" y="487" width="159" height="22"/>
+                                        <rect key="frame" x="126" y="485" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="933">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -398,7 +395,7 @@
                                         </connections>
                                     </popUpButton>
                                     <popUpButton verticalHuggingPriority="750" id="768" userLabel="Pop Up Button (Input)">
-                                        <rect key="frame" x="126" y="394" width="159" height="22"/>
+                                        <rect key="frame" x="126" y="392" width="159" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <string key="toolTip">Choose the input source for the command. The desired data will be available as UTF-8 encoded file whose name will be passed as shell variable SP_BUNDLE_INPUT which will be piped to the script (STDIN)</string>
                                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="769">
@@ -428,7 +425,7 @@
                                         </connections>
                                     </button>
                                     <textField verticalHuggingPriority="750" id="1088">
-                                        <rect key="frame" x="332" y="400" width="32" height="14"/>
+                                        <rect key="frame" x="332" y="398" width="32" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="AND" id="1089">
                                             <font key="font" metaFont="smallSystem"/>
@@ -437,7 +434,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="795">
-                                        <rect key="frame" x="332" y="400" width="32" height="14"/>
+                                        <rect key="frame" x="332" y="398" width="32" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="OR" id="796">
                                             <font key="font" metaFont="smallSystem"/>
@@ -446,7 +443,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField toolTip="Enter a menu category which will be displayed as submenu containing the Bundle command" verticalHuggingPriority="750" id="691" userLabel="Text Field (Menu Category)">
-                                        <rect key="frame" x="414" y="464" width="323" height="19"/>
+                                        <rect key="frame" x="414" y="462" width="323" height="19"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="[sub menu category]" drawsBackground="YES" usesSingleLineMode="YES" id="702">
                                             <font key="font" metaFont="smallSystem"/>
@@ -469,7 +466,7 @@
                                         </connections>
                                     </textField>
                                     <textField toolTip="Alphanumeric character string which inserts the favorite query string after expansion by pressing the ⇥ key." verticalHuggingPriority="750" id="1083">
-                                        <rect key="frame" x="287" y="493" width="122" height="14"/>
+                                        <rect key="frame" x="287" y="491" width="122" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Trigger:" id="1084">
                                             <font key="font" metaFont="smallSystem"/>
@@ -478,7 +475,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="788">
-                                        <rect key="frame" x="21" y="374" width="103" height="14"/>
+                                        <rect key="frame" x="21" y="372" width="103" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Output:" id="789">
                                             <font key="font" metaFont="smallSystem"/>
@@ -487,7 +484,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField toolTip="Alphanumeric character string which inserts the favorite query string after expansion by pressing the ⇥ key." verticalHuggingPriority="750" id="692">
-                                        <rect key="frame" x="287" y="466" width="122" height="14"/>
+                                        <rect key="frame" x="287" y="464" width="122" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Menu Category:" id="701">
                                             <font key="font" metaFont="smallSystem"/>
@@ -496,7 +493,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="936">
-                                        <rect key="frame" x="21" y="492" width="103" height="14"/>
+                                        <rect key="frame" x="21" y="490" width="103" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Bundle Scope:" id="937">
                                             <font key="font" metaFont="smallSystem"/>
@@ -505,7 +502,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="938">
-                                        <rect key="frame" x="17" y="351" width="447" height="14"/>
+                                        <rect key="frame" x="17" y="349" width="447" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Command:" id="939">
                                             <font key="font" metaFont="smallSystem"/>
@@ -514,7 +511,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="797">
-                                        <rect key="frame" x="21" y="400" width="103" height="14"/>
+                                        <rect key="frame" x="21" y="398" width="103" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Input:" id="798">
                                             <font key="font" metaFont="smallSystem"/>
@@ -523,7 +520,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="800">
-                                        <rect key="frame" x="287" y="439" width="122" height="14"/>
+                                        <rect key="frame" x="287" y="437" width="122" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Tooltip:" id="801">
                                             <font key="font" metaFont="smallSystem"/>
@@ -532,7 +529,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField toolTip="Enter the tooltip for the Bundle command menu item" verticalHuggingPriority="750" id="799" userLabel="Text Field (Tooltip)">
-                                        <rect key="frame" x="414" y="437" width="323" height="19"/>
+                                        <rect key="frame" x="414" y="435" width="323" height="19"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="[menu label tooltip]" drawsBackground="YES" usesSingleLineMode="YES" id="802">
                                             <font key="font" metaFont="smallSystem"/>
@@ -550,7 +547,7 @@
                                         </connections>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="693">
-                                        <rect key="frame" x="21" y="466" width="103" height="14"/>
+                                        <rect key="frame" x="21" y="464" width="103" height="14"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Menu Label:" id="700">
                                             <font key="font" metaFont="smallSystem"/>
@@ -559,7 +556,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField toolTip="Enter the menu label name" verticalHuggingPriority="750" id="695" userLabel="Text Field (Menu Label)">
-                                        <rect key="frame" x="129" y="464" width="153" height="19"/>
+                                        <rect key="frame" x="129" y="462" width="153" height="19"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="[menu label name]" drawsBackground="YES" usesSingleLineMode="YES" id="696">
                                             <font key="font" metaFont="smallSystem"/>
@@ -800,12 +797,11 @@ Gw
                                 <textView editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" allowsNonContiguousLayout="YES" id="1147">
                                     <rect key="frame" x="0.0" y="0.0" width="255" height="92"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <size key="minSize" width="255" height="92"/>
                                     <size key="maxSize" width="463" height="10000000"/>
-                                    <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                    <size key="minSize" width="255" height="92"/>
-                                    <size key="maxSize" width="463" height="10000000"/>
+                                    <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <connections>
                                         <binding destination="982" name="value" keyPath="selection.description" id="1166"/>
                                     </connections>
@@ -844,7 +840,6 @@ DQ
         <image name="button_action" width="16" height="16"/>
         <image name="button_add" width="16" height="16"/>
         <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_remove" width="32" height="23"/>
     </resources>
 </document>

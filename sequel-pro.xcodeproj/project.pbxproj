@@ -153,6 +153,9 @@
 		3876E1541CC0B26700D85154 /* button_add_folder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3876E1531CC0B26700D85154 /* button_add_folder@2x.png */; };
 		3876E15D1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876E15C1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
+		3E10740420FC25B7006DBDFD /* SPButtonBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E10740320FC25B7006DBDFD /* SPButtonBar.m */; };
+		3E242D4F20FEB44D0015470D /* button_bar_spacer_dark.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E242D4B20FEB44D0015470D /* button_bar_spacer_dark.png */; };
+		3E242D5020FEB44D0015470D /* button_bar_spacer_dark@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E242D4E20FEB44D0015470D /* button_bar_spacer_dark@2x.png */; };
 		4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B799101E0CDF00D116A1 /* SPUserManager.m */; };
 		4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */; };
 		4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79D101E0CF200D116A1 /* SPUserMO.m */; };
@@ -219,7 +222,7 @@
 		50EA92681AB23EFC008D3C4F /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
 		50EA926A1AB246B8008D3C4F /* SPDatabaseActionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EA92691AB246B8008D3C4F /* SPDatabaseActionTest.m */; };
 		50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
-		50F530521ABCF66B002F2C1A /* reset.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 50F530511ABCF66B002F2C1A /* reset.pdf */; };
+		50F530521ABCF66B002F2C1A /* resetTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 50F530511ABCF66B002F2C1A /* resetTemplate.pdf */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
 		580E8DB711EA774B000D8427 /* SequelProTabClose_Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */; };
 		580E8DB811EA774B000D8427 /* SequelProTabClose_Rollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAC11EA772C000D8427 /* SequelProTabClose_Rollover.png */; };
@@ -867,6 +870,10 @@
 		38C613701C89777B00B3B6EF /* libz.1.2.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.5.tbd; path = usr/lib/libz.1.2.5.tbd; sourceTree = SDKROOT; };
 		38C613721C8977E600B3B6EF /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		38F37194182F0621008EB031 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = readme.md; sourceTree = "<group>"; };
+		3E10740220FC25B7006DBDFD /* SPButtonBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPButtonBar.h; sourceTree = "<group>"; };
+		3E10740320FC25B7006DBDFD /* SPButtonBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SPButtonBar.m; sourceTree = "<group>"; };
+		3E242D4B20FEB44D0015470D /* button_bar_spacer_dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_bar_spacer_dark.png; sourceTree = "<group>"; };
+		3E242D4E20FEB44D0015470D /* button_bar_spacer_dark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_bar_spacer_dark@2x.png"; sourceTree = "<group>"; };
 		4D90B798101E0CDF00D116A1 /* SPUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManager.h; sourceTree = "<group>"; };
 		4D90B799101E0CDF00D116A1 /* SPUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManager.m; sourceTree = "<group>"; };
 		4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; name = SPUserManager.xcdatamodel; path = Models/SPUserManager.xcdatamodel; sourceTree = SOURCE_ROOT; };
@@ -913,7 +920,7 @@
 		50EA92691AB246B8008D3C4F /* SPDatabaseActionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseActionTest.m; sourceTree = "<group>"; };
 		50EAB5B61A8FBB08008F627A /* SPOSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPOSInfo.h; sourceTree = "<group>"; };
 		50EAB5B71A8FBB08008F627A /* SPOSInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPOSInfo.m; sourceTree = "<group>"; };
-		50F530511ABCF66B002F2C1A /* reset.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reset.pdf; sourceTree = "<group>"; };
+		50F530511ABCF66B002F2C1A /* resetTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = resetTemplate.pdf; sourceTree = "<group>"; };
 		5806B76211A991EC00813A88 /* SPDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDocumentController.h; sourceTree = "<group>"; };
 		5806B76311A991EC00813A88 /* SPDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDocumentController.m; sourceTree = "<group>"; };
 		580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SequelProTabClose_Pressed.png; sourceTree = "<group>"; };
@@ -2003,6 +2010,8 @@
 				17DC8828126B332F00E9AAEC /* Accessory Views */,
 				9BE768F3989033CEDDC2027E /* SPFillView.m */,
 				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
+				3E10740220FC25B7006DBDFD /* SPButtonBar.h */,
+				3E10740320FC25B7006DBDFD /* SPButtonBar.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -2046,6 +2055,8 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				3E242D4B20FEB44D0015470D /* button_bar_spacer_dark.png */,
+				3E242D4E20FEB44D0015470D /* button_bar_spacer_dark@2x.png */,
 				C9AD7C8116761B3300234EEE /* button_action.png */,
 				C9AD7C8216761B3300234EEE /* button_action@2x.png */,
 				582E93F5168298C6003459FD /* button_add_folder.png */,
@@ -2126,7 +2137,7 @@
 				384582C60FB9603600DDACB6 /* proc-small.png */,
 				58F48B2D161D08C0008536A1 /* quick-connect-icon-white.pdf */,
 				58F48AA2161D03C6008536A1 /* quick-connect-icon.pdf */,
-				50F530511ABCF66B002F2C1A /* reset.pdf */,
+				50F530511ABCF66B002F2C1A /* resetTemplate.pdf */,
 				582E946F16837DB2003459FD /* showconsole.png */,
 				588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */,
 				588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */,
@@ -2892,6 +2903,7 @@
 				B58DA73C0FF8BBA500FDDACD /* PrintAccessory.xib in Resources */,
 				B58DA73A0FF8BB9E00FDDACD /* SSHQuestionDialog.xib in Resources */,
 				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
+				3E242D4F20FEB44D0015470D /* button_bar_spacer_dark.png in Resources */,
 				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
 				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
 				588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */,
@@ -2988,6 +3000,7 @@
 				C9C9944E1678BCFA001F5DA8 /* table-small@2x.png in Resources */,
 				582E939D168296F3003459FD /* link-arrow-clicked@2x.png in Resources */,
 				582E939E168296F3003459FD /* link-arrow-highlighted-clicked@2x.png in Resources */,
+				3E242D5020FEB44D0015470D /* button_bar_spacer_dark@2x.png in Resources */,
 				582E939F168296F3003459FD /* link-arrow-highlighted@2x.png in Resources */,
 				582E93A0168296F3003459FD /* link-arrow@2x.png in Resources */,
 				582E93F6168298C6003459FD /* button_add_folder.png in Resources */,
@@ -2995,7 +3008,7 @@
 				582E940216829B0A003459FD /* button_bar_handle.png in Resources */,
 				582E940E1682A2AD003459FD /* button_bar_spacer@2x.png in Resources */,
 				582E94161682A463003459FD /* button_clear.png in Resources */,
-				50F530521ABCF66B002F2C1A /* reset.pdf in Resources */,
+				50F530521ABCF66B002F2C1A /* resetTemplate.pdf in Resources */,
 				582E94181682A4B4003459FD /* button_duplicate.png in Resources */,
 				582E941F16835DD4003459FD /* button_edit_mode_selected.png in Resources */,
 				582E942016835DD4003459FD /* button_edit_mode.png in Resources */,
@@ -3261,6 +3274,7 @@
 				BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */,
 				BC878A71121A836F00AE5066 /* SPColorWellCell.m in Sources */,
 				BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */,
+				3E10740420FC25B7006DBDFD /* SPButtonBar.m in Sources */,
 				BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */,
 				17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */,
 				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,

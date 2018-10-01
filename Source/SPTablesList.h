@@ -39,7 +39,7 @@
 @class SPSplitView;
 @class SPCharsetCollationHelper;
 @class SPCustomQuery;
-@class SPTableImport;
+@class SPDataImport;
 @class SPTableData;
 @class SPTableInfo;
 @class SPTableTriggers;
@@ -53,29 +53,29 @@
 	IBOutlet SPDatabaseData *databaseDataInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	IBOutlet SPCustomQuery *customQueryInstance;
-	IBOutlet SPTableImport *tableDumpInstance;
+	IBOutlet SPDataImport *tableDumpInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPTableTriggers *tableTriggersInstance;
 
-	IBOutlet id copyTableSheet;
+	IBOutlet NSWindow *copyTableSheet;
 	IBOutlet SPTableView *tablesListView;
-	IBOutlet id copyTableButton;
-	IBOutlet id copyTableNameField;
-	IBOutlet id copyTableMessageField;
+	IBOutlet NSButton *copyTableButton;
+	IBOutlet NSTextField *copyTableNameField;
+	IBOutlet NSTextField *copyTableMessageField;
 	IBOutlet NSButton *copyTableContentSwitch;
-	IBOutlet id tableSheet;
-	IBOutlet id tableNameField;
-	IBOutlet id tableEncodingButton;
-	IBOutlet id tableCollationButton;
-	IBOutlet id tableTypeButton;
-	IBOutlet id toolbarAddButton;
+	IBOutlet NSWindow *tableSheet;
+	IBOutlet NSTextField *tableNameField;
+	IBOutlet NSPopUpButton *tableEncodingButton;
+	IBOutlet NSPopUpButton *tableCollationButton;
+	IBOutlet NSPopUpButton *tableTypeButton;
+	IBOutlet NSButton *toolbarAddButton;
 
-	IBOutlet id toolbarActionsButton;
-	IBOutlet id toolbarReloadButton;
-	IBOutlet id addTableButton;
-	IBOutlet id truncateTableButton;
+	IBOutlet NSPopUpButton *toolbarActionsButton;
+	IBOutlet NSButton *toolbarReloadButton;
+	IBOutlet NSButton *addTableButton;
+	IBOutlet NSMenuItem *truncateTableButton;
 	IBOutlet SPSplitView *tableListSplitView;
 	IBOutlet SPSplitView *tableListFilterSplitView;
 

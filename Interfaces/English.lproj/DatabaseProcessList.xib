@@ -198,11 +198,10 @@
                         <rect key="frame" x="619" y="178" width="16" height="16"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                     </progressIndicator>
-                    <imageView misplaced="YES" id="74">
+                    <customView id="pmB-gQ-pby" customClass="SPButtonBar">
                         <rect key="frame" x="0.0" y="0.0" width="640" height="23"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="axesIndependently" image="button_bar_spacer" id="86"/>
-                    </imageView>
+                    </customView>
                     <button verticalHuggingPriority="750" id="87">
                         <rect key="frame" x="452" y="2" width="168" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
@@ -390,7 +389,7 @@
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" tag="1" id="135">
-                        <rect key="frame" x="134.00000087703972" y="13" width="80" height="28"/>
+                        <rect key="frame" x="134" y="13" width="80" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
                         <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" tag="1" inset="2" id="172">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -404,7 +403,7 @@ DQ
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" id="140">
-                        <rect key="frame" x="50.000003151203373" y="13" width="86" height="28"/>
+                        <rect key="frame" x="50" y="13" width="86" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
                         <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="141">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -438,7 +437,6 @@ Gw
     </objects>
     <resources>
         <image name="button_action" width="30" height="22"/>
-        <image name="button_bar_spacer" width="11" height="23"/>
         <image name="button_refresh" width="30" height="22"/>
     </resources>
 </document>

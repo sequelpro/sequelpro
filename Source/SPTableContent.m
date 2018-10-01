@@ -187,10 +187,9 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		tableLoadTimer = nil;
 
-		blackColor = [NSColor blackColor];
-		lightGrayColor = [NSColor lightGrayColor];
-		blueColor = [NSColor blueColor];
-		whiteColor = [NSColor whiteColor];
+		textForegroundColor  = [NSColor controlTextColor]; // this color dynamically adapts to the rest of the UI
+		nullHighlightColor   = [NSColor lightGrayColor];
+		binhexHighlightColor = [NSColor blueColor];
 
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row");
 		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
@@ -4337,7 +4336,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		if ([tableView editedColumn] != -1
 			&& [tableView editedRow] == rowIndex
 			&& (NSUInteger)[[NSArrayObjectAtIndex([tableView tableColumns], [tableView editedColumn]) identifier] integerValue] == columnIndex) {
-			[cell setTextColor:blackColor];
+			[cell setTextColor:textForegroundColor];
 			if (cellIsLinkCell) [cell setLinkActive:NO];
 			return;
 		}
@@ -4359,13 +4358,16 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 
 		if (cellIsNullOrUnloaded) {
-			[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : lightGrayColor];
+			[cell setTextColor:(rowIndex == [tableContentView selectedRow] ? textForegroundColor : nullHighlightColor)];
 		}
 		else {
-			[cell setTextColor:blackColor];
+			[cell setTextColor:textForegroundColor];
 
-			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+			if (
+				[self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]] &&
+				rowIndex != [tableContentView selectedRow]
+			) {
+				[cell setTextColor:binhexHighlightColor];
 			}
 		}
 

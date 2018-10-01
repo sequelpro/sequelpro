@@ -33,22 +33,6 @@
                 <rect key="frame" x="0.0" y="0.0" width="575" height="203"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView misplaced="YES" id="71">
-                        <rect key="frame" x="-1" y="0.0" width="578" height="23"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="axesIndependently" image="button_bar_spacer" id="72"/>
-                    </imageView>
-                    <button verticalHuggingPriority="750" id="9">
-                        <rect key="frame" x="399" y="2" width="166" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="roundRect" title="Save As..." bezelStyle="roundedRect" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="12">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="smallSystem"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="saveConsoleAs:" target="-2" id="54"/>
-                        </connections>
-                    </button>
                     <searchField wantsLayer="YES" verticalHuggingPriority="750" id="8">
                         <rect key="frame" x="10" y="174" width="531" height="19"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -61,6 +45,10 @@
                             <outlet property="delegate" destination="-2" id="61"/>
                         </connections>
                     </searchField>
+                    <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="62">
+                        <rect key="frame" x="549" y="175" width="16" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                    </progressIndicator>
                     <scrollView autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="7">
                         <rect key="frame" x="-1" y="22" width="578" height="144"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -120,7 +108,7 @@
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                             </tableHeaderCell>
-                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="g2D-wF-fcB">
+                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="g2D-wF-fcB">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -152,10 +140,21 @@
                             </connections>
                         </tableHeaderView>
                     </scrollView>
-                    <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="62">
-                        <rect key="frame" x="549" y="175" width="16" height="16"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                    </progressIndicator>
+                    <customView id="plS-KC-BwQ" customClass="SPButtonBar">
+                        <rect key="frame" x="0.0" y="0.0" width="575" height="23"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                    </customView>
+                    <button verticalHuggingPriority="750" id="9">
+                        <rect key="frame" x="399" y="2" width="166" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="roundRect" title="Save As..." bezelStyle="roundedRect" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="12">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="saveConsoleAs:" target="-2" id="54"/>
+                        </connections>
+                    </button>
                     <button toolTip="Clear Console" id="73">
                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -233,7 +232,7 @@
                         </popUpButtonCell>
                     </popUpButton>
                     <textField verticalHuggingPriority="750" id="108">
-                        <rect key="frame" x="67" y="4" width="375" height="14"/>
+                        <rect key="frame" x="67" y="4" width="326" height="14"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="109">
                             <font key="font" metaFont="smallSystem"/>
@@ -329,7 +328,6 @@
     </objects>
     <resources>
         <image name="button_action" width="30" height="22"/>
-        <image name="button_bar_spacer" width="11" height="23"/>
         <image name="button_clear" width="30" height="22"/>
     </resources>
 </document>

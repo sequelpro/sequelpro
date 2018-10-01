@@ -11,15 +11,13 @@
 			font-size:9pt;
 		}
 		
-		h2 {}
-		
-		ul {}
-		
-		li {}
-		
 		.internallink {
 			color: #6A81DD;
 			text-decoration: none;
+		}
+
+		.internallink:hover {
+			text-decoration: underline;
 		}
 		
 		.description {
@@ -42,9 +40,23 @@
 			color: #ff415a;
 			font-family: monospace;
 		}
+
+		body.dark {
+			background-color: rgb(42, 38, 38);
+			color: white;
+		}
+
+		.dark .internallink {
+			color: rgb(65, 156, 255);
+		}
 	</style>
+	<script type="text/javascript">
+		window.onThemeChange = function(theme) {
+		    document.body.className = (theme === 'dark') ? 'dark' : '';
+		};
+	</script>
 </head>
-<body>
+<body class="{{bodyClass}}">
 {{body}}
 </body>
 </html>

@@ -261,6 +261,10 @@
 	[importFieldNamesSwitch setState:[[prefs objectForKey:SPCSVImportFirstLineIsHeader] boolValue]];
 
 	[openPanel setAccessoryView:importView];
+	//on os x 10.11+ the accessory view will be hidden by default and has to be made visible
+	if([openPanel respondsToSelector:@selector(setAccessoryViewDisclosed:)]) {
+		[openPanel setAccessoryViewDisclosed:YES];
+	}
 	[openPanel setDelegate:self];
 	
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {

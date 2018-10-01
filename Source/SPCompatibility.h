@@ -62,6 +62,16 @@
 
 @end
 
+// This is actually a @protocol
+@interface NSWindow (Mavericks)
+
+// actual return type is `NSAppearance *`
+@property (readonly) id effectiveAppearance;
+
+@end
+
+#define NSAppearanceNameAqua @"NSAppearanceNameAqua"
+
 #endif
 
 #pragma mark - 10.10 Yosemite
@@ -121,6 +131,14 @@ typedef struct {
 @protocol WebFrameLoadDelegate <NSObject>
 @end
 
+// formal protocol since 10.11, NSObject category before
+@protocol WebPolicyDelegate <NSObject>
+@end
+
+// formal protocol since 10.11, NSObject category before
+@protocol WebUIDelegate <NSObject>
+@end
+
 @interface NSOpenPanel (ElCapitan)
 
 @property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed;
@@ -147,5 +165,34 @@ typedef struct {
 @end
 
 #endif
+
+#endif
+
+#pragma mark - 10.13 High Sierra
+
+#ifndef __MAC_10_13
+#define __MAC_10_13 101300
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_13
+
+#endif
+
+#pragma mark - 10.14 Mojave
+
+#ifndef __MAC_10_14
+#define __MAC_10_14 101400
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_14
+
+// NSAppearance class is supported since 10.9, but this file has to go back to 10.8
+@interface NSObject (NSAppearance_Mojave)
+
+- (NSString *)bestMatchFromAppearancesWithNames:(NSArray *)appearances;
+
+@end
+
+#define NSAppearanceNameDarkAqua @"NSAppearanceNameDarkAqua"
 
 #endif

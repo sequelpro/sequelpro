@@ -182,7 +182,7 @@ Gw
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button verticalHuggingPriority="750" id="1759">
-                        <rect key="frame" x="161.00000039736432" y="13" width="88" height="28"/>
+                        <rect key="frame" x="161" y="13" width="88" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
                         <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="1764">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -245,17 +245,16 @@ Gw
                         </connections>
                     </scrollView>
                     <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" id="2252">
-                        <rect key="frame" x="-1" y="57" width="266" height="23"/>
+                        <rect key="frame" x="-1" y="56" width="266" height="24"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <view key="contentView">
-                            <rect key="frame" x="1" y="1" width="264" height="21"/>
+                        <view key="contentView" id="sIK-yy-s99">
+                            <rect key="frame" x="1" y="1" width="264" height="22"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <imageView id="2254">
-                                    <rect key="frame" x="-2" y="0.0" width="272" height="22"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="2257"/>
-                                </imageView>
+                                <customView id="GNX-ny-MYp" customClass="SPButtonBar">
+                                    <rect key="frame" x="0.0" y="0.0" width="264" height="23"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                </customView>
                                 <button toolTip="Remove Theme" id="2255">
                                     <rect key="frame" x="31" y="-1" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -885,7 +884,7 @@ Gw
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="cv6-Te-MPL">
-                    <rect key="frame" x="202" y="174" width="360" height="28"/>
+                    <rect key="frame" x="202" y="172" width="360" height="30"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" id="JMS-lH-5Te">
                         <font key="font" metaFont="smallSystem"/>
@@ -1181,7 +1180,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                 <button toolTip="Reset the cipher list to the default configuration" verticalHuggingPriority="750" id="jJw-LF-gtW">
                     <rect key="frame" x="226" y="22" width="32" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="reset" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7JN-Nf-GsD">
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="resetTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7JN-Nf-GsD">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -1728,9 +1727,8 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
     </objects>
     <resources>
         <image name="NSAdvanced" width="32" height="32"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_duplicate" width="33" height="23"/>
         <image name="button_remove" width="32" height="23"/>
-        <image name="reset" width="16" height="16"/>
+        <image name="resetTemplate" width="16" height="16"/>
     </resources>
 </document>

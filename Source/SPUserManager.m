@@ -1597,7 +1597,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
 			[cell setTextColor:[NSColor lightGrayColor]];
 		} else {
-			[cell setTextColor:[NSColor blackColor]];
+			[cell setTextColor:[NSColor controlTextColor]];
 		}
 
 		// If the schema has permissions set, highlight with a yellow background

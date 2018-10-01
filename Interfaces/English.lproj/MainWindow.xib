@@ -35,7 +35,7 @@
                         </connections>
                     </customView>
                     <tabView misplaced="YES" drawsBackground="NO" type="noTabsNoBorder" id="4">
-                        <rect key="frame" x="0.0" y="1" width="948" height="529"/>
+                        <rect key="frame" x="0.0" y="0.0" width="948" height="530"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <font key="font" metaFont="system"/>
                         <tabViewItems/>

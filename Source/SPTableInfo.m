@@ -134,7 +134,6 @@
  */
 - (void)tableChanged:(NSNotification *)notification
 {
-	NSDictionary *tableStatus;
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
@@ -160,7 +159,7 @@
 		if ([tableListInstance tableName]) {
 
 			// Retrieve the table status information via the data cache
-			tableStatus = [tableDataInstance statusValues];
+			NSDictionary *tableStatus = [tableDataInstance statusValues];
 
 			// Check for errors
 			if (![tableStatus count]) {
@@ -228,7 +227,7 @@
 		if ([tableListInstance tableName]) {
 
 			// Retrieve the table status information via the data cache
-			tableStatus = [tableDataInstance statusValues];
+			NSDictionary *tableStatus = [tableDataInstance statusValues];
 
 			// Check for errors
 			if (![tableStatus count]) {
@@ -282,7 +281,7 @@
 		if ([tableListInstance tableName]) {
 
 			// Retrieve the table status information via the data cache
-			tableStatus = [tableDataInstance statusValues];
+			NSDictionary *tableStatus = [tableDataInstance statusValues];
 
 			// Check for errors
 			if (![tableStatus count]) {
@@ -290,10 +289,11 @@
 				return;
 			}
 
-			// Check for 'CREATED' == NULL
-			if (![[tableStatus objectForKey:@"DEFINER"] isNSNull]) {
+			// Check for 'DEFINER' == NULL
+			// Note: In mysql 8.0 definer and all the other following fields are missing in the result set for information_schema system views!
+			if ([[tableStatus objectForKey:@"DEFINER"] unboxNull]) {
 
-				// Add the creation date to the infoTable
+				// Add the definer to the infoTable
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"definer: %@", @"definer: %@"), [tableStatus objectForKey:@"DEFINER"]]];
 
 				// Check for 'SECURITY_TYPE'

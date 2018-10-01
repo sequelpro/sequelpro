@@ -52,8 +52,8 @@
                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="28">
                                         <rect key="frame" x="0.0" y="23" width="177" height="483"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                        <clipView key="contentView" id="VfC-c0-tv4">
-                                            <rect key="frame" x="0.0" y="17" width="177" height="466"/>
+                                        <clipView key="contentView" drawsBackground="NO" id="VfC-c0-tv4">
+                                            <rect key="frame" x="0.0" y="0.0" width="177" height="483"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" headerView="923" indentationPerLevel="14" autoresizesOutlineColumn="YES" outlineTableColumn="33" id="31" customClass="SPOutlineView">
@@ -93,7 +93,6 @@
                                                     </connections>
                                                 </outlineView>
                                             </subviews>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="30">
                                             <rect key="frame" x="0.0" y="473" width="183" height="11"/>
@@ -108,11 +107,10 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
-                                    <imageView id="1001">
-                                        <rect key="frame" x="1" y="0.0" width="176" height="23"/>
+                                    <customView id="laV-2i-ttS" customClass="SPButtonBar">
+                                        <rect key="frame" x="0.0" y="0.0" width="177" height="23"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="1002"/>
-                                    </imageView>
+                                    </customView>
                                     <popUpButton id="1006">
                                         <rect key="frame" x="60" y="0.0" width="36" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -865,7 +863,7 @@ DQ
                                                                         <rect key="frame" x="0.0" y="0.0" width="163" height="363"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <size key="intercellSpacing" width="3" height="2"/>
-                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                         <tableColumns>
                                                                             <tableColumn identifier="Schemas" editable="NO" width="160" minWidth="40" maxWidth="1000" id="750">
@@ -888,7 +886,6 @@ DQ
                                                                         </connections>
                                                                     </tableView>
                                                                 </subviews>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </clipView>
                                                             <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="747">
                                                                 <rect key="frame" x="1" y="369" width="109" height="11"/>
@@ -944,7 +941,6 @@ DQ
                                                                         </connections>
                                                                     </tableView>
                                                                 </subviews>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </clipView>
                                                             <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="771">
                                                                 <rect key="frame" x="1" y="369" width="109" height="11"/>
@@ -970,7 +966,7 @@ DQ
                                                                         <rect key="frame" x="0.0" y="0.0" width="163" height="363"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <size key="intercellSpacing" width="3" height="2"/>
-                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                         <tableColumns>
                                                                             <tableColumn identifier="Available Privilige" editable="NO" width="160" minWidth="40" maxWidth="1000" id="780">
@@ -1000,7 +996,6 @@ DQ
                                                                         </connections>
                                                                     </tableView>
                                                                 </subviews>
-                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                             </clipView>
                                                             <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="778">
                                                                 <rect key="frame" x="1" y="369" width="109" height="11"/>
@@ -1333,8 +1328,6 @@ Some changes may have already been applied; please review the errors below befor
                                     <size key="minSize" width="405" height="115"/>
                                     <size key="maxSize" width="463" height="10000000"/>
                                     <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                    <size key="minSize" width="405" height="115"/>
-                                    <size key="maxSize" width="463" height="10000000"/>
                                 </textView>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -1372,7 +1365,6 @@ DQ
         <image name="button_action" width="16" height="16"/>
         <image name="button_add" width="16" height="16"/>
         <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_bar_spacer" width="10" height="29"/>
         <image name="button_remove" width="32" height="23"/>
     </resources>
 </document>
