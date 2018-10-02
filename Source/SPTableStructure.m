@@ -2920,31 +2920,45 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 #pragma mark -
 
-void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries)
+void _BuildMenuWithPills(NSMenu *menu, struct _cmpMap *map, size_t mapEntries)
 {
-	NSDictionary *baseAttrs = @{NSFontAttributeName:[menu font],NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
+	NSDictionary *baseAttrs = @{NSFontAttributeName: [menu font], NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
 
-	for(NSMenuItem *item in [menu itemArray]) {
+	for (NSMenuItem *item in [menu itemArray])
+	{
 		NSMutableAttributedString *itemStr = [[NSMutableAttributedString alloc] initWithString:[item title] attributes:baseAttrs];
 		NSString *value = [item representedObject];
 
 		NSMutableArray *tooltipParts = [NSMutableArray array];
-		for (unsigned int i = 0; i < mapEntries; ++i) {
+
+		for (unsigned int i = 0; i < mapEntries; ++i)
+		{
 			struct _cmpMap *cmp = &map[i];
-			if([cmp->cmpWith isEqualToString:value]) {
+
+			if ([cmp->cmpWith isEqualToString:value]) {
+
 				SPPillAttachmentCell *cell = [[SPPillAttachmentCell alloc] init];
+
 				[cell setStringValue:cmp->title];
+
 				NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+
 				[attachment setAttachmentCell:[cell autorelease]];
+
 				NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:[attachment autorelease]];
 
 				[[itemStr mutableString] appendString:@" "];
 				[itemStr appendAttributedString:attachmentString];
 
-				if(cmp->tooltipPart) [tooltipParts addObject:cmp->tooltipPart];
+				if (cmp->tooltipPart) {
+					[tooltipParts addObject:cmp->tooltipPart];
+				}
 			}
 		}
-		if([tooltipParts count]) [item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+
+		if ([tooltipParts count]) {
+			[item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+		}
 
 		[item setAttributedTitle:[itemStr autorelease]];
 	}
