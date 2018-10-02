@@ -160,23 +160,19 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 - (void)awakeFromNib
 {
-#ifndef SP_CODA /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[indexesTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-#endif
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
 
-#ifndef SP_CODA /* set font from prefs */
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
 	NSInteger monospacedFontSize = [prefs integerForKey:SPMonospacedFontSize] > 0 ? [prefs integerForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-#endif
 
 	extraFieldSuggestions = [@[
 			@"None",
@@ -250,17 +246,12 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-#ifndef SP_CODA /* add prefs observer */
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-#endif	
 
-#ifndef SP_CODA
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
-#endif
 
-#ifndef SP_CODA /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -274,24 +265,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 				[[viewColumnsMenu itemWithTag:12] setState:NSOffState];
 		}
 	}
-#else
-/*
-	for (NSTableColumn *col in [tableSourceView tableColumns]) 
-	{
-		if ([col isHidden]) {
-			if ([[col identifier] isEqualToString:@"Key"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:7]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"encoding"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:10]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"collation"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:11]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"comment"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:12]] setState:NSOffState];
-		}
-	}
-*/
-#endif
-	
+
 	[tableSourceView reloadData];
 }
 
@@ -2478,20 +2452,20 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	const SPFieldTypeHelp *help = [[self class] helpForFieldType:selected];
 
-	if(help) {
+	if (help) {
 		NSMutableAttributedString *as = [[NSMutableAttributedString alloc] init];
 
 		//title
 		{
-			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]]};
+			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *title = [[NSAttributedString alloc] initWithString:[help typeDefinition] attributes:titleAttr];
 			[as appendAttributedString:[title autorelease]];
 			[[as mutableString] appendString:@"\n"];
 		}
 
 		//range
-		if([[help typeRange] length]) {
-			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]};
+		if ([[help typeRange] length]) {
+			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *range = [[NSAttributedString alloc] initWithString:[help typeRange] attributes:rangeAttr];
 			[as appendAttributedString:[range autorelease]];
 			[[as mutableString] appendString:@"\n"];
@@ -2501,7 +2475,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 		//description
 		{
-			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]]};
+			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *desc = [[NSAttributedString alloc] initWithString:[help typeDescription] attributes:descAttr];
 			[as appendAttributedString:[desc autorelease]];
 		}
@@ -2522,7 +2496,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		NSPoint topRightCorner = NSMakePoint(popUpFrame.origin.x, NSMaxY(popUpFrame));
 		NSRect screenRect = [NSScreen rectOfScreenAtPoint:topRightCorner];
 
-		if(NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
+		if (NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
 			// exceeds right border, display on the left
 			winRect.origin.x = popUpFrame.origin.x - 10 - winRect.size.width;
 		}
@@ -2533,6 +2507,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 		winRect.size.height = rect.size.height + winAddonSize;
 		winRect.origin.y = NSMaxY(popUpFrame) - winRect.size.height;
+
 		[structureHelpPanel setFrame:winRect display:YES];
 
 		[structureHelpPanel orderFront:nil];
