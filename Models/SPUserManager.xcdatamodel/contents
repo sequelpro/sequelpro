@@ -9,6 +9,7 @@
         <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="db" attributeType="String" maxValueString="64" indexed="YES" syncable="YES"/>
         <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="delete_versioning_rows_priv" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
@@ -21,7 +22,6 @@
         <attribute name="show_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="trigger_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="update_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
-        <attribute name="delete_history_priv" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="userManager" optional="YES" transient="YES" syncable="YES"/>
         <relationship name="user" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SPUser" inverseName="schema_privileges" inverseEntity="SPUser" indexed="YES" syncable="YES"/>
     </entity>
@@ -36,6 +36,7 @@
         <attribute name="create_user_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="delete_versioning_rows_priv" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
@@ -69,7 +70,6 @@
         <attribute name="super_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="trigger_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="update_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
-        <attribute name="delete_history_priv" optional="YES" attributeType="Boolean" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="userManager" optional="YES" transient="YES" syncable="YES"/>
         <relationship name="children" optional="YES" toMany="YES" minCount="1" deletionRule="Cascade" destinationEntity="SPUser" inverseName="parent" inverseEntity="SPUser" indexed="YES" syncable="YES"/>
