@@ -1534,7 +1534,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 				}
 				else {
 					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"] &&
-						[[index objectForKey:@"Index_type"] isEqualToString:@"SPATIAL"]
+						[[index objectForKey:@"Index_type"] isEqualToString:@"SPATIAL"] &&
 						![field objectForKey:@"Key"]) {
 						[field setObject:@"SPA" forKey:@"Key"];
 					}
