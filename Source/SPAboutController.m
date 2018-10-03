@@ -39,26 +39,16 @@ static NSString *SPLicenseFilename = @"License";
 static NSString *SPAboutPanelNibName = @"AboutPanel";
 static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 
-static BOOL isOSAtLeast10_14 = NO;
-
 @interface SPAboutController ()
 
-- (BOOL)_isInDarkMode;
 - (void)_setVersionLabel:(BOOL)isNightly;
-- (NSAttributedString *)_getCreditsText;
-- (NSAttributedString *)_getLicenseText;
-- (NSAttributedString *)_applyTextAttributes:(NSMutableAttributedString *)text;
+- (NSMutableAttributedString *)_loadRtfResource:(NSString *)filename;
 
 @end
 
 @implementation SPAboutController
 
 #pragma mark -
-
-+ (void)initialize
-{
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
-}
 
 - (id)init
 {
@@ -80,10 +70,10 @@ static BOOL isOSAtLeast10_14 = NO;
 	[self _setVersionLabel:isSnapshotBuild];
 	
 	// Set the credits
-	[[appCreditsTextView textStorage] appendAttributedString:[self _getCreditsText]];
+	[[appCreditsTextView textStorage] appendAttributedString:[self _loadRtfResource:SPCreditsFilename]];
 	
 	// Set the license
-	[[appLicenseTextView textStorage] appendAttributedString:[self _getLicenseText]];
+	[[appLicenseTextView textStorage] appendAttributedString:[self _loadRtfResource:SPLicenseFilename]];
 }
 
 #pragma mark -
@@ -108,19 +98,6 @@ static BOOL isOSAtLeast10_14 = NO;
 
 #pragma mark -
 #pragma mark Private API
-
-- (BOOL)_isInDarkMode
-{
-	if (isOSAtLeast10_14) {
-		NSString *match = [[NSAppearance currentAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
-
-		if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
-			return YES;
-		}
-	}
-
-	return NO;
-}
 
 /**
  * Set the UI version labels.
@@ -154,35 +131,15 @@ static BOOL isOSAtLeast10_14 = NO;
 }
 
 /**
- * Returns the credits string to display in the about dialog.
+ * Loads the resource with the supplied name and sets any necessary string attributes.
  */
-- (NSAttributedString *)_getCreditsText
+- (NSAttributedString *)_loadRtfResource:(NSString *)filename
 {
-	NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil];
+	NSMutableAttributedString *resouece = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:filename ofType:@"rtf"] documentAttributes:nil];
 
-	return [[self _applyTextAttributes:credits] autorelease];
-}
+	[resouece addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [resouece length])];
 
-/**
- * Returns the license string to display in the about dialog.
- */
-- (NSAttributedString *)_getLicenseText
-{
-	NSMutableAttributedString *license = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPLicenseFilename ofType:@"rtf"] documentAttributes:nil];
-
-	return [[self _applyTextAttributes:license] autorelease];
-}
-
-/**
- *
- */
-- (NSAttributedString *)_applyTextAttributes:(NSMutableAttributedString *)text
-{
-	if ([self _isInDarkMode]) {
-		[text addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [text length])];
-	}
-
-	return text;
+	return [resouece autorelease];
 }
 
 @end
