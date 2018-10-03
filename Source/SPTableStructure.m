@@ -56,10 +56,12 @@ static NSString *SPRemoveField = @"SPRemoveField";
 static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 @interface SPFieldTypeHelp ()
+
 @property(copy,readwrite) NSString *typeName;
 @property(copy,readwrite) NSString *typeDefinition;
 @property(copy,readwrite) NSString *typeRange;
 @property(copy,readwrite) NSString *typeDescription;
+
 @end
 
 @implementation SPFieldTypeHelp
@@ -505,17 +507,17 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 }
 
 /**
- *
+ * Resets the auto increment value of a table.
  */
 - (IBAction)resetAutoIncrement:(id)sender
 {
-#ifndef SP_CODA
 	if ([sender tag] == 1) {
 
 		[resetAutoIncrementLine setHidden:YES];
 
-		if ([tableDocumentInstance currentlySelectedView] == SPTableViewStructure)
+		if ([tableDocumentInstance currentlySelectedView] == SPTableViewStructure){
 			[resetAutoIncrementLine setHidden:NO];
+		}
 
 		// Begin the sheet
 		[NSApp beginSheet:resetAutoIncrementSheet
@@ -529,7 +531,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	else if ([sender tag] == 2) {
 		[self setAutoIncrementTo:@1];
 	}
-#endif
 }
 
 /**
@@ -537,23 +538,23 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
  */
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-#ifndef SP_CODA
 	// Order out current sheet to suppress overlapping of sheets
 	[theSheet orderOut:nil];
 
 	if (returnCode == NSAlertDefaultReturn) {
 		[self takeAutoIncrementFrom:resetAutoIncrementValue];
 	}
-#endif
 }
 
 - (void)takeAutoIncrementFrom:(NSTextField *)field
 {
 	id obj = [field objectValue];
+
 	//nil is handled by -setAutoIncrementTo:
-	if(obj && ![obj isKindOfClass:[NSNumber class]]) {
+	if (obj && ![obj isKindOfClass:[NSNumber class]]) {
 		[NSException raise:NSInternalInconsistencyException format:@"[$field objectValue] should return NSNumber *, but was %@",[obj class]];
 	}
+
 	[self setAutoIncrementTo:(NSNumber *)obj];
 }
 
@@ -727,7 +728,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	return tempResult;
 }
-
 
 /**
  * A method to be called whenever the selection changes or the table would be reloaded
@@ -1061,40 +1061,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	return queryString;
 }
-
-#ifdef SP_CODA /* glue */
-
-- (void)setDatabaseDocument:(SPDatabaseDocument*)doc
-{
-	tableDocumentInstance = doc;
-}
-
-- (void)setTableListInstance:(SPTablesList*)list
-{
-	tablesListInstance = list;
-}
-
-- (void)setTableDataInstance:(SPTableData*)data
-{
-	tableDataInstance = data;
-}
-
-- (void)setDatabaseDataInstance:(SPDatabaseData*)data
-{
-	databaseDataInstance = data;
-}
-
-- (void)setTableSourceView:(SPTableView*)tv
-{
-	tableSourceView = tv;
-}
-
-- (void)setEncodingPopupCell:(NSPopUpButtonCell*)cell
-{
-	encodingPopupCell = cell;
-}
-
-#endif
 
 /**
  * A method to show an error sheet after a short delay, so that it can
@@ -1555,23 +1521,25 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	}
 
 	// Process the indexes into a local array of dictionaries
-	NSArray *theTableIndexes = [self convertIndexResultToArray:indexResult];
+	NSArray *tableIndexes = [self convertIndexResultToArray:indexResult];
 
 	// Set the Key column
-	for (NSDictionary* theIndex in theTableIndexes)
+	for (NSDictionary *index in tableIndexes)
 	{
 		for (id field in theTableFields)
 		{
-			if ([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
-				if ([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
+			if ([[field objectForKey:@"name"] isEqualToString:[index objectForKey:@"Column_name"]]) {
+				if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
 					[field setObject:@"PRI" forKey:@"Key"];
 				}
 				else {
-					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"] &&
+						[[index objectForKey:@"Index_type"] isEqualToString:@"SPATIAL"]
+						![field objectForKey:@"Key"]) {
 						[field setObject:@"SPA" forKey:@"Key"];
 					}
 					else {
-						[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
+						[field setObject:[[index objectForKey:@"Non_unique"] isEqualToString:@"1"] ? @"MUL" : @"UNI" forKey:@"Key"];
 					}
 				}
 
@@ -1716,7 +1684,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
 								  aTable, @"name",
 								  theTableFields, @"tableFields",
-								  theTableIndexes, @"tableIndexes",
+								  tableIndexes, @"tableIndexes",
 								  theTableEnumLists, @"enumLists",
 								  nil];
 
