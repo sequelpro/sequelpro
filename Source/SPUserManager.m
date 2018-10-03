@@ -101,12 +101,17 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 		// is derived automatically.  While most keys can be automatically converted without
 		// any difficulty, some keys differ slightly in mysql column storage to GRANT syntax;
 		// this dictionary provides mappings for those values to ensure consistency.
+		
+		// key is:   The name of the actual column in the mysql.users / mysql.db table
+		// value is: The "Privilege" value from "SHOW PRIVILEGES" with " " replaced by "_" and "_priv" appended
 		privColumnToGrantMap = [@{
-			@"Grant_priv":            @"Grant_option_priv",
-			@"Show_db_priv":          @"Show_databases_priv",
-			@"Create_tmp_table_priv": @"Create_temporary_tables_priv",
-			@"Repl_slave_priv":       @"Replication_slave_priv",
-			@"Repl_client_priv":      @"Replication_client_priv",
+			@"Grant_priv":               @"Grant_option_priv",
+			@"Show_db_priv":             @"Show_databases_priv",
+			@"Create_tmp_table_priv":    @"Create_temporary_tables_priv",
+			@"Repl_slave_priv":          @"Replication_slave_priv",
+			@"Repl_client_priv":         @"Replication_client_priv",
+			@"Truncate_versioning_priv": @"Delete_versioning_rows_priv", // MariaDB only, 10.3.4 only
+			@"Delete_history_priv":      @"Delete_versioning_rows_priv", // MariaDB only, since 10.3.5
 		} retain];
 	
 		schemas = [[NSMutableArray alloc] init];

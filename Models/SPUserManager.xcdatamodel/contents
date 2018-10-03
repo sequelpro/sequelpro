@@ -9,6 +9,7 @@
         <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="db" attributeType="String" maxValueString="64" indexed="YES" syncable="YES"/>
         <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="delete_versioning_rows_priv" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
@@ -35,6 +36,7 @@
         <attribute name="create_user_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="delete_versioning_rows_priv" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
