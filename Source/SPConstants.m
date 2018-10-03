@@ -254,8 +254,8 @@ NSString *SPHistoryItemsHaveBeenUpdatedNotification   = @"HistoryItemsHaveBeenUp
 NSString *SPContentFiltersHaveBeenUpdatedNotification = @"ContentFiltersHaveBeenUpdatedNotification";
 
 // URLs
-NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";
-NSString *SPMySQLSearchURL                       = @"http://dev.mysql.com/doc/refman/%@/%@/%@.html";
+NSString *SPDonationsURL                         = @"https://www.sequelpro.com/donate/";
+NSString *SPMySQLSearchURL                       = @"https://dev.mysql.com/doc/refman/%@/%@/%@.html";
 NSString *SPDevURL                               = @"https://github.com/sequelpro/sequelpro";
 
 // Toolbar constants

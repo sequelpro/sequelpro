@@ -235,15 +235,15 @@ typedef enum
 } SPPreferenceFontChangeTarget;
 
 // Predefined localisable URLs
-#define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"http://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"http://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_DOCUMENTATION       NSLocalizedString(@"http://www.sequelpro.com/docs/", @"Localized documentation home page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"http://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"http://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/category/getting-connected/", @"Localized connection help page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"http://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"http://www.sequelpro.com/bundles/reference/", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_CONTENTFILTERHELP   NSLocalizedString(@"http://www.sequelpro.com/docs/Content_Filters", @"Localized help page for content filter - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"https://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"https://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_DOCUMENTATION       NSLocalizedString(@"https://www.sequelpro.com/docs/", @"Localized documentation home page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"https://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"https://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"https://www.sequelpro.com/docs/category/getting-connected/", @"Localized connection help page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"https://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"https://www.sequelpro.com/bundles/reference/", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONTENTFILTERHELP   NSLocalizedString(@"https://www.sequelpro.com/docs/Content_Filters", @"Localized help page for content filter - do not localize if no translated webpage is available")
 
 // Narrow down completion max rows
 extern const NSUInteger SPNarrowDownCompletionMaxRows;
