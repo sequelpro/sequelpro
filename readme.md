@@ -3,7 +3,7 @@ Sequel Pro <img alt="Logo" src="https://sequelpro.com/images/logo.png" align="ri
 
 Sequel Pro is a fast, easy-to-use Mac database management application for working with MySQL & MariaDB databases.
 
-You can find more details on our website: [sequelpro.com](http://sequelpro.com)
+You can find more details on our website: [sequelpro.com](https://sequelpro.com)
 
 ![Screenshot](https://sequelpro.com/images/browse.png)
 
@@ -11,7 +11,7 @@ Build Instructions
 ==================
 
  * Install the [latest version of Xcode](https://itunes.apple.com/au/app/xcode/id497799835)
- * Install [GitHub for Mac](https://desktop.github.com/) (or [SourceTree](https://www.sourcetreeapp.com/), or […](http://git-scm.com/downloads/guis))
+ * Install [GitHub for Mac](https://desktop.github.com/) (or [SourceTree](https://www.sourcetreeapp.com/), or […](https://git-scm.com/downloads/guis))
  * Click "Clone in Desktop" on the right sidebar of our [GitHub page](https://github.com/sequelpro/sequelpro)
  * Open `sequel-pro.xcodeproj`
  * Click the `Run` button in the toolbar
