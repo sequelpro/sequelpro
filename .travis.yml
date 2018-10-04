@@ -1,0 +1,9 @@
+language: objective-c
+os: osx
+osx_image: xcode10
+xcode_project: sequel-pro.xcodeproj
+xcode_scheme: Sequel Pro
+before_install:
+  - sed -i '' -e 's/Debug/Release/g' Makefile
+  - find . -type f -name "*.pbxproj" -exec sed -i '' -e 's/ARCHS_STANDARD_32_64_BIT/ARCHS_STANDARD_64_BIT/g' {} +
+script: make
