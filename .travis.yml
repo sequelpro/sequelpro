@@ -1,0 +1,20 @@
+language: objective-c
+os: osx
+osx_image: xcode10
+xcode_project: sequel-pro.xcodeproj
+xcode_scheme: Sequel Pro
+before_install:
+- sed -i '' -e 's/Debug/Release/g' Makefile
+- find . -type f -name "*.pbxproj" -exec sed -i '' -e 's/ARCHS_STANDARD_32_64_BIT/ARCHS_STANDARD_64_BIT/g'
+  {} +
+script: make
+before_deploy:
+  - tar -zcvf SequelPro.app.tar.gz "build/Release/Sequel Pro.app"
+deploy:
+  provider: releases
+  file: SequelPro.app.tar.gz
+  api_key:
+    secure: DjKVKG+HaPHmkxI05uHYyAqRYA4rYpHfaum5+ON5GLRqN8nfRzu2OJO1OYPykj4mVujgaQ6vWipYU50/+O5L5ZPwaznelm8jav68b1cbFqlFI9BKs/lkAd0hXXyMISFt+zRJPAXh5PwtUHcefUuq9Y5b0qfQQ0wyBI5mfdzpyUN+QqZbMHp55n5KABOmjG48rRhZU6wSCvhTvO2IUEui9n4iq5qzfw6SIh8+ZE/7t3oWBDckWU4Gr/9jPC9vFiUni8ZU9irT2+vDj3a+D2DuA5QKAcr9HaEGaUM4WAiisvMVbz9IMYC3GiYELPDYhpQPmV117llxln8SUvHroFa7kc0HIF6I7ooK8ItfajDY+ifO7ViEyl+qe4cXrMnDzRNKJkVwhf2LckJOdx96Y1KKQEvRGVQBHXKziTrW7758QwkDjJK8ZSPvd2ShbOj6sCikJoUrKu9ojH7plvjpqWAtjNobgGXe6mNOmbPSXwwQTCh/hs8KrAyb1DR+y2CFGTXaqfcYNah/qYmnuPrRjDgSwIVSLWmjQrt3CwZGatZd8oezLsLbKkmKMwxGhoPrUCadkIepSyPAD3BkGKGFAUr0zRToOVou78dx+zqAonJMTlv4rMpy5NYfHuaAdZwpcrVvrCdd1QScENBL6wqA3yJ3go29Ytwo7VzVRsoKZNEz1UQ=
+  skip_cleanup: true
+  on:
+    tags: true
