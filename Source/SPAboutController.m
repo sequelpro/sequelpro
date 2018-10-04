@@ -135,11 +135,11 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
  */
 - (NSAttributedString *)_loadRtfResource:(NSString *)filename
 {
-	NSMutableAttributedString *resouece = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:filename ofType:@"rtf"] documentAttributes:nil];
+	NSMutableAttributedString *resource = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:filename ofType:@"rtf"] documentAttributes:nil];
 
-	[resouece addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [resouece length])];
+	[resource addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [resource length])];
 
-	return [resouece autorelease];
+	return [resource autorelease];
 }
 
 @end
