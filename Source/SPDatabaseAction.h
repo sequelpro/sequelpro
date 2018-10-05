@@ -42,17 +42,13 @@
 /**
  * @property connection References the SPMySQL.framework MySQL connection; it has to be set.
  */
-@property (readwrite, assign) SPMySQLConnection *connection;
+@property (nonnull, readwrite, assign) SPMySQLConnection *connection;
 
-/**
- * @property messageWindow The NSWindow instance to send message sheets to.
- */
-@property (readwrite, assign) NSWindow *messageWindow;
 
 /**
  * @property tablesList
  */
-@property (readwrite, assign) SPTablesList *tablesList;
+@property (nonnull, readwrite, assign) SPTablesList *tablesList;
 
 /**
  * This method creates a new database.
@@ -63,7 +59,7 @@
  *
  * @see createDatabase:withEncoding:collation:
  */
-- (BOOL)createDatabase:(SPCreateDatabaseInfo *)dbInfo;
+- (BOOL)createDatabase:(SPCreateDatabaseInfo *)databaseInfo;
 
 /**
  * This method creates a new database.

@@ -39,46 +39,46 @@
  * This method copies a table structure from one db to another.
  *
  * @param name name of the table in the source database
- * @param sourceDB name of the source database
- * @param targetDB name of the target database
+ * @param sourceDatabase name of the source database
+ * @param targetDatabase name of the target database
  *
  * @return YES on success, NO on any kind of error (unspecified)
  */
-- (BOOL)copyTable:(NSString *)name from:(NSString *)sourceDB to:(NSString *)targetDB;
+- (BOOL)copyTable:(NSString *)name from:(NSString *)sourceDatabase to:(NSString *)targetDatabase;
 
 /**
  * This method moves a table from one db to another.
  *
  * @param name name of the table in the source database
- * @param sourceDB name of the source database
- * @param targetDB name of the target database
+ * @param sourceDatabase name of the source database
+ * @param targetDatabase name of the target database
  */
-- (BOOL)moveTable:(NSString *)name from:(NSString *)sourceDB to:(NSString *)targetDB;
+- (BOOL)moveTable:(NSString *)name from:(NSString *)sourceDatabase to:(NSString *)targetDatabase;
 
 /**
  * This method copies a table including its data from one db to another.
  *
  * @param name name of the table in the source database
- * @param sourceDB name of the source database
- * @param targetDB name of the target database
+ * @param sourceDatabase name of the source database
+ * @param targetDatabase name of the target database
  * @param copyWithContent whether to copy the content too, otherwise only structure
  *
  * @return YES on success, NO on any kind of error (unspecified)
  */
-- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to: (NSString *)targetDB withContent:(BOOL)copyWithContent;
+- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDatabase to:(NSString *)targetDatabase withContent:(BOOL)copyWithContent;
 
 /**
  * This method copies a bunch of tables including their data from one db to another.
  *
  * @param tableArray array of NSStrings with the table names in the sourceDB
- * @param sourceDB name of the source database
- * @param targetDB name of the target database
+ * @param sourceDatabase name of the source database
+ * @param targetDatabase name of the target database
  * @param copyWithContent whether to copy the content too, otherwise only structure
  *
  * @return YES on success, NO on any kind of error (unspecified)
  *
  * This method is able to copy InnoDB tables with foreign key constraints.
  */
-- (BOOL)copyTables:(NSArray *)tablesArray from:(NSString *)sourceDB to:(NSString *)targetDB withContent:(BOOL)copyWithContent;
+- (BOOL)copyTables:(NSArray *)tablesArray from:(NSString *)sourceDatabase to:(NSString *)targetDatabase withContent:(BOOL)copyWithContent;
 
 @end
