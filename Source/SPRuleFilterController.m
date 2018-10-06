@@ -1325,11 +1325,20 @@ BOOL SerIsGroup(NSDictionary *dict)
 
 		NSArray *values = [in objectForKey:SerFilterExprValues];
 
+
+		NSString *firstValue = [values objectOrNilAtIndex:0];
+		NSString *secondValue = [values objectOrNilAtIndex:1];
+		
+		// Check to see if all input values are emtpy - if so, no intended filtering to be done
+		if(!((firstValue != nil && [firstValue length] > 0) || (secondValue != nil && [secondValue length] > 0))) {
+			return;
+		}
+
 		SPTableFilterParser *parser = [[SPTableFilterParser alloc] initWithFilterClause:[filter objectForKey:@"Clause"]
 		                                                              numberOfArguments:[[filter objectForKey:@"NumberOfArguments"] integerValue]];
 		[parser setArgument:[values objectOrNilAtIndex:0]];
-		[parser setFirstBetweenArgument:[values objectOrNilAtIndex:0]];
-		[parser setSecondBetweenArgument:[values objectOrNilAtIndex:1]];
+		[parser setFirstBetweenArgument:firstValue];
+		[parser setSecondBetweenArgument:secondValue];
 		[parser setSuppressLeadingTablePlaceholder:[[filter objectForKey:@"SuppressLeadingFieldPlaceholder"] boolValue]];
 		[parser setCaseSensitive:isBINARY];
 		[parser setCurrentField:[in objectForKey:SerFilterExprColumn]];
