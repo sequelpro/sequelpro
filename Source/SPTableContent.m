@@ -175,7 +175,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		tableRowsSelectable = YES;
 		isFirstChangeInView = YES;
 
-		showFilterRuleEditor = NO;
+		showFilterRuleEditor = YES;
 
 		isFiltered = NO;
 		isLimited = NO;
