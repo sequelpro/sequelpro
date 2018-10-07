@@ -143,6 +143,7 @@
 - (void)selectTableAtIndex:(nullable NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
 - (void)makeTableListHaveFocus;
+- (void)deselectAllTables;
 
 // Getters
 - (nonnull NSArray *)selectedTableNames;
@@ -161,6 +162,7 @@
 - (nonnull NSArray *)allDatabaseNames;
 - (nonnull NSArray *)allSystemDatabaseNames;
 - (nullable NSString *)selectedDatabase;
+
 - (BOOL)hasViews;
 - (BOOL)hasFunctions;
 - (BOOL)hasProcedures;

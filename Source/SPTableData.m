@@ -471,12 +471,12 @@
 					   tableName, [mySQLConnection lastErrorMessage]];
 
 			// If the current table doesn't exist anymore reload table list
-			if([mySQLConnection lastErrorID] == 1146) {
+			if ([mySQLConnection lastErrorID] == 1146) {
 
 				// Release the table loading lock to allow reselection/reloading to requery the database.
 				pthread_mutex_unlock(&dataProcessingLock);
 
-				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
+				[tableListInstance deselectAllTables];
 				[tableListInstance updateTables:self];
 			}
 
