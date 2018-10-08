@@ -600,6 +600,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[copyTableMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate %@ '%@' to:", @"duplicate object message"), tableType, [self tableName]]];
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@_copy", [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 
+	[copyTableButton setEnabled:[self isTableNameValid:[copyTableNameField stringValue] forType:[self tableType]]];
+
 	[NSApp beginSheet:copyTableSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
