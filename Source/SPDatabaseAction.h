@@ -59,7 +59,7 @@
  *
  * @see createDatabase:withEncoding:collation:
  */
-- (BOOL)createDatabase:(SPCreateDatabaseInfo *)databaseInfo;
+- (BOOL)createDatabase:(SPCreateDatabaseInfo * _Nonnull)databaseInfo;
 
 /**
  * This method creates a new database.
@@ -70,6 +70,6 @@
  *
  * @return YES on success, otherwise NO
  */
-- (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation;
+- (BOOL)createDatabase:(NSString * _Nonnull)database withEncoding:(NSString * _Nonnull)encoding collation:(NSString * _Nonnull)collation;
 
 @end

@@ -36,7 +36,7 @@
 }
 
 @property (nonnull, readwrite, retain) NSString *databaseName;
-@property (nullable, readwrite, retain) NSString *defaultEncoding;
-@property (nullable, readwrite, retain) NSString *defaultCollation;
+@property (nonnull, readwrite, retain) NSString *defaultEncoding;
+@property (nonnull, readwrite, retain) NSString *defaultCollation;
 
 @end
