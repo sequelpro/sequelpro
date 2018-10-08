@@ -101,15 +101,9 @@ NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
 NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
 NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
-#ifndef SP_CODA
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
-#else
-NSString *SPLimitResults                         = @"SPLimitResults";
-NSString *SPLimitResultsValue                    = @"SPLimitResultsValue";
-NSString *SPNullValue                            = @"SPNullValue";
-#endif
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
@@ -127,15 +121,9 @@ NSString *SPConsoleEnableImportExportLogging     = @"ConsoleEnableImportExportLo
 NSString *SPConsoleEnableErrorLogging            = @"ConsoleEnableErrorLogging";
 
 // Network Prefpane
-#ifndef SP_CODA
 NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
 NSString *SPUseKeepAlive                         = @"UseKeepAlive";
 NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
-#else
-NSString *SPConnectionTimeoutValue               = @"SPConnectionTimeoutValue";
-NSString *SPUseKeepAlive                         = @"SPUseKeepAlive";
-NSString *SPKeepAliveInterval                    = @"SPKeepAliveInterval";
-#endif
 
 // Editor Prefpane
 NSString *SPCustomQueryEditorFont                = @"CustomQueryEditorFont";
@@ -207,16 +195,16 @@ NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_F
 NSString *SPLastExportSettings                   = @"LastExportSettings";
 
 // Export filename tokens
-NSString *SPFileNameDatabaseTokenName   = @"database";
-NSString *SPFileNameHostTokenName       = @"host";
-NSString *SPFileNameDateTokenName       = @"date";
-NSString *SPFileNameYearTokenName       = @"year";
-NSString *SPFileNameMonthTokenName      = @"month";
-NSString *SPFileNameDayTokenName        = @"day";
-NSString *SPFileNameTimeTokenName       = @"time";
-NSString *SPFileName24HourTimeTokenName = @"time24";
-NSString *SPFileNameFavoriteTokenName   = @"favorite";
-NSString *SPFileNameTableTokenName      = @"table";
+NSString *SPFileNameDatabaseTokenName            = @"database";
+NSString *SPFileNameHostTokenName                = @"host";
+NSString *SPFileNameDateTokenName                = @"date";
+NSString *SPFileNameYearTokenName                = @"year";
+NSString *SPFileNameMonthTokenName               = @"month";
+NSString *SPFileNameDayTokenName                 = @"day";
+NSString *SPFileNameTimeTokenName                = @"time";
+NSString *SPFileName24HourTimeTokenName          = @"time24";
+NSString *SPFileNameFavoriteTokenName            = @"favorite";
+NSString *SPFileNameTableTokenName               = @"table";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
@@ -252,6 +240,7 @@ NSString *SPSSLCipherListKey                     = @"SSLCipherList";
 NSString *SPQueryFavoritesHaveBeenUpdatedNotification = @"QueryFavoritesHaveBeenUpdatedNotification";
 NSString *SPHistoryItemsHaveBeenUpdatedNotification   = @"HistoryItemsHaveBeenUpdatedNotification";
 NSString *SPContentFiltersHaveBeenUpdatedNotification = @"ContentFiltersHaveBeenUpdatedNotification";
+NSString *SPCopyContentOnTableCopy                    = @"CopyContentOnTableCopy";
 
 // URLs
 NSString *SPDonationsURL                         = @"https://www.sequelpro.com/donate/";

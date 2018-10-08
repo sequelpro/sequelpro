@@ -3099,15 +3099,18 @@ Gw
                         </textFieldCell>
                     </textField>
                     <button id="514">
-                        <rect key="frame" x="19" y="43" width="223" height="18"/>
+                        <rect key="frame" x="17" y="43" width="227" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="check" title="Duplicate table content" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="3832">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="smallSystem"/>
                         </buttonCell>
+                        <connections>
+                            <binding destination="1907" name="value" keyPath="values.CopyContentOnTableCopy" id="4I8-Es-EDn"/>
+                        </connections>
                     </button>
                     <button verticalHuggingPriority="750" tag="1" id="515">
-                        <rect key="frame" x="148" y="13" width="97" height="28"/>
+                        <rect key="frame" x="150" y="13" width="97" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="push" title="Duplicate" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" tag="1" inset="2" id="3833">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -3121,7 +3124,7 @@ DQ
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" id="516">
-                        <rect key="frame" x="59" y="13" width="91" height="28"/>
+                        <rect key="frame" x="61" y="13" width="91" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="3834">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -3139,7 +3142,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="n3P-gU-pX8">
                             <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
@@ -3148,6 +3151,7 @@ Gw
                     </textField>
                 </subviews>
             </view>
+            <point key="canvasLocation" x="183" y="402.5"/>
         </window>
         <window title="Key Sheet" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="409" userLabel="Key Sheet">
             <windowStyleMask key="styleMask" titled="YES"/>

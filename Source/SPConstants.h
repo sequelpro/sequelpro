@@ -455,6 +455,7 @@ extern NSString *SPSSLCipherListKey;
 extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
 extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;
 extern NSString *SPContentFiltersHaveBeenUpdatedNotification;
+extern NSString *SPCopyContentOnTableCopy;
 
 // URLs
 extern NSString *SPDonationsURL;

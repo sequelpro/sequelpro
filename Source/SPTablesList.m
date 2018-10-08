@@ -568,38 +568,37 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (IBAction)copyTable:(id)sender
 {
-	NSString *tableType = @"";
-
 	if ([tablesListView numberOfSelectedRows] != 1) return;
 	if (![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect]) return;
 
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
-	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
+	NSInteger objectType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 
-	switch (tblType)
+	[copyTableContentSwitch setState:NSOffState];
+	[copyTableContentSwitch setEnabled:objectType == SPTableTypeTable];
+
+	NSString *tableType = @"";
+
+	switch (objectType)
 	{
 		case SPTableTypeTable:
 			tableType = NSLocalizedString(@"table", @"table");
-			[copyTableContentSwitch setEnabled:YES];
+			[copyTableContentSwitch setState:[[[NSUserDefaults standardUserDefaults] objectForKey:SPCopyContentOnTableCopy] boolValue]];
 			break;
 		case SPTableTypeView:
 			tableType = NSLocalizedString(@"view", @"view");
-			[copyTableContentSwitch setEnabled:NO];
 			break;
 		case SPTableTypeProc:
 			tableType = NSLocalizedString(@"procedure", @"procedure");
-			[copyTableContentSwitch setEnabled:NO];
 			break;
 		case SPTableTypeFunc:
 			tableType = NSLocalizedString(@"function", @"function");
-			[copyTableContentSwitch setEnabled:NO];
 			break;
 	}
 
 	[copyTableMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate %@ '%@' to:", @"duplicate object message"), tableType, [self tableName]]];
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@_copy", [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
-	[copyTableContentSwitch setState:NSOffState];
 
 	[NSApp beginSheet:copyTableSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
