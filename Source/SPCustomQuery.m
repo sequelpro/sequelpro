@@ -558,9 +558,9 @@
 /* *
  * Set font panel's valid modes
  */
-- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSFontPanelModeMask)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
+	return NSFontPanelSizeModeMask | NSFontPanelCollectionModeMask;
 }
 
 #pragma mark -
@@ -921,7 +921,7 @@
 #ifndef SP_CODA /* growl */
 			// Perform the Growl notification for query completion
 			[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
 			                                                  document:tableDocumentInstance
 			                                          notificationName:@"Query Finished"];
 #endif
@@ -951,7 +951,7 @@
 #ifndef SP_CODA /* growl */
 		// Query finished Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
 		                                                  document:tableDocumentInstance
 		                                          notificationName:@"Query Finished"];
 #endif
@@ -967,7 +967,7 @@
 		// Restore selection indexes if appropriate
 		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 
-		if(reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
 	}
 }
 
