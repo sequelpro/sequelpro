@@ -236,7 +236,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
                     alias:(NSString *)anAlias
  withDBStructureRetriever:(SPDatabaseStructure *)theDatabaseStructure
 {
-	if((self = [self init]))
+	if ((self = [self init]))
 	{
 		// Set filter string 
 		if (aUserString) {
@@ -251,15 +251,13 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 		oneColumnMode = oneColumn;
 
 		fuzzyMode = fuzzySearch;
-		if(fuzzyMode) [theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
-		else          [theTableView setBackgroundColor:[NSColor whiteColor]];
 
 		cursorMovedLeft = caretMovedLeft;
 		backtickMode = theBackTickMode;
 		commaInsertionMode = NO;
 		triggerMode = tabTriggerMode;
 
-		if(aStaticPrefix) staticPrefix = [aStaticPrefix retain];
+		if (aStaticPrefix) staticPrefix = [aStaticPrefix retain];
 
 		caseSensitive = isCaseSensitive;
 
@@ -274,33 +272,43 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 
 		suggestions = [someSuggestions retain];
 
-		if(dictMode || oneColumnMode) {
+		if (dictMode || oneColumnMode) {
 			[[theTableView tableColumnWithIdentifier:@"image"] setWidth:0];
-			if(!dictMode) {
+
+			if (!dictMode) {
 				NSUInteger maxLength = 0;
-				for(id w in someSuggestions) {
+
+				for (id w in someSuggestions) {
 					NSUInteger len = [(NSString*)[w objectForKey:@"display"] length];
-					if(len>maxLength) maxLength = len;
+
+					if (len>maxLength) maxLength = len;
 				}
+
 				NSMutableString *dummy = [NSMutableString string];
-				for(NSUInteger i=0; i<maxLength; i++) [dummy appendString:@" "];
+
+				for (NSUInteger i=0; i<maxLength; i++) [dummy appendString:@" "];
 
 				CGFloat w = NSSizeToCGSize([dummy sizeWithAttributes:@{NSFontAttributeName : tableFont}]).width + 26.0f;
+
 				maxWindowWidth = (w>maxWindowWidth) ? maxWindowWidth : w;
-			} else {
+			}
+			else {
 				maxWindowWidth = 220;
 			}
+
 			[[theTableView tableColumnWithIdentifier:@"name"] setWidth:maxWindowWidth];
 		}
 
 		currentDb = selectedDb;
 
-		if(someAdditionalWordCharacters) [textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
+		if (someAdditionalWordCharacters) {
+			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
+		}
 
 		databaseStructureRetrieval = [theDatabaseStructure retain];
 		isQueryingDatabaseStructure = [databaseStructureRetrieval isQueryingDatabaseStructure];
 
-		if(isQueryingDatabaseStructure) {
+		if (isQueryingDatabaseStructure) {
 			stateTimer = [[NSTimer scheduledTimerWithTimeInterval:0.07f target:self selector:@selector(updateSyncArrowStatus) userInfo:nil repeats:YES] retain];
 		}
 	}
@@ -855,7 +863,6 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 			else if([event keyCode] == 53) { // escape
 				if(flags & NSControlKeyMask) {
 					fuzzyMode = YES;
-					[theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
 					[self filter];
 				}
 				else {
