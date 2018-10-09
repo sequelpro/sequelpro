@@ -40,10 +40,10 @@ fi
 
 echo "Running genstrings to update 'Localizable.strings'..."
 
- Update 'Localizable.strings' by running genstrings(1)
+# Update 'Localizable.strings' by running genstrings(1)
 GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROOT}/Source/"*.m)
 
- Check for genstrings errors
+# Check for genstrings errors
 if [[ ${GENSTRINGS_ERRORS} -ne 0 ]]
 then
     echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
@@ -51,7 +51,7 @@ fi
 
 echo "Updating nib and xib localisations..."
 
- Generate up-to-date nib .strings files for localisation
+# Generate up-to-date nib .strings files for localisation
 find "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"/**/*.nib | while read nibFile
 do
     stringsFilePath="${SOURCE_ROOT}/Resources/English.lproj/`basename "${nibFile}" .nib`.strings"
