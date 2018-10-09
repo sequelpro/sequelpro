@@ -64,7 +64,7 @@ find "$XIB_BASE" \( -name "*.xib" \) | while read FILE; do
 done
 
 echo "Downloading localizations to merge in..."
- Download the latest language translations, and copy them into the Resources directory
+# Download the latest language translations, and copy them into the Resources directory
 curl http://dev.sequelpro.com/translate/download/sequelpro > languagetranslations.zip
 unzip -q languagetranslations.zip -d languagetranslations
 
