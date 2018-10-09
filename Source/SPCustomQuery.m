@@ -558,7 +558,7 @@
 /* *
  * Set font panel's valid modes
  */
-- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSFontPanelModeMask)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }

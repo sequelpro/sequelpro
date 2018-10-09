@@ -856,7 +856,7 @@
  * When dragging a tab off the tab bar, return an image so that a
  * drag placeholder can be displayed.
  */
-- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask
+- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(NSUInteger *)styleMask
 {
 	NSImage *viewImage = [[NSImage alloc] init];
 

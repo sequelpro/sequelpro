@@ -936,6 +936,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 						case SPTableTypeFunc:
 							[[tableColumn dataCell] setImage:functionIcon];
 							break;
+						default:
+							break;
 					}
 				} else {
 					[[tableColumn dataCell] setImage:databaseIcon];
