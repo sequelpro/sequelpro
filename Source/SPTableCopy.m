@@ -34,23 +34,23 @@
 
 @interface SPTableCopy ()
 
-- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase; 
+- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase;
 
 @end
 
 
 @implementation SPTableCopy
 
-- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 
+- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDatabase to:(NSString *)targetDatabase
 {
-	NSString *createTableResult = [self _createTableStatementFor:tableName inDatabase:sourceDB];
+	NSString *createTableResult = [self _createTableStatementFor:tableName inDatabase:sourceDatabase];
 	
 	if ([createTableResult hasPrefix:@"CREATE TABLE"]) {
 		NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 		
 		// Add the target DB name and the separator dot after "CREATE TABLE ".
 		[createTableStatement insertString:@"." atIndex:13];
-		[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
+		[createTableStatement insertString:[targetDatabase backtickQuotedString] atIndex:13];
 
 		[connection queryString:createTableStatement];		
 	
@@ -62,18 +62,18 @@
 	return NO;
 }
 
-- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB withContent:(BOOL)copyWithContent
+- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDatabase to:(NSString *)targetDatabase withContent:(BOOL)copyWithContent
 {
 	// Copy the table structure
-	BOOL structureCopySuccess = [self copyTable:tableName from:sourceDB to:targetDB];
+	BOOL structureCopySuccess = [self copyTable:tableName from:sourceDatabase to:targetDatabase];
 	
 	// Optionally copy the table data using an insert select
 	if (structureCopySuccess && copyWithContent) {
 		
 		NSString *copyDataStatement = [NSString stringWithFormat:@"INSERT INTO %@.%@ SELECT * FROM %@.%@", 
-									   [targetDB backtickQuotedString],
+									   [targetDatabase backtickQuotedString],
 									   [tableName backtickQuotedString],
-									   [sourceDB backtickQuotedString],
+									   [sourceDatabase backtickQuotedString],
 									   [tableName backtickQuotedString]
 									   ];
 		
@@ -85,7 +85,7 @@
 	return structureCopySuccess;
 }
 
-- (BOOL)copyTables:(NSArray *)tablesArray from:(NSString *)sourceDB to:(NSString *)targetDB withContent:(BOOL)copyWithContent
+- (BOOL)copyTables:(NSArray *)tablesArray from:(NSString *)sourceDatabase to:(NSString *)targetDatabase withContent:(BOOL)copyWithContent
 {
 	BOOL success = YES;
 	
@@ -105,7 +105,7 @@
 	
 	for (NSString *tableName in tablesArray) 
 	{
-		if (![self copyTable:tableName from:sourceDB to:targetDB withContent:copyWithContent]) {
+		if (![self copyTable:tableName from:sourceDatabase to:targetDatabase withContent:copyWithContent]) {
 			success = NO;
 		}
 	}
@@ -127,12 +127,12 @@
 	return success;
 }
 
-- (BOOL)moveTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB
+- (BOOL)moveTable:(NSString *)tableName from:(NSString *)sourceDatabase to:(NSString *)targetDatabase
 {	
 	NSString *moveStatement = [NSString stringWithFormat:@"RENAME TABLE %@.%@ TO %@.%@", 
-							   [sourceDB backtickQuotedString],
+							   [sourceDatabase backtickQuotedString],
 							   [tableName backtickQuotedString],
-							   [targetDB backtickQuotedString],
+							   [targetDatabase backtickQuotedString],
 							   [tableName backtickQuotedString]];
 
 	[connection queryString:moveStatement];
@@ -143,7 +143,7 @@
 #pragma mark -
 #pragma mark Private API
 
-- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase 
+- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase
 {
 	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@", [sourceDatabase backtickQuotedString], [tableName backtickQuotedString]];
 	

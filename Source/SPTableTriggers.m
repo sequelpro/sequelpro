@@ -678,7 +678,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 
 	id value = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 
-	[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+	[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor controlTextColor]];
 }
 
 /**

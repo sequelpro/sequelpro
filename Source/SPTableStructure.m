@@ -56,10 +56,12 @@ static NSString *SPRemoveField = @"SPRemoveField";
 static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 @interface SPFieldTypeHelp ()
+
 @property(copy,readwrite) NSString *typeName;
 @property(copy,readwrite) NSString *typeDefinition;
 @property(copy,readwrite) NSString *typeRange;
 @property(copy,readwrite) NSString *typeDescription;
+
 @end
 
 @implementation SPFieldTypeHelp
@@ -160,23 +162,19 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 - (void)awakeFromNib
 {
-#ifndef SP_CODA /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[indexesTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-#endif
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
 
-#ifndef SP_CODA /* set font from prefs */
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
 	NSInteger monospacedFontSize = [prefs integerForKey:SPMonospacedFontSize] > 0 ? [prefs integerForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-#endif
 
 	extraFieldSuggestions = [@[
 			@"None",
@@ -250,17 +248,12 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-#ifndef SP_CODA /* add prefs observer */
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-#endif	
 
-#ifndef SP_CODA
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
-#endif
 
-#ifndef SP_CODA /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -274,24 +267,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 				[[viewColumnsMenu itemWithTag:12] setState:NSOffState];
 		}
 	}
-#else
-/*
-	for (NSTableColumn *col in [tableSourceView tableColumns]) 
-	{
-		if ([col isHidden]) {
-			if ([[col identifier] isEqualToString:@"Key"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:7]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"encoding"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:10]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"collation"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:11]] setState:NSOffState];
-			else if ([[col identifier] isEqualToString:@"comment"])
-				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:12]] setState:NSOffState];
-		}
-	}
-*/
-#endif
-	
+
 	[tableSourceView reloadData];
 }
 
@@ -531,17 +507,17 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 }
 
 /**
- *
+ * Resets the auto increment value of a table.
  */
 - (IBAction)resetAutoIncrement:(id)sender
 {
-#ifndef SP_CODA
 	if ([sender tag] == 1) {
 
 		[resetAutoIncrementLine setHidden:YES];
 
-		if ([tableDocumentInstance currentlySelectedView] == SPTableViewStructure)
+		if ([tableDocumentInstance currentlySelectedView] == SPTableViewStructure){
 			[resetAutoIncrementLine setHidden:NO];
+		}
 
 		// Begin the sheet
 		[NSApp beginSheet:resetAutoIncrementSheet
@@ -555,7 +531,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	else if ([sender tag] == 2) {
 		[self setAutoIncrementTo:@1];
 	}
-#endif
 }
 
 /**
@@ -563,23 +538,23 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
  */
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-#ifndef SP_CODA
 	// Order out current sheet to suppress overlapping of sheets
 	[theSheet orderOut:nil];
 
 	if (returnCode == NSAlertDefaultReturn) {
 		[self takeAutoIncrementFrom:resetAutoIncrementValue];
 	}
-#endif
 }
 
 - (void)takeAutoIncrementFrom:(NSTextField *)field
 {
 	id obj = [field objectValue];
+
 	//nil is handled by -setAutoIncrementTo:
-	if(obj && ![obj isKindOfClass:[NSNumber class]]) {
+	if (obj && ![obj isKindOfClass:[NSNumber class]]) {
 		[NSException raise:NSInternalInconsistencyException format:@"[$field objectValue] should return NSNumber *, but was %@",[obj class]];
 	}
+
 	[self setAutoIncrementTo:(NSNumber *)obj];
 }
 
@@ -753,7 +728,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	return tempResult;
 }
-
 
 /**
  * A method to be called whenever the selection changes or the table would be reloaded
@@ -1087,40 +1061,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	return queryString;
 }
-
-#ifdef SP_CODA /* glue */
-
-- (void)setDatabaseDocument:(SPDatabaseDocument*)doc
-{
-	tableDocumentInstance = doc;
-}
-
-- (void)setTableListInstance:(SPTablesList*)list
-{
-	tablesListInstance = list;
-}
-
-- (void)setTableDataInstance:(SPTableData*)data
-{
-	tableDataInstance = data;
-}
-
-- (void)setDatabaseDataInstance:(SPDatabaseData*)data
-{
-	databaseDataInstance = data;
-}
-
-- (void)setTableSourceView:(SPTableView*)tv
-{
-	tableSourceView = tv;
-}
-
-- (void)setEncodingPopupCell:(NSPopUpButtonCell*)cell
-{
-	encodingPopupCell = cell;
-}
-
-#endif
 
 /**
  * A method to show an error sheet after a short delay, so that it can
@@ -1581,23 +1521,25 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	}
 
 	// Process the indexes into a local array of dictionaries
-	NSArray *theTableIndexes = [self convertIndexResultToArray:indexResult];
+	NSArray *tableIndexes = [self convertIndexResultToArray:indexResult];
 
 	// Set the Key column
-	for (NSDictionary* theIndex in theTableIndexes)
+	for (NSDictionary *index in tableIndexes)
 	{
 		for (id field in theTableFields)
 		{
-			if ([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
-				if ([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
+			if ([[field objectForKey:@"name"] isEqualToString:[index objectForKey:@"Column_name"]]) {
+				if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
 					[field setObject:@"PRI" forKey:@"Key"];
 				}
 				else {
-					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"] &&
+						[[index objectForKey:@"Index_type"] isEqualToString:@"SPATIAL"] &&
+						![field objectForKey:@"Key"]) {
 						[field setObject:@"SPA" forKey:@"Key"];
 					}
 					else {
-						[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
+						[field setObject:[[index objectForKey:@"Non_unique"] isEqualToString:@"1"] ? @"MUL" : @"UNI" forKey:@"Key"];
 					}
 				}
 
@@ -1742,7 +1684,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
 								  aTable, @"name",
 								  theTableFields, @"tableFields",
-								  theTableIndexes, @"tableIndexes",
+								  tableIndexes, @"tableIndexes",
 								  theTableEnumLists, @"enumLists",
 								  nil];
 
@@ -2478,20 +2420,20 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	const SPFieldTypeHelp *help = [[self class] helpForFieldType:selected];
 
-	if(help) {
+	if (help) {
 		NSMutableAttributedString *as = [[NSMutableAttributedString alloc] init];
 
 		//title
 		{
-			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]]};
+			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *title = [[NSAttributedString alloc] initWithString:[help typeDefinition] attributes:titleAttr];
 			[as appendAttributedString:[title autorelease]];
 			[[as mutableString] appendString:@"\n"];
 		}
 
 		//range
-		if([[help typeRange] length]) {
-			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]};
+		if ([[help typeRange] length]) {
+			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *range = [[NSAttributedString alloc] initWithString:[help typeRange] attributes:rangeAttr];
 			[as appendAttributedString:[range autorelease]];
 			[[as mutableString] appendString:@"\n"];
@@ -2501,7 +2443,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 		//description
 		{
-			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]]};
+			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]], NSForegroundColorAttributeName: [NSColor controlTextColor]};
 			NSAttributedString *desc = [[NSAttributedString alloc] initWithString:[help typeDescription] attributes:descAttr];
 			[as appendAttributedString:[desc autorelease]];
 		}
@@ -2522,7 +2464,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		NSPoint topRightCorner = NSMakePoint(popUpFrame.origin.x, NSMaxY(popUpFrame));
 		NSRect screenRect = [NSScreen rectOfScreenAtPoint:topRightCorner];
 
-		if(NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
+		if (NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
 			// exceeds right border, display on the left
 			winRect.origin.x = popUpFrame.origin.x - 10 - winRect.size.width;
 		}
@@ -2533,6 +2475,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 		winRect.size.height = rect.size.height + winAddonSize;
 		winRect.origin.y = NSMaxY(popUpFrame) - winRect.size.height;
+
 		[structureHelpPanel setFrame:winRect display:YES];
 
 		[structureHelpPanel orderFront:nil];
@@ -2945,31 +2888,45 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 #pragma mark -
 
-void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries)
+void _BuildMenuWithPills(NSMenu *menu, struct _cmpMap *map, size_t mapEntries)
 {
-	NSDictionary *baseAttrs = @{NSFontAttributeName:[menu font],NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
+	NSDictionary *baseAttrs = @{NSFontAttributeName: [menu font], NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
 
-	for(NSMenuItem *item in [menu itemArray]) {
+	for (NSMenuItem *item in [menu itemArray])
+	{
 		NSMutableAttributedString *itemStr = [[NSMutableAttributedString alloc] initWithString:[item title] attributes:baseAttrs];
 		NSString *value = [item representedObject];
 
 		NSMutableArray *tooltipParts = [NSMutableArray array];
-		for (unsigned int i = 0; i < mapEntries; ++i) {
+
+		for (unsigned int i = 0; i < mapEntries; ++i)
+		{
 			struct _cmpMap *cmp = &map[i];
-			if([cmp->cmpWith isEqualToString:value]) {
+
+			if ([cmp->cmpWith isEqualToString:value]) {
+
 				SPPillAttachmentCell *cell = [[SPPillAttachmentCell alloc] init];
+
 				[cell setStringValue:cmp->title];
+
 				NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+
 				[attachment setAttachmentCell:[cell autorelease]];
+
 				NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:[attachment autorelease]];
 
 				[[itemStr mutableString] appendString:@" "];
 				[itemStr appendAttributedString:attachmentString];
 
-				if(cmp->tooltipPart) [tooltipParts addObject:cmp->tooltipPart];
+				if (cmp->tooltipPart) {
+					[tooltipParts addObject:cmp->tooltipPart];
+				}
 			}
 		}
-		if([tooltipParts count]) [item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+
+		if ([tooltipParts count]) {
+			[item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+		}
 
 		[item setAttributedTitle:[itemStr autorelease]];
 	}

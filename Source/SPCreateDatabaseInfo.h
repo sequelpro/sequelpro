@@ -1,5 +1,5 @@
 //
-//  SPCreateDatabaseInfo.m
+//  SPCreateDatabaseInfo.h
 //  sequel-pro
 //
 //  Created by David Rekowski on April 29, 2010.
@@ -35,8 +35,8 @@
 	NSString *defaultCollation;
 }
 
-@property (readwrite, retain) NSString *databaseName;
-@property (readwrite, retain) NSString *defaultEncoding;
-@property (readwrite, retain) NSString *defaultCollation;
+@property (nonnull, readwrite, retain) NSString *databaseName;
+@property (nonnull, readwrite, retain) NSString *defaultEncoding;
+@property (nonnull, readwrite, retain) NSString *defaultCollation;
 
 @end

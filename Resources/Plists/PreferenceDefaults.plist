@@ -201,5 +201,7 @@
 	<true/>
 	<key>DisplayBinaryDataAsHex</key>
 	<false/>
+	<key>CopyContentOnTableCopy</key>
+	<false/>
 </dict>
 </plist>

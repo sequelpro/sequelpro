@@ -41,62 +41,54 @@
 @class SPExtendedTableInfo;
 @class SPTableInfo;
 
-@interface SPFieldTypeHelp : NSObject {
+@interface SPFieldTypeHelp : NSObject
+{
 	NSString *typeName;
 	NSString *typeDefinition;
 	NSString *typeRange;
 	NSString *typeDescription;
 }
+
 @property(readonly) NSString *typeName;
 @property(readonly) NSString *typeDefinition;
 @property(readonly) NSString *typeRange;
 @property(readonly) NSString *typeDescription;
+
 @end
 
-@interface SPTableStructure : NSObject 
-#ifdef SP_CODA
-<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
-#endif
+@interface SPTableStructure : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
 {
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
-#ifndef SP_CODA /* ivars */
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
-#endif
 	IBOutlet SPIndexesController *indexesController;
 	IBOutlet SPDatabaseData *databaseDataInstance;
 	
 	IBOutlet NSPanel *structureHelpPanel;
 	IBOutlet NSTextView *structureHelpText;
-	
-#ifndef SP_CODA /* ivars */
+
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
 	IBOutlet id resetAutoIncrementLine;
-#endif
 	IBOutlet SPTableView* tableSourceView;
 	IBOutlet id addFieldButton;
 	IBOutlet id duplicateFieldButton;
 	IBOutlet id removeFieldButton;
 	IBOutlet id reloadFieldsButton;
-#ifndef SP_CODA /* ivars */
 	IBOutlet id chooseKeyButton;
 	IBOutlet id structureGrabber;
 	IBOutlet id editTableButton;
 	IBOutlet id addIndexButton;
 	IBOutlet id removeIndexButton;
 	IBOutlet id refreshIndexesButton;
-#endif
 	IBOutlet SPTableView* indexesTableView;
-#ifndef SP_CODA /* ivars */
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 
 	IBOutlet id viewColumnsMenu;
-#endif
 	IBOutlet NSPopUpButtonCell *encodingPopupCell;
 
 	SPMySQLConnection *mySQLConnection;
@@ -118,23 +110,6 @@
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }
 
-#ifdef SP_CODA
-@property (assign) SPIndexesController* indexesController;
-@property (assign) id indexesTableView;
-@property (assign) id addFieldButton;
-@property (assign) id duplicateFieldButton;
-@property (assign) id removeFieldButton;
-@property (assign) id reloadFieldsButton;
-#endif
-
-#ifdef SP_CODA /* method decls */
-- (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
-- (void)setTableListInstance:(SPTablesList*)list;
-- (void)setTableDataInstance:(SPTableData*)data;
-- (void)setDatabaseDataInstance:(SPDatabaseData*)data;
-- (void)setTableSourceView:(SPTableView*)tv;
-- (void)setEncodingPopupCell:(NSPopUpButtonCell*)cell;
-#endif
 - (void)showErrorSheetWith:(NSDictionary *)errorDictionary;
 
 // Edit methods

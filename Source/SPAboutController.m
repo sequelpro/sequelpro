@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPAboutController.h"
+#import "SPOSInfo.h"
 
 static NSString *SPSnapshotBuildIndicator = @"Snapshot";
 
@@ -41,6 +42,7 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 @interface SPAboutController ()
 
 - (void)_setVersionLabel:(BOOL)isNightly;
+- (NSMutableAttributedString *)_loadRtfResource:(NSString *)filename;
 
 @end
 
@@ -59,24 +61,19 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	
 	// If the version string has a prefix of 'Nightly' then this is obviously a nighly build.
 	NSRange matchRange = [version rangeOfString:SPSnapshotBuildIndicator];
-	BOOL isSnapshotBuild = (matchRange.location != NSNotFound);
+
+	BOOL isSnapshotBuild = matchRange.location != NSNotFound;
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
 	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
 
 	[self _setVersionLabel:isSnapshotBuild];
-
-	// Get the credits file contents
-	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
-
-	// Get the license file contents
-	NSAttributedString *license = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPLicenseFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
 	
 	// Set the credits
-	[[appCreditsTextView textStorage] appendAttributedString:credits];
+	[[appCreditsTextView textStorage] appendAttributedString:[self _loadRtfResource:SPCreditsFilename]];
 	
 	// Set the license
-	[[appLicenseTextView textStorage] appendAttributedString:license];
+	[[appLicenseTextView textStorage] appendAttributedString:[self _loadRtfResource:SPLicenseFilename]];
 }
 
 #pragma mark -
@@ -131,6 +128,18 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	}
 
 	[appBuildVersionTextField setStringValue:textFieldString];
+}
+
+/**
+ * Loads the resource with the supplied name and sets any necessary string attributes.
+ */
+- (NSAttributedString *)_loadRtfResource:(NSString *)filename
+{
+	NSMutableAttributedString *resource = [[NSMutableAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:filename ofType:@"rtf"] documentAttributes:nil];
+
+	[resource addAttribute:NSForegroundColorAttributeName value:[NSColor textColor] range:NSMakeRange(0, [resource length])];
+
+	return [resource autorelease];
 }
 
 @end

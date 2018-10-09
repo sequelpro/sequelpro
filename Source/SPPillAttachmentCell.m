@@ -112,7 +112,7 @@
 
 - (NSDictionary *)attributes
 {
-    return @{NSFontAttributeName: [self font],NSForegroundColorAttributeName: [NSColor controlTextColor]};
+    return @{NSFontAttributeName: [self font]};
 }
 
 @end

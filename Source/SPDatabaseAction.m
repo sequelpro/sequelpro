@@ -38,14 +38,13 @@
 @implementation SPDatabaseAction
 
 @synthesize connection;
-@synthesize messageWindow;
 @synthesize tablesList;
 
-- (BOOL)createDatabase:(SPCreateDatabaseInfo *)dbInfo
+- (BOOL)createDatabase:(SPCreateDatabaseInfo *)databaseInfo
 {
-	return [self createDatabase:[dbInfo databaseName]
-				   withEncoding:[dbInfo defaultEncoding]
-					  collation:[dbInfo defaultCollation]];
+	return [self createDatabase:[databaseInfo databaseName]
+				   withEncoding:[databaseInfo defaultEncoding]
+					  collation:[databaseInfo defaultCollation]];
 }
 
 - (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation
