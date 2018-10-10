@@ -30,6 +30,7 @@
 
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPFunctions.h"
 
 @implementation SPAlertSheets
 
@@ -207,7 +208,7 @@ void SPBeginAlertSheet(
 		void *contextInfo,
 	NSString *msg) 
 {
-	dispatch_sync(dispatch_get_main_queue(), ^{
+	void (^alertBlock)(void) = ^{
 		// Set up an NSAlert with the supplied details
 		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
 
@@ -236,5 +237,12 @@ void SPBeginAlertSheet(
 
 		// Ensure the alerting window is frontmost
 		[docWindow makeKeyWindow];
-	});
+	};
+
+	if (dispatch_get_current_queue() == dispatch_get_main_queue()) {
+		alertBlock();
+	}
+	else {
+		dispatch_sync(dispatch_get_main_queue(), alertBlock);
+	}
 }
