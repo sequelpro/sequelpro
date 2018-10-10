@@ -30,7 +30,6 @@
 
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
-#import "SPFunctions.h"
 
 @implementation SPAlertSheets
 
