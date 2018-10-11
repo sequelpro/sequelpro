@@ -335,7 +335,9 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSArray *collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 
-	if (([engines count] > 0) && ([statusFields objectForKey:SPMySQLEngineField])) {
+	NSString *storageEngine = [statusFields objectForKey:SPMySQLEngineField];
+
+	if ([engines count] > 0 && storageEngine) {
 
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
@@ -343,8 +345,14 @@ static NSString *SPMySQLCommentField          = @"Comment";
 			[tableTypePopUpButton addItemWithTitle:[engine objectForKey:SPMySQLEngineField]];
 		}
 
-		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:SPMySQLEngineField]];
+		[tableTypePopUpButton selectItemWithTitle:storageEngine];
 		[tableTypePopUpButton setEnabled:enableInteraction];
+
+		// Object has a non-user storage engine (i.e. performance_schema) so just add it
+		if ([tableTypePopUpButton indexOfSelectedItem] == -1) {
+			[tableTypePopUpButton addItemWithTitle:storageEngine];
+			[tableTypePopUpButton selectItemWithTitle:storageEngine];
+		}
 	}
 	else {
 		[tableTypePopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
