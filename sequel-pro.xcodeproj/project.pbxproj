@@ -98,6 +98,7 @@
 		17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C66D128AD4710047709F /* SPFavoritesController.m */; };
 		17D3C671128AD8160047709F /* SPSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C670128AD8160047709F /* SPSingleton.m */; };
 		17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */; };
+		17D41A8221700F8200B1888D /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		17D5B49E1553059F00EF3BB3 /* SPViewCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5B49D1553059F00EF3BB3 /* SPViewCopy.m */; };
 		17DB5F441555CA300046834B /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */; };
 		17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* SPPrintTemplate.html */; };
@@ -3157,6 +3158,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17D41A8221700F8200B1888D /* SPFunctions.m in Sources */,
 				507FF2421BC33BBC00104523 /* SPOSInfo.m in Sources */,
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
