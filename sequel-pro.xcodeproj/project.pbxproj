@@ -1453,15 +1453,6 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
-		1713C73D140D88D400CFD461 /* Query Controller */ = {
-			isa = PBXGroup;
-			children = (
-				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
-				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
-			);
-			name = "Query Controller";
-			sourceTree = "<group>";
-		};
 		173284E51088FEC20062E892 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -1482,15 +1473,6 @@
 				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 			);
 			name = "Bundle Support";
-			sourceTree = "<group>";
-		};
-		17381853151FB29C0078FFE2 /* User Manager */ = {
-			isa = PBXGroup;
-			children = (
-				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
-				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
-			);
-			name = "User Manager";
 			sourceTree = "<group>";
 		};
 		17386E08151924E9002DC206 /* Table Content */ = {
@@ -1541,9 +1523,9 @@
 			children = (
 				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
 				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
-				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
 				500C1F901BFB5F9F0095DC7F /* SPPrivilegesMO.h */,
 				500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */,
+				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
 			);
 			name = "Core Data";
 			sourceTree = "<group>";
@@ -1593,15 +1575,15 @@
 				50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */,
 				506CE92F1A311C6C0039F736 /* SPRuleFilterController.h */,
 				506CE9301A311C6C0039F736 /* SPRuleFilterController.m */,
-				1713C73D140D88D400CFD461 /* Query Controller */,
-				17381853151FB29C0078FFE2 /* User Manager */,
-				17846B9D170C95D800414499 /* Process List */,
 				9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */,
 				9BE76F9BF9BDA2921CDD05AF /* SPFilterTableController.h */,
-				9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */,
-				9BE76C6E8377959C794385E5 /* SPHelpViewerController.h */,
-				9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */,
-				9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */,
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
+				174CE14010AB9281008F892B /* SPProcessListController.h */,
+				174CE14110AB9281008F892B /* SPProcessListController.m */,
+				17F2FB322172561400CA4358 /* Help Viewer */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -1695,15 +1677,6 @@
 				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 			);
 			name = RegexKitLite;
-			sourceTree = "<group>";
-		};
-		17846B9D170C95D800414499 /* Process List */ = {
-			isa = PBXGroup;
-			children = (
-				174CE14010AB9281008F892B /* SPProcessListController.h */,
-				174CE14110AB9281008F892B /* SPProcessListController.m */,
-			);
-			name = "Process List";
 			sourceTree = "<group>";
 		};
 		1798D17215BE9B8E008690E6 /* Protocols */ = {
@@ -2010,16 +1983,16 @@
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
 				BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */,
+				9BE768F3989033CEDDC2027E /* SPFillView.m */,
+				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
+				3E10740220FC25B7006DBDFD /* SPButtonBar.h */,
+				3E10740320FC25B7006DBDFD /* SPButtonBar.m */,
 				17FDB0AC1280938000DBBBC2 /* Controls */,
 				171312CF109D23CA00FB465F /* Cells */,
 				17DC8829126B337900E9AAEC /* Text Views */,
 				17DC8827126B32F300E9AAEC /* Table Views */,
 				17DF51241163C68600E3F396 /* Outline Views */,
 				17DC8828126B332F00E9AAEC /* Accessory Views */,
-				9BE768F3989033CEDDC2027E /* SPFillView.m */,
-				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
-				3E10740220FC25B7006DBDFD /* SPButtonBar.h */,
-				3E10740320FC25B7006DBDFD /* SPButtonBar.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -2217,6 +2190,17 @@
 				BAE25DFF20B32BDA00DD9A40 /* HelpViewer.xib */,
 			);
 			path = Interfaces;
+			sourceTree = "<group>";
+		};
+		17F2FB322172561400CA4358 /* Help Viewer */ = {
+			isa = PBXGroup;
+			children = (
+				9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */,
+				9BE76C6E8377959C794385E5 /* SPHelpViewerController.h */,
+				9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */,
+				9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */,
+			);
+			name = "Help Viewer";
 			sourceTree = "<group>";
 		};
 		17F5B1491048C4C000FC794F /* Data Export */ = {

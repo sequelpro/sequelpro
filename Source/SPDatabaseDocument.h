@@ -68,7 +68,7 @@
 	// IBOutlets
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableStructure *tableSourceInstance;
-	IBOutlet SPTableContent<SPDatabaseContentViewDelegate> *tableContentInstance;
+	IBOutlet SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
 	IBOutlet SPTableRelations *tableRelationsInstance;
 	IBOutlet SPTableTriggers *tableTriggersInstance;
 	IBOutlet SPCustomQuery *customQueryInstance;
@@ -290,7 +290,7 @@
 @property (readonly) SPDataImport *tableDumpInstance;
 @property (readonly) SPTablesList *tablesListInstance;
 @property (readonly) SPCustomQuery *customQueryInstance;
-@property (readonly) SPTableContent<SPDatabaseContentViewDelegate> *tableContentInstance;
+@property (readonly) SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
 
 @property (readonly) int64_t instanceId;
 
