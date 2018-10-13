@@ -143,6 +143,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 @synthesize tableDumpInstance;
 @synthesize tablesListInstance;
 @synthesize tableContentInstance;
+@synthesize customQueryInstance;
 
 #pragma mark -
 
