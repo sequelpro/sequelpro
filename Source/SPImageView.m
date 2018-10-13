@@ -46,7 +46,9 @@
 	if (delegate) {
 		if ([delegate respondsToSelector:@selector(processUpdatedImageData:)]) {
 			delegateForUse = delegate;
-		} else if ( [delegate valueForKey:@"tableContentInstance"]
+		}
+#warning Private ivar accessed from outside (#2978)
+		else if ( [delegate valueForKey:@"tableContentInstance"]
 					&& [[delegate valueForKey:@"tableContentInstance"] respondsToSelector:@selector(processUpdatedImageData:)] ) {
 			delegateForUse = [delegate valueForKey:@"tableContentInstance"];
 		}
@@ -120,13 +122,16 @@
 	if (delegate) {
 		if ([delegate respondsToSelector:@selector(processUpdatedImageData:)]) {
 			delegateForUse = delegate;
-		} else if ( [delegate valueForKey:@"tableContentInstance"]
+		}
+#warning Private ivar accessed from outside (#2978)
+		else if ( [delegate valueForKey:@"tableContentInstance"]
 					&& [[delegate valueForKey:@"tableContentInstance"] respondsToSelector:@selector(processUpdatedImageData:)] ) {
 			delegateForUse = [delegate valueForKey:@"tableContentInstance"];
 		}
 	}
-	if (delegateForUse)
+	if (delegateForUse) {
 		[delegateForUse processPasteImageData];
+	}
 }
 
 @end

@@ -3168,6 +3168,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 #ifndef SP_CODA
 		databaseConnectionSuperview = [dbDocument databaseView];
+#warning Private ivar accessed from outside (#2978)
 		databaseConnectionView = [dbDocument valueForKey:@"contentViewSplitter"];
 #endif
 

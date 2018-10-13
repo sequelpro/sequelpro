@@ -86,6 +86,7 @@
 
 	if (frontDoc && [frontDoc isKindOfClass:[SPDatabaseDocument class]] && [frontDoc valueForKeyPath:@"spHistoryControllerInstance"] && ![frontDoc isWorking])
 	{
+#warning Private ivar accessed from outside (#2978)
 		if ([event deltaX] == -1.0f) {
 			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
 		}

@@ -394,10 +394,10 @@
 				
 				[alert release];
 				
-				if(returnCode == NSAlertSecondButtonReturn) return; // Cancel
-				else if(returnCode == NSAlertThirdButtonReturn) {   // Import
+				if (returnCode == NSAlertSecondButtonReturn) return; // Cancel
+				else if (returnCode == NSAlertThirdButtonReturn) {   // Import
 					// begin import process
-					[[frontDocument valueForKeyPath:@"tableDumpInstance"] startSQLImportProcessWithFile:filePath];
+					[[frontDocument tableDumpInstance] startSQLImportProcessWithFile:filePath];
 					return;
 				}
 			}
