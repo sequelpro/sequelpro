@@ -186,6 +186,13 @@ Gw
                                                             <action selector="importFavoritesByAdding:" target="-2" id="369"/>
                                                         </connections>
                                                     </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="dBw-fd-qFr"/>
+                                                    <menuItem title="Sort Favorites..." toolTip="Sort query favorites alphabetically, A to Z." id="a0m-jn-lJC">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="sortFavoritesAlphabetically:" target="-2" id="DLo-wY-y9c"/>
+                                                        </connections>
+                                                    </menuItem>
                                                     <menuItem isSeparatorItem="YES" id="364"/>
                                                     <menuItem title="Save Query to File..." toolTip="Save query of selected favorite to file" id="365">
                                                         <modifierMask key="keyEquivalentModifierMask"/>

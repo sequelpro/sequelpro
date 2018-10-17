@@ -380,6 +380,20 @@
 }
 
 /**
+ * Sorts the users favorites alphabetically
+ */
+- (IBAction)sortFavoritesAlphabetically:(id)sender
+{
+#ifndef SP_CODA
+    NSLog(@"%s", "sort pressed");
+    NSLog(@"%@", favorites);
+    
+//    [favoritesArrayController rearrangeObjects];
+//    [favoritesTableView reloadData];
+#endif
+}
+
+/**
  * Insert placeholder - the placeholder string is stored as tooltip
  */
 - (IBAction)insertPlaceholder:(id)sender
