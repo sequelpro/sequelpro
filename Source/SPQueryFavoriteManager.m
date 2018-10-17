@@ -385,11 +385,51 @@
 - (IBAction)sortFavoritesAlphabetically:(id)sender
 {
 #ifndef SP_CODA
-    NSLog(@"%s", "sort pressed");
-    NSLog(@"%@", favorites);
-    
-//    [favoritesArrayController rearrangeObjects];
-//    [favoritesTableView reloadData];
+	NSMutableSet *sortedFavoritesSet;
+	NSMutableArray *sortedFavoritesChunk = [[NSMutableArray alloc] init];
+	NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+	
+	[sortedFavoritesChunk addObject:@{
+		@"name"            : @"Global",
+		@"headerOfFileURL" : @"",
+		@"query"           : @""
+	}];
+	
+	sortedFavoritesSet = [NSMutableSet setWithArray:sortedFavoritesChunk];
+	[sortedFavoritesChunk removeAllObjects];
+	
+	// FIXME: Still sorting fixed file headers
+	
+	if([prefs objectForKey:SPQueryFavorites]) {
+		for(id fav in [prefs objectForKey:SPQueryFavorites])
+			[sortedFavoritesChunk addObject:[[fav mutableCopy] autorelease]];
+	}
+	
+	[sortedFavoritesChunk sortUsingDescriptors:@[sortDescriptor]];
+	[sortedFavoritesSet addObjectsFromArray:sortedFavoritesChunk];
+	[sortedFavoritesChunk removeAllObjects];
+	
+	[sortedFavoritesChunk addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						  [[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name",
+						  [delegatesFileURL absoluteString], @"headerOfFileURL",
+						  @"", @"query",
+						  nil]];
+	
+	[sortedFavoritesSet addObjectsFromArray:sortedFavoritesChunk];
+	[sortedFavoritesChunk removeAllObjects];
+	
+	if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
+		for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
+			[sortedFavoritesChunk addObject:[[fav mutableCopy] autorelease]];
+	}
+	
+	[sortedFavoritesChunk sortUsingDescriptors:@[sortDescriptor]];
+	[sortedFavoritesSet addObjectsFromArray:sortedFavoritesChunk];
+	[sortedFavoritesChunk removeAllObjects];
+	
+	favorites = [[sortedFavoritesSet allObjects] mutableCopy];
+	
+    [favoritesTableView reloadData];
 #endif
 }
 
