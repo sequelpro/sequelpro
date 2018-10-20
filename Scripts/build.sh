@@ -55,12 +55,12 @@ dev_sign_resource()
 
 dist_sign_framework()
 {
-	codesign -f -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/spframeworkrequirement.bin" "$1" 2> /dev/null
+	codesign -f -s 'Developer ID Application: MJ Media (Y48LQG59RS)' -r "${SRCROOT}/Resources/spframeworkrequirement.bin" "$1" 2> /dev/null
 }
 
 dist_sign_resource()
 {
-	codesign -f -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
+	codesign -f -s 'Developer ID Application: MJ Media (Y48LQG59RS)' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
 }
 
 verify_signing()
