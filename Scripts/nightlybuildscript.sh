@@ -45,7 +45,7 @@ then
 fi
 
 IBSTRINGSDIR=ibstrings
-XIB_BASE="$GIT_DIR/Interfaces/English.lproj"
+#XIB_BASE="$GIT_DIR/Interfaces/English.lproj"
 
 echo "Cleaning remains of any previous nightly builds..."
 
@@ -56,39 +56,39 @@ rm -f languagetranslations.zip &> /dev/null
 rm -rf languagetranslations &> /dev/null
 rm -rf $IBSTRINGSDIR &> /dev/null
 
-echo "Creating IB strings files for rekeying..."
-mkdir -p $IBSTRINGSDIR/English.lproj
-find "$XIB_BASE" \( -name "*.xib" \) | while read FILE; do
-    printf "\t$(basename ${FILE})\n"
-    ibtool "$FILE" --export-strings-file "$IBSTRINGSDIR/English.lproj/`basename "$FILE" .xib`.strings"
-done
+#echo "Creating IB strings files for rekeying..."
+#mkdir -p $IBSTRINGSDIR/English.lproj
+#find "$XIB_BASE" \( -name "*.xib" \) | while read FILE; do
+#    printf "\t$(basename ${FILE})\n"
+#    ibtool "$FILE" --export-strings-file "$IBSTRINGSDIR/English.lproj/`basename "$FILE" .xib`.strings"
+#done
 
-echo "Downloading localizations to merge in..."
+#echo "Downloading localizations to merge in..."
 # Download the latest language translations, and copy them into the Resources directory
-curl http://dev.sequelpro.com/translate/download/sequelpro > languagetranslations.zip
-unzip -q languagetranslations.zip -d languagetranslations
-
-echo "Rekeying localization files, translating xibs, merging localizations..."
-find languagetranslations/Resources \( -name "*.lproj" \) | while read FILE; do
-    loc=`basename "$FILE"`
-    mkdir "$IBSTRINGSDIR/$loc"
-	printf "\tRekeying localization: $loc\n"
-	find "$FILE" \( -name "*.strings" \) | while read STRFILE; do
-        file=`basename "$STRFILE" .strings`
-        printf "\t\tFile: $file\n"
-        ibkeyfile="$IBSTRINGSDIR/English.lproj/$file.strings"
-        xibfile="$XIB_BASE/$file.xib"
-        transfile="$IBSTRINGSDIR/$loc/$file.strings"
-        if [ -e "$ibkeyfile" ] && [ -e "$xibfile" ]; then
-            $BUILD_DIR/xibLocalizationPostprocessor "$STRFILE" "$ibkeyfile" "$transfile"
+#curl http://dev.sequelpro.com/translate/download/sequelpro > languagetranslations.zip
+#unzip -q languagetranslations.zip -d languagetranslations
+#
+#echo "Rekeying localization files, translating xibs, merging localizations..."
+#find languagetranslations/Resources \( -name "*.lproj" \) | while read FILE; do
+#    loc=`basename "$FILE"`
+#    mkdir "$IBSTRINGSDIR/$loc"
+#    printf "\tRekeying localization: $loc\n"
+#    find "$FILE" \( -name "*.strings" \) | while read STRFILE; do
+#        file=`basename "$STRFILE" .strings`
+#        printf "\t\tFile: $file\n"
+#        ibkeyfile="$IBSTRINGSDIR/English.lproj/$file.strings"
+#        xibfile="$XIB_BASE/$file.xib"
+#        transfile="$IBSTRINGSDIR/$loc/$file.strings"
+#        if [ -e "$ibkeyfile" ] && [ -e "$xibfile" ]; then
+#            $BUILD_DIR/xibLocalizationPostprocessor "$STRFILE" "$ibkeyfile" "$transfile"
             #we no longer need the original file and don't want to copy it
-            rm -f "$STRFILE"
-            ibtool "$xibfile" --import-strings-file "$transfile" --compile "languagetranslations/Resources/$loc/$file.nib"
-        fi
-    done
-    printf "\tCopying localization: $loc\n"
-    cp -R "$FILE" "Sequel Pro.app/Contents/Resources/"
-done
+#            rm -f "$STRFILE"
+#            ibtool "$xibfile" --import-strings-file "$transfile" --compile "languagetranslations/Resources/$loc/$file.nib"
+#        fi
+#    done
+#    printf "\tCopying localization: $loc\n"
+#    cp -R "$FILE" "Sequel Pro.app/Contents/Resources/"
+#done
 
 #echo "Copying nightly icon"
 
@@ -108,11 +108,11 @@ php -r '$infoplistloc = "'$BUILD_DIR'/Sequel Pro.app/Contents/Info.plist";
 
 # Update versions in localised string files
 php -r '$englishstringsloc = "/'$BUILD_DIR'/Sequel Pro.app/Contents/Resources/English.lproj/InfoPlist.strings";
-	$englishstrings = file_get_contents($englishstringsloc);
-	$englishstrings = mb_convert_encoding($englishstrings, "UTF-8", "UTF-16");
-	$englishstrings = preg_replace("/version [^\,\"]+/iu", "nightly build for r'$SHORT_HASH'", $englishstrings);
-        $englishstrings = mb_convert_encoding($englishstrings, "UTF-16", "UTF-8");
-	file_put_contents($englishstringsloc, $englishstrings);'
+    $englishstrings = file_get_contents($englishstringsloc);
+    $englishstrings = mb_convert_encoding($englishstrings, "UTF-8", "UTF-16");
+    $englishstrings = preg_replace("/version [^\,\"]+/iu", "nightly build for r'$SHORT_HASH'", $englishstrings);
+    $englishstrings = mb_convert_encoding($englishstrings, "UTF-16", "UTF-8");
+    file_put_contents($englishstringsloc, $englishstrings);'
 
 echo "Signing build..."
 
