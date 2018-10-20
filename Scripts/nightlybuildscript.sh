@@ -8,11 +8,11 @@
 # Compiling this script with shc is quite straightforward - /usr/local/bin/shc -T -f <filename> , then move.
 
 # Hacky constants
-GIT_DIR=/Users/spbuildbot/buildbot/sequel-pro-10_7/build/
-BUILD_DIR=/Users/spbuildbot/buildbot/sequel-pro-10_7/build/build/Release
+GIT_DIR=/Users/spbuildbot/buildbot/sequel-pro/build/
+BUILD_DIR=/Users/spbuildbot/buildbot/sequel-pro/build/build/Release
 PRIVATE_KEY_LOC='LOCATION NOT COMMITTED'
-NIGHTLY_ICON_LOC=/Users/spbuildbot/Documents/nightly-icon.icns
-NIGHTLY_KEYCHAIN_LOC=/Users/spbuildbot/Library/Keychains/spnightly.keychain
+NIGHTLY_ICON_LOC=/Users/spbuildbot/buildbot/sequel-pro/build/Resources/Images/appIcon.icns
+NIGHTLY_KEYCHAIN_LOC=/Users/spbuildbot/Library/Keychains/spnightly.keychain-db
 NIGHTLY_KEYCHAIN_PASSWORD='PASSWORD NOT COMMITTED'
 
 # Ensure a revision hash was passed in
@@ -117,10 +117,10 @@ php -r '$englishstringsloc = "/'$BUILD_DIR'/Sequel Pro.app/Contents/Resources/En
 echo "Signing build..."
 
 # Code sign and verify the nightly
-#security unlock-keychain -p "$NIGHTLY_KEYCHAIN_PASSWORD" "$NIGHTLY_KEYCHAIN_LOC"
-codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r $GIT_DIR"/Resources/spframeworkrequirement.bin" "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant"
-codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r $GIT_DIR"/Resources/sprequirement.bin" "Sequel Pro.app"
-#security lock-keychain "$NIGHTLY_KEYCHAIN_LOC"
+security unlock-keychain -p "$NIGHTLY_KEYCHAIN_PASSWORD" "$NIGHTLY_KEYCHAIN_LOC"
+codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media (Y48LQG59RS)' -r $GIT_DIR"/Resources/spframeworkrequirement.bin" "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant"
+codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media (Y48LQG59RS)' -r $GIT_DIR"/Resources/sprequirement.bin" "Sequel Pro.app"
+security lock-keychain "$NIGHTLY_KEYCHAIN_LOC"
 VERIFYERRORS=`codesign --verify "Sequel Pro.app" 2>&1`
 VERIFYERRORS+=`codesign --verify "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant" 2>&1`
 if [ "$VERIFYERRORS" != '' ]
