@@ -21,5 +21,5 @@ clean:
 	xcodebuild -project sequel-pro.xcodeproj -scheme "Sequel Pro" -configuration "$(BUILD_CONFIG)" $(OPTIONS) clean
 
 localize:
-	xcodebuild -project sequel-pro.xcodeproj -scheme "Sequel Pro" -configuration "$(BUILD_CONFIG)" $(OPTIONS) -target Localize
+	xcodebuild -project sequel-pro.xcodeproj -scheme "Localize" -configuration "$(BUILD_CONFIG)" $(OPTIONS)
 
