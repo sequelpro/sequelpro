@@ -23,3 +23,5 @@ clean:
 localize:
 	xcodebuild -project sequel-pro.xcodeproj -scheme "Localize" -configuration "$(BUILD_CONFIG)" $(OPTIONS)
 
+nightly:
+	/usr/local/bin/nightlybuildscript.sh $(REVISION)
