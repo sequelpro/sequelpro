@@ -29,22 +29,12 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#ifndef SP_CODA /* headers */
-#import <WebKit/WebKit.h>
-#endif
-
 @class SPConnectionController;
-
-#ifdef SP_CODA 
-@class BottomBarSegmentedControl;
-#else
 @class SPProcessListController;
 @class SPServerVariablesController;
 @class SPUserManager;
 @class SPWindowController;
 @class SPSplitView;
-#endif
-
 @class SPDatabaseData;
 @class SPTablesList;
 @class SPTableStructure;
@@ -61,11 +51,13 @@
 @class SPTableTriggers;
 @class SPTableRelations;
 @class SPHelpViewerClient;
+@class SPDataImport;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPThreadAdditions.h"
 
+#import <WebKit/WebKit.h>
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
 
 /**
@@ -73,22 +65,17 @@
  */
 @interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol, SPMySQLConnectionDelegate, NSTextFieldDelegate, NSToolbarDelegate, SPCountedObject, WebFrameLoadDelegate>
 {
-#ifdef SP_CODA /* patch */
-	id delegate;
-	BottomBarSegmentedControl* structureContentSwitcher;
-#endif
-
 	// IBOutlets
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableStructure *tableSourceInstance;
 	IBOutlet SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
 	IBOutlet SPTableRelations *tableRelationsInstance;
 	IBOutlet SPTableTriggers *tableTriggersInstance;
-	IBOutlet id customQueryInstance;
-	IBOutlet id tableDumpInstance;
+	IBOutlet SPCustomQuery *customQueryInstance;
+	IBOutlet SPDataImport *tableDumpInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
-	IBOutlet id databaseDataInstance;
+	IBOutlet SPDatabaseData *databaseDataInstance;
 #ifndef SP_CODA
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
@@ -291,40 +278,20 @@
 }
 
 @property (nonatomic, assign) NSTableView *dbTablesTableView;
-
-#ifdef SP_CODA /* ivars */
-@property (assign) SPDatabaseData* databaseDataInstance;
-@property (assign) SPTableData* tableDataInstance;
-@property (assign) SPCustomQuery* customQueryInstance;
-@property (assign) BottomBarSegmentedControl* structureContentSwitcher;
-
-@property (assign) id databaseNameField;
-@property (assign) id databaseEncodingButton;
-@property (assign) id addDatabaseButton;
-@property (assign) id chooseDatabaseButton;
-
-@property (assign) id databaseRenameNameField;
-@property (assign) id renameDatabaseButton;
-@property (assign) id databaseRenameSheet;
-
-@property (assign) id delegate;
-@property (readonly) NSMutableArray* allDatabases;
-@property (assign) NSProgressIndicator* queryProgressBar;
-@property (assign) NSWindow* databaseSheet;
-#endif
-
-#ifndef SP_CODA /* ivars */
 @property (readwrite, retain) NSURL *sqlFileURL;
 @property (readwrite, assign) NSStringEncoding sqlFileEncoding;
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
-#endif
 @property (readwrite, assign) BOOL isProcessing;
-#ifndef SP_CODA /* ivars */
 @property (readwrite, retain) NSString *processID;
-#endif
+
 @property (readonly) SPServerSupport *serverSupport;
 @property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
+@property (readonly) SPDataImport *tableDumpInstance;
+@property (readonly) SPTablesList *tablesListInstance;
+@property (readonly) SPCustomQuery *customQueryInstance;
+@property (readonly) SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
+
 @property (readonly) int64_t instanceId;
 
 - (SPHelpViewerClient *)helpViewerClient;
@@ -458,7 +425,6 @@
 - (NSUndoManager *)undoManager;
 #endif
 - (NSArray *)allTableNames;
-- (SPTablesList *)tablesListInstance;
 - (SPCreateDatabaseInfo *)createDatabaseInfo;
 - (SPTableViewType) currentlySelectedView;
 

@@ -70,6 +70,6 @@
  *
  * @return YES on success, otherwise NO
  */
-- (BOOL)createDatabase:(NSString * _Nonnull)database withEncoding:(NSString * _Nonnull)encoding collation:(NSString * _Nonnull)collation;
+- (BOOL)createDatabase:(NSString * _Nonnull)database withEncoding:(NSString * _Nullable)encoding collation:(NSString * _Nullable)collation;
 
 @end

@@ -276,8 +276,10 @@ copy_return:
 			// Check if InnoDB support is enabled
 			NSString *result = [self _getSingleVariableValue:@"have_innodb"];
 			
-			if(result && [result isEqualToString:@"YES"])
+			if (result && [result isEqualToString:@"YES"])
+			{
 				[storageEngines addObject:@{@"Engine" : @"InnoDB"}];
+			}
 			
 			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
 			if ([serverSupport supportsPre41StorageEngines]) {
@@ -314,7 +316,7 @@ copy_return:
 					
 					// Table is accessible so get available storage engines
 					// Note, that the case of the column names specified in this query are important.
-					[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT Engine, Support FROM `information_schema`.`engines` WHERE SUPPORT IN ('DEFAULT', 'YES')"]];				
+					[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT Engine, Support FROM `information_schema`.`engines` WHERE SUPPORT IN ('DEFAULT', 'YES') AND Engine != 'PERFORMANCE_SCHEMA'"]];
 				}
 			}
 			else {				
@@ -324,8 +326,9 @@ copy_return:
 				// We only want to include engines that are supported
 				for (NSDictionary *engine in engines) 
 				{				
-					if (([[engine objectForKey:@"Support"] isEqualToString:@"DEFAULT"]) ||
-						([[engine objectForKey:@"Support"] isEqualToString:@"YES"]))
+					if (([[engine objectForKey:@"Support"] isEqualToString:@"DEFAULT"] ||
+						[[engine objectForKey:@"Support"] isEqualToString:@"YES"]) &&
+						![[engine objectForKey:@"Engine"] isEqualToString:@"PERFORMANCE_SCHEMA"])
 					{
 						[storageEngines addObject:engine];
 					}

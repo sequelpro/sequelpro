@@ -217,8 +217,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
  */
 - (id)customQueryInstance
 {
-#warning private ivar accessed from outside
-	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
+	return [tableDocumentInstance customQueryInstance];
 }
 
 #pragma mark -

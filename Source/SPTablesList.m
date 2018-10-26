@@ -55,17 +55,26 @@
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
+//
+// Actions
 static NSString *SPAddRow         = @"SPAddRow";
 static NSString *SPAddNewTable    = @"SPAddNewTable";
 static NSString *SPRemoveTable    = @"SPRemoveTable";
 static NSString *SPTruncateTable  = @"SPTruncateTable";
 static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
+// New table
+static NSString *SPNewTableName         = @"SPNewTableName";
+static NSString *SPNewTableType         = @"SPNewTableType";
+static NSString *SPNewTableCharacterSet = @"SPNewTableCharacterSet";
+static NSString *SPNewTableCollation    = @"SPNewTableCollation";
+
 @interface SPTablesList () <NSSplitViewDelegate, NSTableViewDataSource>
 
 - (void)_removeTable:(BOOL)force;
 - (void)_truncateTable;
 - (void)_addTable;
+- (void)_addTableWithDetails:(NSDictionary *)tableDetails;
 - (void)_copyTable;
 - (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 - (void)_duplicateConnectionToFrontTab;
@@ -734,30 +743,25 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	else if ([contextInfo isEqualToString:SPRemoveTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self _removeTable:([[(NSAlert *)sheet suppressionButton] state] == NSOnState)];
+			[self _removeTable:[[(NSAlert *)sheet suppressionButton] state] == NSOnState];
 		}
 	}
-#ifndef SP_CODA
 	else if ([contextInfo isEqualToString:SPTruncateTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _truncateTable];
 		}
 	}
-	else 
-#endif
-	if ([contextInfo isEqualToString:SPAddNewTable]) {
+	else if ([contextInfo isEqualToString:SPAddNewTable]) {
 		[addTableCharsetHelper setEnabled:NO];
 		if (returnCode == NSOKButton) {
 			[self _addTable];
 		}
 	}
-#ifndef SP_CODA
 	else if ([contextInfo isEqualToString:SPDuplicateTable]) {
 		if (returnCode == NSOKButton) {
 			[self _copyTable];
 		}
 	}
-#endif
 }
 
 #pragma mark -
@@ -895,7 +899,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[renameTableContextMenuItem setHidden:YES];
 		[openTableInNewTabContextMenuItem setHidden:YES];
 		[openTableInNewWindowContextMenuItem setHidden:YES];
-		[separatorTableContextMenuItem3 setHidden:YES];
+		[separatorTableContextMenuItem3 setHidden:NO];
 		[duplicateTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem2 setHidden:NO];
@@ -908,7 +912,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[renameTableMenuItem setHidden:YES];
 		[openTableInNewTabMenuItem setHidden:YES];
 		[openTableInNewWindowMenuItem setHidden:YES];
-		[separatorTableMenuItem3 setHidden:YES];
+		[separatorTableMenuItem3 setHidden:NO];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableMenuItem2 setHidden:NO];
@@ -2355,25 +2359,57 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 /**
- * Adds a new table table to the database using the selected character set encoding and storage engine.
+ * Adds a new table table to the database using the selected character set encoding and storage engine on a separate thread.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_addTable
 {
-	// Ensure the task is performed on a background thread to group addition and loads
-	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPTablesList table addition task", tableDocumentInstance) target:self selector:@selector(_addTable) object:nil];
-		return;
-	}
-	
-	@autoreleasepool {
-		[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
+	NSString *tableType = [tableTypeButton title];
+	NSString *tableName = [tableNameField stringValue];
+	NSString *tableCharacterSet = [addTableCharsetHelper selectedCharset];
+	NSString *tableColletion = [addTableCharsetHelper selectedCollation];
 
+	NSMutableDictionary *tableDetails = [NSMutableDictionary dictionaryWithObject:tableName forKey:SPNewTableName];
+
+	if ([tableTypeButton indexOfSelectedItem] > 0) {
+		[tableDetails setObject:tableType forKey:SPNewTableType];
+	}
+
+	if (tableCharacterSet) {
+		[tableDetails setObject:tableCharacterSet forKey:SPNewTableCharacterSet];
+	}
+
+	if (tableColletion) {
+		[tableDetails setObject:tableColletion forKey:SPNewTableCollation];
+	}
+
+	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), tableName]];
+
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPTablesList table addition task", tableDocumentInstance)
+							   target:self
+							 selector:@selector(_addTableWithDetails:)
+							   object:tableDetails];
+
+	// Clear table name
+	[[tableNameField onMainThread] setStringValue:@""];
+
+	[tableDocumentInstance endTask];
+}
+
+/**
+ * Adds a new table table to the database using the selected character set encoding and storage engine.
+ */
+- (void)_addTableWithDetails:(NSDictionary *)tableDetails
+{
+	@autoreleasepool
+	{
 		NSString *charSetStatement   = @"";
 		NSString *collationStatement = @"";
 		NSString *engineStatement    = @"";
 
-		NSString *tableType = [tableTypeButton title];
-		NSString *tableName = [tableNameField stringValue];
+		NSString *tableName = [tableDetails objectForKey:SPNewTableName];
+		NSString *tableType = [tableDetails objectForKey:SPNewTableType];
 
 		// Ensure the use of UTF8 when creating new tables
 		BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
@@ -2384,15 +2420,17 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 
 		// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
-		NSString *encodingName = [addTableCharsetHelper selectedCharset];
+		NSString *encodingName = [tableDetails objectForKey:SPNewTableCharacterSet];
+
 		if (encodingName) charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
 
 		// If there is a collation selected other than the default we must specify it in the CREATE TABLE statement
-		NSString *collationName = [addTableCharsetHelper selectedCollation];
-		if (collationName) collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@",[collationName backtickQuotedString]];
+		NSString *collationName = [tableDetails objectForKey:SPNewTableCollation];
+
+		if (collationName) collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@", [collationName backtickQuotedString]];
 
 		// If there is a type selected other than the default we must specify it in CREATE TABLE statement
-		if ([tableTypeButton indexOfSelectedItem] > 0) {
+		if (tableType) {
 			engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [[tableDocumentInstance serverSupport] supportsQuotingEngineTypeInCreateSyntax] ? [tableType backtickQuotedString] : tableType];
 		}
 
@@ -2439,17 +2477,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			selectedTableType = SPTableTypeTable;
 
 			[[self onMainThread] updateFilter:self];
-			[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+			[[tablesListView onMainThread] scrollRowToVisible:[[tablesListView onMainThread] selectedRow]];
 
 			// Select the newly created table and switch to the table structure view for easier setup
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
-#ifndef SP_CODA
 			[tableDocumentInstance viewStructure:self];
-#endif
-
-#ifdef SP_CODA
-			[sidebarViewController setTableNames:[self allTableNames] selectedTableName:selectedTableName];
-#endif
 
 			// Query the structure of all databases in the background (mainly for completion)
 			[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
@@ -2474,11 +2506,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 			[[tablesListView onMainThread] reloadData];
 		}
-
-		// Clear table name
-		[[tableNameField onMainThread] setStringValue:@""];
-
-		[tableDocumentInstance endTask];
 	}
 }
 

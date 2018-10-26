@@ -139,7 +139,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 @synthesize databaseStructureRetrieval;
 @synthesize processID;
 @synthesize instanceId;
-@synthesize dbTablesTableView = dbTablesTableView;
+@synthesize dbTablesTableView;
+@synthesize tableDumpInstance;
+@synthesize tablesListInstance;
+@synthesize tableContentInstance;
+@synthesize customQueryInstance;
 
 #pragma mark -
 
@@ -2825,11 +2829,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (NSArray *)allTableNames
 {
 	return [tablesListInstance allTableNames];
-}
-
-- (SPTablesList *)tablesListInstance
-{
-	return tablesListInstance;
 }
 
 - (SPCreateDatabaseInfo *)createDatabaseInfo
@@ -5855,7 +5854,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// Otherwise position the sheet beneath the tab bar if it's visible
+#warning Private ivar accessed from outside (#2978)
 	rect.origin.y -= [[parentWindowController valueForKey:@"tabBar"] frame].size.height - 1;
+
 	return rect;
 }
 #endif

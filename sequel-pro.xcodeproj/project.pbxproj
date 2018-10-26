@@ -98,6 +98,7 @@
 		17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C66D128AD4710047709F /* SPFavoritesController.m */; };
 		17D3C671128AD8160047709F /* SPSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C670128AD8160047709F /* SPSingleton.m */; };
 		17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */; };
+		17D41A8221700F8200B1888D /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		17D5B49E1553059F00EF3BB3 /* SPViewCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5B49D1553059F00EF3BB3 /* SPViewCopy.m */; };
 		17DB5F441555CA300046834B /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */; };
 		17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* SPPrintTemplate.html */; };
@@ -515,6 +516,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 58B9096011C3A42B000826E5;
 			remoteInfo = xibLocalizationPostprocessor;
+		};
+		17D41AB12171157B00B1888D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 584D876015140D3500F24774 /* SPMySQLFramework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
+			remoteInfo = SPMySQL.framework;
 		};
 		17E5955214F304000054EE08 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1445,15 +1453,6 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
-		1713C73D140D88D400CFD461 /* Query Controller */ = {
-			isa = PBXGroup;
-			children = (
-				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
-				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
-			);
-			name = "Query Controller";
-			sourceTree = "<group>";
-		};
 		173284E51088FEC20062E892 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -1474,15 +1473,6 @@
 				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 			);
 			name = "Bundle Support";
-			sourceTree = "<group>";
-		};
-		17381853151FB29C0078FFE2 /* User Manager */ = {
-			isa = PBXGroup;
-			children = (
-				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
-				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
-			);
-			name = "User Manager";
 			sourceTree = "<group>";
 		};
 		17386E08151924E9002DC206 /* Table Content */ = {
@@ -1533,9 +1523,9 @@
 			children = (
 				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
 				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
-				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
 				500C1F901BFB5F9F0095DC7F /* SPPrivilegesMO.h */,
 				500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */,
+				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
 			);
 			name = "Core Data";
 			sourceTree = "<group>";
@@ -1585,15 +1575,15 @@
 				50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */,
 				506CE92F1A311C6C0039F736 /* SPRuleFilterController.h */,
 				506CE9301A311C6C0039F736 /* SPRuleFilterController.m */,
-				1713C73D140D88D400CFD461 /* Query Controller */,
-				17381853151FB29C0078FFE2 /* User Manager */,
-				17846B9D170C95D800414499 /* Process List */,
 				9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */,
 				9BE76F9BF9BDA2921CDD05AF /* SPFilterTableController.h */,
-				9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */,
-				9BE76C6E8377959C794385E5 /* SPHelpViewerController.h */,
-				9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */,
-				9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */,
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
+				174CE14010AB9281008F892B /* SPProcessListController.h */,
+				174CE14110AB9281008F892B /* SPProcessListController.m */,
+				17F2FB322172561400CA4358 /* Help Viewer */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -1687,15 +1677,6 @@
 				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 			);
 			name = RegexKitLite;
-			sourceTree = "<group>";
-		};
-		17846B9D170C95D800414499 /* Process List */ = {
-			isa = PBXGroup;
-			children = (
-				174CE14010AB9281008F892B /* SPProcessListController.h */,
-				174CE14110AB9281008F892B /* SPProcessListController.m */,
-			);
-			name = "Process List";
 			sourceTree = "<group>";
 		};
 		1798D17215BE9B8E008690E6 /* Protocols */ = {
@@ -2002,16 +1983,16 @@
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
 				BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */,
+				9BE768F3989033CEDDC2027E /* SPFillView.m */,
+				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
+				3E10740220FC25B7006DBDFD /* SPButtonBar.h */,
+				3E10740320FC25B7006DBDFD /* SPButtonBar.m */,
 				17FDB0AC1280938000DBBBC2 /* Controls */,
 				171312CF109D23CA00FB465F /* Cells */,
 				17DC8829126B337900E9AAEC /* Text Views */,
 				17DC8827126B32F300E9AAEC /* Table Views */,
 				17DF51241163C68600E3F396 /* Outline Views */,
 				17DC8828126B332F00E9AAEC /* Accessory Views */,
-				9BE768F3989033CEDDC2027E /* SPFillView.m */,
-				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
-				3E10740220FC25B7006DBDFD /* SPButtonBar.h */,
-				3E10740320FC25B7006DBDFD /* SPButtonBar.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -2209,6 +2190,17 @@
 				BAE25DFF20B32BDA00DD9A40 /* HelpViewer.xib */,
 			);
 			path = Interfaces;
+			sourceTree = "<group>";
+		};
+		17F2FB322172561400CA4358 /* Help Viewer */ = {
+			isa = PBXGroup;
+			children = (
+				9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */,
+				9BE76C6E8377959C794385E5 /* SPHelpViewerController.h */,
+				9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */,
+				9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */,
+			);
+			name = "Help Viewer";
 			sourceTree = "<group>";
 		};
 		17F5B1491048C4C000FC794F /* Data Export */ = {
@@ -2719,6 +2711,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				17D41AB22171157B00B1888D /* PBXTargetDependency */,
 			);
 			name = SequelProTunnelAssistant;
 			productName = TunnelPassphraseRequester;
@@ -3157,6 +3150,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				17D41A8221700F8200B1888D /* SPFunctions.m in Sources */,
 				507FF2421BC33BBC00104523 /* SPOSInfo.m in Sources */,
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
@@ -3344,6 +3338,11 @@
 			isa = PBXTargetDependency;
 			target = 58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */;
 			targetProxy = 1798AB401267731F000D946A /* PBXContainerItemProxy */;
+		};
+		17D41AB22171157B00B1888D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SPMySQL.framework;
+			targetProxy = 17D41AB12171157B00B1888D /* PBXContainerItemProxy */;
 		};
 		5847571E120A1C6D0057631F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3747,7 +3746,6 @@
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				PRODUCT_NAME = Localize;
 				ZERO_LINK = NO;
 			};
@@ -3795,7 +3793,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
 					"$(inherited)",
@@ -3893,6 +3890,7 @@
 		588593F00F7AEB6900ED0E67 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -3944,11 +3942,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Distribution",
-					"$(SRCROOT)/Frameworks/QueryKit/build/Distribution",
-					"$(SRCROOT)/Frameworks",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4039,7 +4033,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
@@ -4076,10 +4069,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks",
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4100,10 +4090,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks",
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
@@ -4122,10 +4109,7 @@
 		58CDB33A0FCE13CB00F8ACA3 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(BUILD_DIR)/Frameworks",
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Distribution",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
@@ -4144,11 +4128,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks",
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug",
-					"$(SRCROOT)/Frameworks/QueryKit/build/Debug",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4168,11 +4148,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks",
-					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release",
-					"$(SRCROOT)/Frameworks/QueryKit/build/Release",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4190,6 +4166,7 @@
 		C05733CC08A9546B00998B17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -4247,6 +4224,7 @@
 		C05733CD08A9546B00998B17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -4305,7 +4283,7 @@
 				1798AB1F12676EA0000D946A /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */ = {
 			isa = XCConfigurationList;
@@ -4315,7 +4293,7 @@
 				380F4EDD0FC0B50600B0BFD7 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Pro QLGenerator" */ = {
 			isa = XCConfigurationList;
@@ -4325,7 +4303,7 @@
 				584754C6120A04560057631F /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		58B906EB11BD989A000826E5 /* Build configuration list for PBXNativeTarget "PSMTabBar" */ = {
 			isa = XCConfigurationList;
@@ -4335,7 +4313,7 @@
 				58B906EA11BD989A000826E5 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		58B9096A11C3A431000826E5 /* Build configuration list for PBXNativeTarget "xibLocalizationPostprocessor" */ = {
 			isa = XCConfigurationList;
@@ -4345,7 +4323,7 @@
 				58B9096511C3A42C000826E5 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelProTunnelAssistant" */ = {
 			isa = XCConfigurationList;
@@ -4355,7 +4333,7 @@
 				58CDB33A0FCE13CB00F8ACA3 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		C05733C708A9546B00998B17 /* Build configuration list for PBXNativeTarget "Sequel Pro" */ = {
 			isa = XCConfigurationList;
@@ -4365,7 +4343,7 @@
 				588593F10F7AEB6900ED0E67 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */ = {
 			isa = XCConfigurationList;
@@ -4375,7 +4353,7 @@
 				588593F00F7AEB6900ED0E67 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

@@ -1,4 +1,4 @@
-#! /bin/ksh 
+#! /bin/ksh
 
 #
 #  localize.sh
@@ -34,8 +34,8 @@
 
 if [ "${BUILT_PRODUCTS_DIR}x" == 'x' ]
 then
-    echo 'This script should only be run by Xcode. Exiting...'
-    exit 1
+   echo 'This script should only be run by Xcode. Exiting...'
+   exit 1
 fi
 
 echo "Running genstrings to update 'Localizable.strings'..."
@@ -46,40 +46,40 @@ GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROO
 # Check for genstrings errors
 if [[ ${GENSTRINGS_ERRORS} -ne 0 ]]
 then
-    echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
+   echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
 fi
 
 echo "Updating nib and xib localisations..."
 
 # Generate up-to-date nib .strings files for localisation
-find "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"/**/*.nib | while read nibFile
+find "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"/**/*.nib | while read NIB_FILE
 do
-    stringsFilePath="${SOURCE_ROOT}/Resources/English.lproj/`basename "${nibFile}" .nib`.strings"
-    xibFile=`basename "${nibFile}" .nib`.xib
-    xibFilePath=`echo "${SOURCE_ROOT}"/Interfaces/**/"${xibFile}"`
+   STRINGS_FILE_PATH="${SOURCE_ROOT}/Resources/English.lproj/`basename "${NIB_FILE}" .nib`.strings"
+   XIB_FILE=`basename "${NIB_FILE}" .nib`.xib
+   XIB_FILE_PATH=`echo "${SOURCE_ROOT}"/Interfaces/**/"${XIB_FILE}"`
 
-    if [[ -e ${xibFilePath} ]]
-    then
-        xibfileModDate=`stat -f "%m" "${xibFilePath}"`
+   if [[ -e ${XIB_FILE_PATH} ]]
+   then
+       XIB_FILE_MOD_DATE=`stat -f "%m" "${XIB_FILE_PATH}"`
 
-        if [[ -e ${stringsFilePath} ]]
-        then
-            stringsFileModDate=`stat -f "%m" "${stringsFilePath}"`
-        else
-            stringsFileModDate=0
-        fi
+       if [[ -e ${STRINGS_FILE_PATH} ]]
+       then
+           STRINGS_FILE_MOD_DATE=`stat -f "%m" "${STRINGS_FILE_PATH}"`
+       else
+           STRINGS_FILE_MOD_DATE=0
+       fi
 
-        if [[ ${xibfileModDate} -gt ${stringsFileModDate} ]]
-        then
-            printf "\tLocalising ${xibFile}...\n";
+       if [[ ${XIB_FILE_MOD_DATE} -gt ${STRINGS_FILE_MOD_DATE} ]]
+       then
+           printf "\tLocalising ${XIB_FILE}...\n";
 
-            ibtool --generate-stringsfile "${stringsFilePath}~" "${xibFilePath}"
+           ibtool --generate-stringsfile "${STRINGS_FILE_PATH}~" "${XIB_FILE_PATH}"
 
-            "${BUILT_PRODUCTS_DIR}"/xibLocalizationPostprocessor "${stringsFilePath}~" "${stringsFilePath}"
+           "${BUILT_PRODUCTS_DIR}"/xibLocalizationPostprocessor "${STRINGS_FILE_PATH}~" "${STRINGS_FILE_PATH}"
 
-            rm "${stringsFilePath}~"
-        fi
-    fi
+           rm "${STRINGS_FILE_PATH}~"
+       fi
+   fi
 done
 
 exit 0

@@ -30,6 +30,7 @@
 
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPFunctions.h"
 
 @implementation SPAlertSheets
 
@@ -207,30 +208,34 @@ void SPBeginAlertSheet(
 		void *contextInfo,
 	NSString *msg) 
 {
-	NSButton *aButton;
+	SPMainQSync(^{
+		// Set up an NSAlert with the supplied details
+		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
 
-	// Set up an NSAlert with the supplied details
-	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-	[alert setMessageText:title];
-	aButton = [alert addButtonWithTitle:defaultButton];
-	[aButton setTag:NSAlertDefaultReturn];
+		[alert setMessageText:title];
 
-	// Add 'alternate' and 'other' buttons as appropriate
-	if (alternateButton) {
-		aButton = [alert addButtonWithTitle:alternateButton];
-		[aButton setTag:NSAlertAlternateReturn];
-	}
-	if (otherButton) {
-		aButton = [alert addButtonWithTitle:otherButton];
-		[aButton setTag:NSAlertOtherReturn];
-	}
+		NSButton *aButton = [alert addButtonWithTitle:defaultButton];
 
-	// Set the informative message if supplied
-	if (msg) [alert setInformativeText:msg];
+		[aButton setTag:NSAlertDefaultReturn];
 
-	// Run the alert on the main thread
-	[[alert onMainThread] beginSheetModalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
+		// Add 'alternate' and 'other' buttons as appropriate
+		if (alternateButton) {
+			aButton = [alert addButtonWithTitle:alternateButton];
+			[aButton setTag:NSAlertAlternateReturn];
+		}
 
-	// Ensure the alerting window is frontmost
-	[[docWindow onMainThread] makeKeyWindow];
+		if (otherButton) {
+			aButton = [alert addButtonWithTitle:otherButton];
+			[aButton setTag:NSAlertOtherReturn];
+		}
+
+		// Set the informative message if supplied
+		if (msg) [alert setInformativeText:msg];
+
+		// Run the alert on the main thread
+		[alert beginSheetModalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
+
+		// Ensure the alerting window is frontmost
+		[docWindow makeKeyWindow];
+	});
 }

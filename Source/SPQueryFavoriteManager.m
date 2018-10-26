@@ -180,7 +180,7 @@
  */
 - (id)customQueryInstance
 {
-	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
+	return [tableDocumentInstance customQueryInstance];
 }
 
 #pragma mark -

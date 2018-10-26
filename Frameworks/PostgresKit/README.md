@@ -1,6 +1,6 @@
 # PostgresKit
 
-PostgresKit is a fork and heavily modified version of the PostgresClientKit 
+PostgresKit is a fork and heavily modified version of the PostgresClientKit
 code from the PostgresKit project:
 
 [http://code.google.com/p/postgres-kit/](http://code.google.com/p/postgres-kit/)
@@ -8,7 +8,7 @@ code from the PostgresKit project:
 PostgresClientKit was originally written by David Thorpe and is licensed under
 version 2 of the Apache License.
 
-This PostgresKit fork was created by Stuart Connolly on July 22, 2012 and 
+This PostgresKit fork was created by Stuart Connolly on July 22, 2012 and
 is to be developed as part of the Sequel Pro project:
 
 [http://sequelpro.com/](http://sequelpro.com/)
@@ -19,28 +19,28 @@ Any new code added during it's development is licensed under the MIT license
 and is copyrighted by the respective developer and the Sequel Pro team.
 
 The framework also includes libpq, the static C library interface to PostgreSQL
-and libpqtypes, a libpq extension designed to ease the use of parameterised 
+and libpqtypes, a libpq extension designed to ease the use of parameterised
 queries and enhanced support for handling native PostgreSQL data types.
 
 libpq is licensed under The PostgreSQL License and is copyrighted by:
 
 	Portions Copyright (c) 1996-2012, The PostgreSQL Global Development Group
 	Portions Copyright (c) 1994, The Regents of the University of California
-	
-Full license: 
+
+Full license:
 
 [https://www.postgresql.org/about/licence/](https://www.postgresql.org/about/licence/)
-	
+
 libpqtypes is licensed under the BSD license and is copyrighted by:
 
 	Copyright (c) 2008-2011 eSilo, LLC. All rights reserved
-	
+
 Full License:
 
 [http://libpqtypes.esilo.com/pkgdocs.html?file=LICENSE](http://libpqtypes.esilo.com/pkgdocs.html?file=LICENSE)
 
-The entire framework is dual licensed under both version 2 of the Apache 
-license and the MIT license. Use of it must carry both of the following 
+The entire framework is dual licensed under both version 2 of the Apache
+license and the MIT license. Use of it must carry both of the following
 licenses to indicate this:
 
 ### Apache 2 License
@@ -61,8 +61,8 @@ limitations under the License.
 
 ### MIT License
 
-Copyright (c) 2017 Sequel Pro Team. All rights reserved.
-	
+Copyright (c) 2018 Sequel Pro Team. All rights reserved.
+
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
 files (the "Software"), to deal in the Software without
@@ -71,10 +71,10 @@ copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the
 Software is furnished to do so, subject to the following
 conditions:
-	
+
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
-	
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
