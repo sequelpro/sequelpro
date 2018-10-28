@@ -3931,6 +3931,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
  */
 - (void)makeContentFilterHaveFocus
 {
+	// don't show the filter UI if no table is selected - would result in invalid state
+	if (!selectedTable || [selectedTable isEqualToString:@""]) {
+		NSBeep();
+		return;
+	}
+	
 	[self setRuleEditorVisible:YES animate:YES];
 	[toggleRuleFilterButton setState:NSOnState];
 	[ruleFilterController focusFirstInputField];

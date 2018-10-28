@@ -3598,7 +3598,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Menu item validation.
-	*/
+ */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	SEL action = [menuItem action];

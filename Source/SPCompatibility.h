@@ -176,6 +176,9 @@ typedef struct {
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_13
 
+// was an anonymous enum before
+#define NSFontPanelModeMask NSUInteger
+
 #endif
 
 #pragma mark - 10.14 Mojave
