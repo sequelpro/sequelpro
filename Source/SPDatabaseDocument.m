@@ -3598,7 +3598,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Menu item validation.
-	*/
+ */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	SEL action = [menuItem action];
@@ -5056,7 +5056,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 /**
- * Restore session from SPF file if given
+ * Restore the session from SPF file if given.
  */
 - (void)restoreSession
 {
@@ -5064,51 +5064,49 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		// Check and set the table
 		NSArray *tables = [tablesListInstance tables];
 
-		BOOL isSelectedTableDefined = YES;
-
-		if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
-			isSelectedTableDefined = NO;
-		}
+		NSUInteger tableIndex = [tables indexOfObject:[spfSession objectForKey:@"table"]];
 
 		// Restore toolbar setting
-		if([spfSession objectForKey:@"isToolbarVisible"]) {
-			[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
+		if ([spfSession objectForKey:@"isToolbarVisible"]) {
+			[[mainToolbar onMainThread] setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
 		}
 
 		// Reset database view encoding if differs from default
-		if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]]) {
+		if ([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]]) {
 			[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
 		}
 
-		if(isSelectedTableDefined) {
+		if (tableIndex != NSNotFound) {
 			// Set table content details for restore
-			if([spfSession objectForKey:@"contentSortCol"])    [tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
-			if([spfSession objectForKey:@"contentPageNumber"]) [tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
-			if([spfSession objectForKey:@"contentViewport"])   [tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
-			if([spfSession objectForKey:@"contentFilterV2"])   [tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilterV2"]];
+			if ([spfSession objectForKey:@"contentSortCol"])    [tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
+			if ([spfSession objectForKey:@"contentPageNumber"]) [tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
+			if ([spfSession objectForKey:@"contentViewport"])   [tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
+			if ([spfSession objectForKey:@"contentFilterV2"])   [tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilterV2"]];
 
 			// Select table
-			[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+			[[tablesListInstance onMainThread] selectTableAtIndex:@(tableIndex)];
 
 			// Restore table selection indexes
-			if([spfSession objectForKey:@"contentSelection"]) {
+			if ([spfSession objectForKey:@"contentSelection"]) {
 				[tableContentInstance setSelectionToRestore:[spfSession objectForKey:@"contentSelection"]];
 			}
 
-			[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
-
+			// Scroll to table
+#warning Private ivar accessed from outside (#2978)
+			[[[tablesListInstance valueForKeyPath:@"tablesListView"] onMainThread] scrollRowToVisible:tableIndex];
 		}
 
 		// update UI on main thread
 		SPMainQSync(^{
 			// Select view
 			NSString *view = [spfSession objectForKey:@"view"];
-			     if([view isEqualToString:@"SP_VIEW_STRUCTURE"])   [self viewStructure:self];
-			else if([view isEqualToString:@"SP_VIEW_CONTENT"])     [self viewContent:self];
-			else if([view isEqualToString:@"SP_VIEW_CUSTOMQUERY"]) [self viewQuery:self];
-			else if([view isEqualToString:@"SP_VIEW_STATUS"])      [self viewStatus:self];
-			else if([view isEqualToString:@"SP_VIEW_RELATIONS"])   [self viewRelations:self];
-			else if([view isEqualToString:@"SP_VIEW_TRIGGERS"])    [self viewTriggers:self];
+
+			     if ([view isEqualToString:@"SP_VIEW_STRUCTURE"])   [self viewStructure:self];
+			else if ([view isEqualToString:@"SP_VIEW_CONTENT"])     [self viewContent:self];
+			else if ([view isEqualToString:@"SP_VIEW_CUSTOMQUERY"]) [self viewQuery:self];
+			else if ([view isEqualToString:@"SP_VIEW_STATUS"])      [self viewStatus:self];
+			else if ([view isEqualToString:@"SP_VIEW_RELATIONS"])   [self viewRelations:self];
+			else if ([view isEqualToString:@"SP_VIEW_TRIGGERS"])    [self viewTriggers:self];
 
 			[self updateWindowTitle:self];
 		});

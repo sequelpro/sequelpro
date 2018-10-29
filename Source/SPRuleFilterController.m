@@ -921,6 +921,9 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 
 - (void)addFilterExpression
 {
+	// reject this if no table columns exist: would cause invalid state (empty filter rows)
+	if(![columns count]) return;
+	
 	[filterRuleEditor insertRowAtIndex:0 withType:NSRuleEditorRowTypeSimple asSubrowOfRow:-1 animate:NO];
 }
 
@@ -979,7 +982,8 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 {
 	NSMutableArray *rootItems = [NSMutableArray arrayWithCapacity:[[_modelContainer model] count]];
 	for(NSDictionary *item in [_modelContainer model]) {
-		[rootItems addObject:[self _serializeSubtree:item includingDefinition:includeDefinition]];
+		NSDictionary *sub = [self _serializeSubtree:item includingDefinition:includeDefinition];
+		if(sub) [rootItems addObject:sub];
 	}
 	//the root serialized filter can either be an AND of multiple root items or a single root item
 	if([rootItems count] == 1) {
@@ -1003,7 +1007,8 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 		NSArray *subrows = [item objectForKey:@"subrows"];
 		NSMutableArray *children = [[NSMutableArray alloc] initWithCapacity:[subrows count]];
 		for(NSDictionary *subitem in subrows) {
-			[children addObject:[self _serializeSubtree:subitem includingDefinition:includeDefinition]];
+			NSDictionary *sub = [self _serializeSubtree:subitem includingDefinition:includeDefinition];
+			if(sub) [children addObject:sub];
 		}
 		StringNode *node = [[item objectForKey:@"criteria"] objectAtIndex:0];
 		BOOL isConjunction = [@"AND" isEqualToString:[node value]];
@@ -1018,6 +1023,9 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 	else {
 		NSArray *criteria = [item objectForKey:@"criteria"];
 		NSArray *displayValues = [item objectForKey:@"displayValues"];
+		if([criteria count] < 2 || [criteria count] != [displayValues count]) {
+			return nil;
+		}
 		ColumnNode *col = [criteria objectAtIndex:0];
 		OpNode *op = [criteria objectAtIndex:1];
 		NSMutableArray *filterValues = [[NSMutableArray alloc] initWithCapacity:2];
