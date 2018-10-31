@@ -2819,7 +2819,8 @@
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
-	return YES;
+	// TODO: The query editor/results split view must not be collapsible, because both subviews would be collapsible, and the SPSplitView code expects only 1 collapsible subview max.
+	return (sender == queryInfoPaneSplitView);
 }
 
 /**

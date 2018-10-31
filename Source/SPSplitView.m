@@ -30,7 +30,10 @@
 
 #import "SPSplitView.h"
 #import "SPDateAdditions.h"
+#import "SPOSInfo.h"
 #include <stdlib.h>
+
+static BOOL isOSAtLeast10_7;
 
 @interface SPSplitView ()
 
@@ -72,6 +75,10 @@
 
 
 @implementation SPSplitView
+
++ (void)initialize {
+	isOSAtLeast10_7 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
+}
 
 #pragma mark -
 #pragma mark Setup and teardown
@@ -339,12 +346,13 @@
 - (void)adjustSubviews
 {
 	CGFloat totalAvailableSize = [self _lengthOfView:self];
-	NSUInteger i, viewCount = [[self subviews] count];
+	NSUInteger i, j, viewCount = [[self subviews] count];
+	CGFloat dividerThickness = [self dividerThickness];
 
 	// Amend the total length by non-hidden dividers
 	for (i = 0; i < viewCount - 1; i++) {
 		if (![self splitView:self shouldHideDividerAtIndex:i]) {
-			totalAvailableSize -= [self dividerThickness];
+			totalAvailableSize -= dividerThickness;
 		}
 	}
 
@@ -362,66 +370,106 @@
 	}
 
 	// Safety check
-	if ([viewSizes count] < [[self subviews] count]) {
+	if ([viewSizes count] < viewCount) {
 		[super adjustSubviews];
 		return;
 	}
-	
-	
-	// Imagine width=9,viewCount=2 and suggestedSizes would return {4.5, 4.5}
-	// If we did a roundf() we would exceed the size limit (because we'd get {5,5}).
-	// However if we don't round, we might get two float values which don't add up anyway
-	// because of a precision issue.
-	// So let's do the following instead: round alernating between DOWN and UP.
-	// Finnally give the remainder to the last subview.
-	// Example with width=11,viewCount=3 -> 3 ; 4 ; 3 + (11 - 10) = 3;4;4
-	CGFloat *viewSizesRaw = calloc(sizeof(CGFloat), viewCount);
-	CGFloat spaceRemaining = totalAvailableSize;
-	for (i = 0; i < viewCount; i++) {
-		//recalculate value
-		CGFloat floatVal = [[viewSizes objectAtIndex:i] floatValue];
-		CGFloat rounded = viewSizesRaw[i] = ((i % 2) == 0)? floorf(floatVal) : ceilf(floatVal);
-		spaceRemaining -= rounded;
-	}
-	//last one gets the remainder
-	if(spaceRemaining) {
-		viewSizesRaw[i-1] += spaceRemaining;
-	}
 
-	CGFloat splitViewBreadth;
-	if ([self isVertical]) {
-		splitViewBreadth = [self frame].size.height;
-	} else {
-		splitViewBreadth = [self frame].size.width;
-	}
-	
-	// Apply the size changes to the views.
+	BOOL isVertical = [self isVertical];
+
+	CGFloat splitViewBreadth = isVertical ? [self frame].size.height : [self frame].size.width;
+
+	NSRect *viewFramesAdjusted = calloc(sizeof(NSRect), viewCount);
+	NSAlignmentOptions opts = ( [self isFlipped] ? NSAlignRectFlipped : (NSAlignmentOptions)0 ) | NSAlignAllEdgesNearest;
+	CGFloat spaceRemaining = totalAvailableSize;
 	CGFloat originPosition = 0;
 	for (i = 0; i < viewCount; i++) {
-		NSView *eachSubview = [[self subviews] objectAtIndex:i];
-		CGFloat viewSize = viewSizesRaw[i];
-		NSRect viewFrame = [eachSubview frame];
-
-		if ([self isVertical]) {
-			viewFrame.origin.x = originPosition;
-			viewFrame.size.width = viewSize;
-			viewFrame.size.height = splitViewBreadth;
-		} else {
+		NSView *subview = [[self subviews] objectAtIndex:i];
+		NSRect viewFrame = [subview frame];
+		// modify the split axis with the calculated size (likely invalid for the given screen)
+		if(isVertical) {
+			viewFrame.size.width = [[viewSizes objectAtIndex:i] floatValue];
+			viewFrame.origin.x = originPosition; // the post-10.7 method may take the origin into account
+		}
+		else {
+			viewFrame.size.height = [[viewSizes objectAtIndex:i] floatValue];
 			viewFrame.origin.y = originPosition;
-			viewFrame.size.width = splitViewBreadth;
-			viewFrame.size.height = viewSize;
 		}
 
-		[eachSubview setFrame:viewFrame];
+		// let the OS adjust the sizes to be valid (but possibly still not matching totalAvailableSize in sum)
+		if(isOSAtLeast10_7) {
+			viewFrame = [self backingAlignedRect:viewFrame options:opts];
+		}
+		else {
+			// This code is taken from Apple's "BlurryView" example code.
+			viewFrame = [self convertRectToBase:viewFrame];
+			if(isVertical) {
+				viewFrame.size.width = round(viewFrame.size.width);
+			}
+			else {
+				viewFrame.size.height = round(viewFrame.size.height);
+			}
+			viewFrame = [self convertRectFromBase:viewFrame];
+		}
+
+		CGFloat viewSize = (isVertical ? viewFrame.size.width : viewFrame.size.height);
+
+		if (isVertical) {
+			originPosition = viewFrame.origin.x;
+			viewFrame.size.height = splitViewBreadth;
+		}
+		else {
+			originPosition = viewFrame.origin.y;
+			viewFrame.size.width = splitViewBreadth;
+		}
 
 		originPosition += viewSize;
 
 		if ((i + 1) < viewCount && ![self splitView:self shouldHideDividerAtIndex:(i + 1)]) {
-			originPosition += [self dividerThickness];
+			originPosition += dividerThickness;
+		}
+
+		spaceRemaining -= viewSize;
+		viewFramesAdjusted[i] = viewFrame;
+	}
+	
+	// The calculation above can have a remainder which we still need to put somewhere, otherwise Coco will complain.
+	// Note: The remainder can be negative, too.
+	// TODO: After the pre-10.7 method is dropped, evaluate alternating between NSAlignAllEdgesOutwards and NSAlignAllEdgesInwards instead, since this should not cause the remainder issue
+	if (spaceRemaining != 0) {
+		// We will just give it to the last non-zero (!) view and adjust the origin of all successors
+		for (i = viewCount - 1; i >= 0; i--) {
+			CGFloat len = isVertical ? viewFramesAdjusted[i].size.width : viewFramesAdjusted[i].size.height;
+			if(len != 0) {
+				//adjust self size
+				if (isVertical) {
+					viewFramesAdjusted[i].size.width += spaceRemaining;
+				}
+				else {
+					viewFramesAdjusted[i].size.height += spaceRemaining;
+				}
+				// and shift all successors
+				for (j = i + 1; j < viewCount; j++) {
+					if (isVertical) {
+						viewFramesAdjusted[j].origin.x += spaceRemaining;
+					}
+					else {
+						viewFramesAdjusted[j].origin.y += spaceRemaining;
+					}
+				}
+				break;
+			}
 		}
 	}
 	
-	free(viewSizesRaw);
+	// Apply the size changes to the views.
+	for (i = 0; i < viewCount; i++) {
+		NSView *subview = [[self subviews] objectAtIndex:i];
+		NSRect viewFrame = viewFramesAdjusted[i];
+		[subview setFrame:viewFrame];
+	}
+	
+	free(viewFramesAdjusted);
 
 	// Invalidate the cursor rects
 	[[self window] invalidateCursorRectsForView:self];
