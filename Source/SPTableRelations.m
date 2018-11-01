@@ -274,6 +274,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 		//MySQL 5.0+
 		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
 		[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		[result setReturnDataAsStrings:YES]; // TODO: Workaround for #2699/#2700
 		for (NSArray *eachRow in result) {
 			[refTablePopUpButton addItemWithTitle:[eachRow objectAtIndex:0]];
 		}
@@ -282,7 +283,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 		//this will work back to 3.23.0, innodb was added in 3.23.49
 		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS FROM %@", [[tableDocumentInstance database] backtickQuotedString]]];
 		[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
-		[result setReturnDataAsStrings:YES]; // some mysql versions would return NSData for string fields otherwise
+		[result setReturnDataAsStrings:YES]; // TODO: Workaround for #2699/#2700
 		for (NSArray *eachRow in result) {
 			// col[1] was named "Type" < 4.1, "Engine" afterwards
 			if(![[[eachRow objectAtIndex:1] uppercaseString] isEqualToString:@"INNODB"]) continue;
