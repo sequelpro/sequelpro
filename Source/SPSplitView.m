@@ -1208,6 +1208,13 @@ static BOOL isOSAtLeast10_7;
 - (void)_animationStep:(NSTimer *)aTimer
 {
 	[parentSplitView adjustSubviews];
+
+	// this is required on 10.14 in order to have the dividers move properly, because that OS version forces a layer-backed
+	// view and at the same time calls -layout much less often than previous OS X versions, resulting in outdated dividers.
+	// That is not an issue on older OS X versions where -drawRect: was used.
+	if(isOSAtLeast10_7) {
+		[parentSplitView setNeedsLayout:YES]; // 10.7+
+	}
 }
 
 @end
