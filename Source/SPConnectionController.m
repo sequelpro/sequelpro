@@ -2399,7 +2399,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Inform the delegate that the connection attempt failed
 	if (delegate && [delegate respondsToSelector:@selector(connectionControllerConnectAttemptFailed:)]) {
-		[[(NSObject *)delegate onMainThread] connectionControllerConnectAttemptFailed:self];
+		[[(id)delegate onMainThread] connectionControllerConnectAttemptFailed:self];
 	}
 
 	// Only display the connection error message if there is a window visible

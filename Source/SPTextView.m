@@ -535,6 +535,8 @@ retry:
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
 								breakFlag = YES;
 								break;
+							default:
+								break;
 						}
 					if(!breakFlag) {
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
@@ -3421,7 +3423,7 @@ retry:
 /**
  * Set font panel's valid modes
  */
-- (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
+- (NSFontPanelModeMask)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }

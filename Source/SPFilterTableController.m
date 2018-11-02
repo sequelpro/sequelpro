@@ -652,7 +652,9 @@ static void *FilterTableKVOContext = &FilterTableKVOContext;
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 	// Check firstly if SPCopyTable can handle command
-	if ([control control:control textView:textView doCommandBySelector:command]) return YES;
+	if ([control respondsToSelector:@selector(control:textView:doCommandBySelector:)]) {
+		if ([(id)control control:control textView:textView doCommandBySelector:command]) return YES;
+	}
 
 	// Trap the escape key
 	if ([[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)]) {

@@ -376,13 +376,13 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		// the child of an argument can only be the conjunction label if more arguments follow
 		else if(type == RuleNodeTypeArgument) {
 			ArgNode *node = (ArgNode *)criterion;
-			NSInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] integerValue];
+			NSUInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] unsignedIntegerValue];
 			return (numOfArgs > [node argIndex]+1) ? 1 : 0;
 		}
 		// the child of a conjunction is the next argument, if we have one
 		else if(type == RuleNodeTypeConnector) {
 			ConnectorNode *node = (ConnectorNode *)criterion;
-			NSInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] integerValue];
+			NSUInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] unsignedIntegerValue];
 			return (numOfArgs > [node labelIndex]+1) ? 1 : 0;
 		}
 	}
@@ -424,7 +424,7 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		else if(type == RuleNodeTypeArgument) {
 			NSDictionary *filter = [(ArgNode *)criterion filter];
 			NSUInteger argIndex = [(ArgNode *)criterion argIndex];
-			if([[filter objectForKey:@"NumberOfArguments"] integerValue] > argIndex +1) {
+			if([[filter objectForKey:@"NumberOfArguments"] unsignedIntegerValue] > argIndex +1) {
 				ConnectorNode *node = [[ConnectorNode alloc] init];
 				[node setFilter:filter];
 				[node setLabelIndex:argIndex]; // label 0 follows argument 0
@@ -434,7 +434,7 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		// the child of a conjunction is the next argument, if we have one
 		else if(type == RuleNodeTypeConnector) {
 			ConnectorNode *node = (ConnectorNode *)criterion;
-			NSInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] integerValue];
+			NSUInteger numOfArgs = [[[node filter] objectForKey:@"NumberOfArguments"] unsignedIntegerValue];
 			if(numOfArgs > [node labelIndex]+1) {
 				ArgNode *arg = [[ArgNode alloc] init];
 				[arg setFilter:[node filter]];
@@ -1141,7 +1141,7 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 		}
 
 		//now we have to create the argument node(s)
-		NSInteger numOfArgs = [[[op filter] objectForKey:@"NumberOfArguments"] integerValue];
+		NSUInteger numOfArgs = [[[op filter] objectForKey:@"NumberOfArguments"] unsignedIntegerValue];
 		//fail if the current op requires more arguments than we have stored values for
 		NSArray *values = [serialized objectForKey:SerFilterExprValues];
 		if(numOfArgs > [values count]) {
