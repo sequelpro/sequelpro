@@ -1026,15 +1026,15 @@ no_or_multiple_matches:
  */
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger popUpMask        = [indexTypePopUpButton autoresizingMask];
-	NSUInteger nameFieldMask    = [indexNameTextField autoresizingMask];
-	NSUInteger scrollMask       = [indexedColumnsScrollView autoresizingMask];
-	NSUInteger buttonMask       = [indexAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask    = [indexAdvancedOptionsViewLabelButton autoresizingMask];
-	NSUInteger advancedViewMask = [indexAdvancedOptionsView autoresizingMask];
-	NSUInteger typeLabelMask    = [indexTypeLabel autoresizingMask];
-	NSUInteger nameLabelMask    = [indexNameLabel autoresizingMask];
-	NSUInteger buttonBarMask    = [(NSView*)anchoredButtonBar autoresizingMask];
+	NSAutoresizingMaskOptions popUpMask        = [indexTypePopUpButton autoresizingMask];
+	NSAutoresizingMaskOptions nameFieldMask    = [indexNameTextField autoresizingMask];
+	NSAutoresizingMaskOptions scrollMask       = [indexedColumnsScrollView autoresizingMask];
+	NSAutoresizingMaskOptions buttonMask       = [indexAdvancedOptionsViewButton autoresizingMask];
+	NSAutoresizingMaskOptions textFieldMask    = [indexAdvancedOptionsViewLabelButton autoresizingMask];
+	NSAutoresizingMaskOptions advancedViewMask = [indexAdvancedOptionsView autoresizingMask];
+	NSAutoresizingMaskOptions typeLabelMask    = [indexTypeLabel autoresizingMask];
+	NSAutoresizingMaskOptions nameLabelMask    = [indexNameLabel autoresizingMask];
+	NSAutoresizingMaskOptions buttonBarMask    = [anchoredButtonBar autoresizingMask];
 
 	NSRect frame = [[self window] frame];
 
@@ -1053,8 +1053,7 @@ no_or_multiple_matches:
 	[indexAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexTypeLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-
-	[(NSView*)anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
 
@@ -1078,8 +1077,7 @@ no_or_multiple_matches:
 	[indexAdvancedOptionsView setAutoresizingMask:advancedViewMask];
 	[indexTypeLabel setAutoresizingMask:typeLabelMask];
 	[indexNameLabel setAutoresizingMask:nameLabelMask];
-
-	[(NSView*)anchoredButtonBar setAutoresizingMask:buttonBarMask];
+	[anchoredButtonBar setAutoresizingMask:buttonBarMask];
 }
 
 #pragma mark -

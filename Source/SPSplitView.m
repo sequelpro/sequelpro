@@ -58,17 +58,17 @@ static BOOL isOSAtLeast10_7;
 	NSView *wrappedView;
 }
 
-- (id)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView;
+- (instancetype)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView;
 - (void)restoreOriginalView;
 
 @end
 
 @interface SPSplitViewAnimationRetainCycleBypass : NSObject
 {
-	SPSplitView *parentSplitView;
+	__unsafe_unretained SPSplitView *parentSplitView;
 }
 
-- (id)initWithParent:(SPSplitView *)aSplitView;
+- (instancetype)initWithParent:(SPSplitView *)aSplitView;
 - (void)_animationStep:(NSTimer *)aTimer;
 
 @end
@@ -1106,12 +1106,12 @@ static BOOL isOSAtLeast10_7;
  * specified view, adding it as a subview to maintain the same appearance, and then
  * can be animated without affecting the contained view.
  */
-- (id)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView
+- (instancetype)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView
 {
 	self = [super initWithFrame:[aView frame]];
 	if (!self) return nil;
 
-	NSUInteger wrappedResizeMask = [wrappedView autoresizingMask];
+	NSAutoresizingMaskOptions wrappedResizeMask = [wrappedView autoresizingMask];
 
 	// Retain the wrapped view while this view exists
 	wrappedView = [aView retain];
@@ -1197,7 +1197,7 @@ static BOOL isOSAtLeast10_7;
 
 @implementation SPSplitViewAnimationRetainCycleBypass
 
-- (id)initWithParent:(SPSplitView *)aSplitView
+- (instancetype)initWithParent:(SPSplitView *)aSplitView
 {
 	self = [super init];
 	if (!self) return nil;

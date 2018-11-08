@@ -2353,14 +2353,14 @@ set_input:
  */
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger popUpMask              = [exportInputPopUpButton autoresizingMask];
-	NSUInteger fileCheckMask          = [exportFilePerTableCheck autoresizingMask];
-	NSUInteger scrollMask             = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask          = [exportTableListButtonBar autoresizingMask];
-	NSUInteger buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
-	NSUInteger textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
-	NSUInteger customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
-	NSUInteger tabBarMask             = [exportOptionsTabBar autoresizingMask];
+	NSAutoresizingMaskOptions popUpMask              = [exportInputPopUpButton autoresizingMask];
+	NSAutoresizingMaskOptions fileCheckMask          = [exportFilePerTableCheck autoresizingMask];
+	NSAutoresizingMaskOptions scrollMask             = [exportTablelistScrollView autoresizingMask];
+	NSAutoresizingMaskOptions buttonBarMask          = [exportTableListButtonBar autoresizingMask];
+	NSAutoresizingMaskOptions buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
+	NSAutoresizingMaskOptions textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
+	NSAutoresizingMaskOptions customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
+	NSAutoresizingMaskOptions tabBarMask             = [exportOptionsTabBar autoresizingMask];
 
 	NSRect frame = [[self window] frame];
 
@@ -2412,13 +2412,13 @@ set_input:
  */
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger scrollMask        = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask     = [exportTableListButtonBar autoresizingMask];
-	NSUInteger tabBarMask        = [exportTypeTabBar autoresizingMask];
-	NSUInteger optionsTabBarMask = [exportOptionsTabBar autoresizingMask];
-	NSUInteger buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
-	NSUInteger advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
+	NSAutoresizingMaskOptions scrollMask        = [exportTablelistScrollView autoresizingMask];
+	NSAutoresizingMaskOptions buttonBarMask     = [exportTableListButtonBar autoresizingMask];
+	NSAutoresizingMaskOptions tabBarMask        = [exportTypeTabBar autoresizingMask];
+	NSAutoresizingMaskOptions optionsTabBarMask = [exportOptionsTabBar autoresizingMask];
+	NSAutoresizingMaskOptions buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
+	NSAutoresizingMaskOptions textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
+	NSAutoresizingMaskOptions advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
 
 	NSRect frame = [[self window] frame];
 

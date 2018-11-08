@@ -1324,17 +1324,17 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 - (void)resizeWindowByHeightDelta:(NSInteger)delta
 {
 #ifndef SP_CODA /* resizeWindowByHeightDelta: */
-	NSUInteger tableMask = [fieldMapperTableScrollView autoresizingMask];
-	NSUInteger headerSwitchMask = [importFieldNamesHeaderSwitch autoresizingMask];
-	NSUInteger alignPopupMask = [alignByPopup autoresizingMask];
-	NSUInteger alignPopupLabelMask = [alignByPopupLabel autoresizingMask];
-	NSUInteger importMethodLabelMask = [importMethodLabel autoresizingMask];
-	NSUInteger importMethodMask = [importMethodPopup autoresizingMask];
-	NSUInteger advancedButtonMask = [advancedButton autoresizingMask];
-	NSUInteger advancedLabelMask = [advancedLabel autoresizingMask];
-	NSUInteger insertViewMask = [advancedInsertView autoresizingMask];
-	NSUInteger updateViewMask = [advancedUpdateView autoresizingMask];
-	NSUInteger replaceViewMask = [advancedReplaceView autoresizingMask];
+	NSAutoresizingMaskOptions tableMask = [fieldMapperTableScrollView autoresizingMask];
+	NSAutoresizingMaskOptions headerSwitchMask = [importFieldNamesHeaderSwitch autoresizingMask];
+	NSAutoresizingMaskOptions alignPopupMask = [alignByPopup autoresizingMask];
+	NSAutoresizingMaskOptions alignPopupLabelMask = [alignByPopupLabel autoresizingMask];
+	NSAutoresizingMaskOptions importMethodLabelMask = [importMethodLabel autoresizingMask];
+	NSAutoresizingMaskOptions importMethodMask = [importMethodPopup autoresizingMask];
+	NSAutoresizingMaskOptions advancedButtonMask = [advancedButton autoresizingMask];
+	NSAutoresizingMaskOptions advancedLabelMask = [advancedLabel autoresizingMask];
+	NSAutoresizingMaskOptions insertViewMask = [advancedInsertView autoresizingMask];
+	NSAutoresizingMaskOptions updateViewMask = [advancedUpdateView autoresizingMask];
+	NSAutoresizingMaskOptions replaceViewMask = [advancedReplaceView autoresizingMask];
 
 	NSRect frame = [[self window] frame];
 	if(frame.size.height>600 && delta > heightOffset) {

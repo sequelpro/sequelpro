@@ -84,6 +84,8 @@
 
 // This enum is available since 10.5 but only got a "name" in 10.10
 typedef NSUInteger NSCellHitResult;
+// This bitfield is available since 10.0 but only got a "name" in 10.10
+typedef NSUInteger NSAutoresizingMaskOptions;
 
 @compatibility_alias NSTitlebarAccessoryViewController NSViewController;
 
