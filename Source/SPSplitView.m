@@ -1176,6 +1176,9 @@ static BOOL isOSAtLeast10_7;
 	if (firstResponderToRestore) {
 		[[wrappedView window] makeFirstResponder:firstResponderToRestore];
 	}
+	
+	// see #3271 - This is a quick workaround for 10.14 not properly redrawing the view
+	[wrappedView setNeedsDisplay:YES];
 
 	SPClear(wrappedView);
 }

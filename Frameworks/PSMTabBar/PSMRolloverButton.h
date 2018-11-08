@@ -16,19 +16,19 @@
 }
 
 // the regular image
-- (void)setUsualImage:(nullable NSImage *)newImage;
-- (nullable NSImage *)usualImage;
+- (void)setUsualImage:(NSImage *)newImage;
+- (NSImage *)usualImage;
 
 // the rollover image
-- (void)setRolloverImage:(nullable NSImage *)newImage;
-- (nullable NSImage *)rolloverImage;
+- (void)setRolloverImage:(NSImage *)newImage;
+- (NSImage *)rolloverImage;
 
 // tracking rect for mouse events
-- (void)rolloverFrameDidChange:(nonnull NSNotification *)notification;
+- (void)rolloverFrameDidChange:(NSNotification *)notification;
 - (void)addTrackingRect;
 - (void)removeTrackingRect;
 
-- (void)mouseEntered:(nullable NSEvent *)event;
-- (void)mouseExited:(nullable NSEvent *)event;
+- (void)mouseEntered:(NSEvent *)event;
+- (void)mouseExited:(NSEvent *)event;
 
 @end
