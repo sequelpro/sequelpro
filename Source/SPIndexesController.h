@@ -35,7 +35,7 @@
 @class SPMySQLConnection;
 @class SPTableView;
 
-@interface SPIndexesController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
+@interface SPIndexesController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
 {
 	// Controllers
 	IBOutlet SPDatabaseDocument *dbDocument;

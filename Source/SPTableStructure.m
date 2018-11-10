@@ -248,8 +248,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
@@ -2568,9 +2566,6 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_CODA
-	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
-#endif
 
 	SPClear(tableFields);
 	SPClear(oldRow);
