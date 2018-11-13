@@ -189,6 +189,8 @@
 	<false/>
 	<key>TableInformationPanelCollapsed</key>
 	<false/>
+	<key>SSHClientPKCS11Provider</key>
+	<string>/usr/local/lib/scd-pkcs11.so</string>
 	<key>TableRowCountCheapLookupSizeBoundary</key>
 	<integer>5242880</integer>
 	<key>TableRowCountQueryLevel</key>

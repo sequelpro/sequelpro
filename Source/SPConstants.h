@@ -451,6 +451,7 @@ extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
+extern NSString *SPSSHPKCS11Provider;
 extern NSString *SPSSLCipherListKey;
 extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
 extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;

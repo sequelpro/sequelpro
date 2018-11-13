@@ -236,6 +236,7 @@ NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexS
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 NSString *SPSSHClientPath                        = @"SSHClientPath";
+NSString *SPSSHPKCS11Provider                    = @"SSHClientPKCS11Provider";
 NSString *SPSSLCipherListKey                     = @"SSLCipherList";
 NSString *SPQueryFavoritesHaveBeenUpdatedNotification = @"QueryFavoritesHaveBeenUpdatedNotification";
 NSString *SPHistoryItemsHaveBeenUpdatedNotification   = @"HistoryItemsHaveBeenUpdatedNotification";
