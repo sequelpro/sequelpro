@@ -330,7 +330,7 @@ static unsigned short getRandomPort();
 		[taskArguments addObject:@"-N"];
 		
 		NSString *pkcs11Provider = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHPKCS11Provider];
-		if (pkcs11Provider) {
+		if (pkcs11Provider.length > 0) {
 			[taskArguments addObject:[NSString stringWithFormat:@"-I %@",pkcs11Provider]];
 		}
 		// If explicitly enabled, activate connection multiplexing - note that this can cause connection
