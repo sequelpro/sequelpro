@@ -1436,230 +1436,265 @@
                                                                                     <customView id="6RR-Sh-9L3" customClass="SPButtonBar">
                                                                                         <rect key="frame" x="0.0" y="213" width="695" height="23"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                                                    </customView>
-                                                                                    <popUpButton id="7221">
-                                                                                        <rect key="frame" x="0.0" y="213" width="35" height="23"/>
-                                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                                        <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" inset="2" pullsDown="YES" arrowPosition="noArrow" autoenablesItems="NO" selectedItem="7236" id="7231">
-                                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                                            <font key="font" metaFont="menu"/>
-                                                                                            <menu key="menu" title="OtherViews" autoenablesItems="NO" id="7232">
-                                                                                                <items>
-                                                                                                    <menuItem image="button_action" hidden="YES" id="7247"/>
-                                                                                                    <menuItem title="Previous Query from History" tag="3" keyEquivalent="" toolTip="Replaces the current query by the previous one coming from the history." id="7243">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" control="YES"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7319"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Next Query from History" tag="4" keyEquivalent="" toolTip="Replaces the current query by the next one coming from the history." id="7242">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" control="YES"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7315"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="History Replaces Editor Content" id="7253">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.QueryHistoryReplacesContent" id="7287"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7241"/>
-                                                                                                    <menuItem title="Favorite Replaces Editor Content" id="7251">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.QueryFavoriteReplacesContent" id="7294"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7252"/>
-                                                                                                    <menuItem title="Shift Right" tag="6" keyEquivalent="]" id="7240">
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7327"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Shift Left" tag="7" keyEquivalent="[" id="7239">
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7322"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Comment Line" tag="11" keyEquivalent="/" id="7249">
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7308"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Comment Current Query" tag="12" enabled="NO" alternate="YES" keyEquivalent="/" id="7250">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7328"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Completion List" tag="8" id="7238">
-                                                                                                        <string key="keyEquivalent" base64-UTF8="YES">
+                                                                                        <subviews>
+                                                                                            <popUpButton id="7221">
+                                                                                                <rect key="frame" x="0.0" y="0.0" width="35" height="23"/>
+                                                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                                <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" inset="2" pullsDown="YES" arrowPosition="noArrow" autoenablesItems="NO" selectedItem="7236" id="7231">
+                                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                                    <font key="font" metaFont="menu"/>
+                                                                                                    <menu key="menu" title="OtherViews" autoenablesItems="NO" id="7232">
+                                                                                                        <items>
+                                                                                                            <menuItem image="button_action" hidden="YES" id="7247"/>
+                                                                                                            <menuItem title="Previous Query from History" tag="3" keyEquivalent="" toolTip="Replaces the current query by the previous one coming from the history." id="7243">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7319"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Next Query from History" tag="4" keyEquivalent="" toolTip="Replaces the current query by the next one coming from the history." id="7242">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7315"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="History Replaces Editor Content" id="7253">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.QueryHistoryReplacesContent" id="7287"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7241"/>
+                                                                                                            <menuItem title="Favorite Replaces Editor Content" id="7251">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.QueryFavoriteReplacesContent" id="7294"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7252"/>
+                                                                                                            <menuItem title="Shift Right" tag="6" keyEquivalent="]" id="7240">
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7327"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Shift Left" tag="7" keyEquivalent="[" id="7239">
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7322"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Comment Line" tag="11" keyEquivalent="/" id="7249">
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7308"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Comment Current Query" tag="12" enabled="NO" alternate="YES" keyEquivalent="/" id="7250">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7328"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Completion List" tag="8" id="7238">
+                                                                                                                <string key="keyEquivalent" base64-UTF8="YES">
 Gw
 </string>
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7309"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Show Completion List" id="7255">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <menu key="submenu" title="Show Completion List" id="7256">
+                                                                                                                    <items>
+                                                                                                                        <menuItem title="All Databases Names" tag="8000" keyEquivalent="1" id="7257">
+                                                                                                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                                            <connections>
+                                                                                                                                <action selector="showCompletionList:" target="134" id="7323"/>
+                                                                                                                            </connections>
+                                                                                                                        </menuItem>
+                                                                                                                        <menuItem title="All Table and View Names" tag="8001" keyEquivalent="2" id="7258">
+                                                                                                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                                            <connections>
+                                                                                                                                <action selector="showCompletionList:" target="134" id="7310"/>
+                                                                                                                            </connections>
+                                                                                                                        </menuItem>
+                                                                                                                        <menuItem title="All Field Names From Current Table" tag="8002" keyEquivalent="3" id="7259">
+                                                                                                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                                            <connections>
+                                                                                                                                <action selector="showCompletionList:" target="134" id="7317"/>
+                                                                                                                            </connections>
+                                                                                                                        </menuItem>
+                                                                                                                    </items>
+                                                                                                                </menu>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7237"/>
+                                                                                                            <menuItem title="Editor Font..." id="7233">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7320"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Indent New Lines" state="on" tag="9" id="7236">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7321"/>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.CustomQueryAutoIndent" id="7295"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Auto-pair Characters" state="on" tag="10" id="7235">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7307"/>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.CustomQueryAutoPairCharacters" id="7291"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Auto-uppercase Keywords" id="7234">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7313"/>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.CustomQueryAutoUppercaseKeywords" id="7289"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Auto-completion" id="7254">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.CustomQueryAutoComplete" id="7292"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Update Help while typing" id="7248">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="gearMenuItemSelected:" target="134" id="7318"/>
+                                                                                                                    <binding destination="1907" name="value" keyPath="values.CustomQueryUpdateAutoHelp" id="7293"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                        </items>
+                                                                                                    </menu>
+                                                                                                </popUpButtonCell>
+                                                                                            </popUpButton>
+                                                                                            <popUpButton toolTip="Choose a favorite from the menu or save queries to the favorites (⌥⌘F)" verticalHuggingPriority="750" id="7218">
+                                                                                                <rect key="frame" x="38" y="0.0" width="129" height="22"/>
+                                                                                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                                                                                <popUpButtonCell key="cell" type="recessed" title="Query Favorites" bezelStyle="recessed" alignment="center" controlSize="small" lineBreakMode="clipping" borderStyle="borderAndBezel" inset="2" pullsDown="YES" preferredEdge="maxY" selectedItem="7264" id="7262">
+                                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
+                                                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                                                    <string key="keyEquivalent">f</string>
+                                                                                                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                    <menu key="menu" title="OtherViews" id="7263">
+                                                                                                        <items>
+                                                                                                            <menuItem title="Query Favorites" hidden="YES" id="7264"/>
+                                                                                                            <menuItem title="Save Query to Favorites" tag="100000" toolTip="Save current query, selection, or - if no selection or current query could be found - the entire content to Favorite." id="7265">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Save All to Favorites" tag="100001" alternate="YES" toolTip="Save editor content to Favorite. Press ⌥ to restrict for current query or selection." id="7269">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Edit Favorites..." id="7266"/>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7267"/>
+                                                                                                            <menuItem title="..placeholder for seachfield.." id="7268">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <outlet property="view" destination="6431" id="7303"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7270"/>
+                                                                                                        </items>
                                                                                                         <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7309"/>
+                                                                                                            <outlet property="delegate" destination="134" id="7306"/>
                                                                                                         </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Show Completion List" id="7255">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <menu key="submenu" title="Show Completion List" id="7256">
-                                                                                                            <items>
-                                                                                                                <menuItem title="All Databases Names" tag="8000" keyEquivalent="1" id="7257">
-                                                                                                                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                                                    <connections>
-                                                                                                                        <action selector="showCompletionList:" target="134" id="7323"/>
-                                                                                                                    </connections>
-                                                                                                                </menuItem>
-                                                                                                                <menuItem title="All Table and View Names" tag="8001" keyEquivalent="2" id="7258">
-                                                                                                                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                                                    <connections>
-                                                                                                                        <action selector="showCompletionList:" target="134" id="7310"/>
-                                                                                                                    </connections>
-                                                                                                                </menuItem>
-                                                                                                                <menuItem title="All Field Names From Current Table" tag="8002" keyEquivalent="3" id="7259">
-                                                                                                                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                                                    <connections>
-                                                                                                                        <action selector="showCompletionList:" target="134" id="7317"/>
-                                                                                                                    </connections>
-                                                                                                                </menuItem>
-                                                                                                            </items>
-                                                                                                        </menu>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7237"/>
-                                                                                                    <menuItem title="Editor Font..." id="7233">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7320"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Indent New Lines" state="on" tag="9" id="7236">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7321"/>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.CustomQueryAutoIndent" id="7295"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Auto-pair Characters" state="on" tag="10" id="7235">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7307"/>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.CustomQueryAutoPairCharacters" id="7291"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Auto-uppercase Keywords" id="7234">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7313"/>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.CustomQueryAutoUppercaseKeywords" id="7289"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Auto-completion" id="7254">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.CustomQueryAutoComplete" id="7292"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Update Help while typing" id="7248">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="gearMenuItemSelected:" target="134" id="7318"/>
-                                                                                                            <binding destination="1907" name="value" keyPath="values.CustomQueryUpdateAutoHelp" id="7293"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                </items>
-                                                                                            </menu>
-                                                                                        </popUpButtonCell>
-                                                                                    </popUpButton>
-                                                                                    <popUpButton toolTip="Choose a favorite from the menu or save queries to the favorites (⌥⌘F)" verticalHuggingPriority="750" id="7218">
-                                                                                        <rect key="frame" x="38" y="213" width="129" height="22"/>
-                                                                                        <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                                                                                        <popUpButtonCell key="cell" type="recessed" title="Query Favorites" bezelStyle="recessed" alignment="center" controlSize="small" lineBreakMode="clipping" borderStyle="borderAndBezel" inset="2" pullsDown="YES" preferredEdge="maxY" selectedItem="7264" id="7262">
-                                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
-                                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                                            <string key="keyEquivalent">f</string>
-                                                                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                            <menu key="menu" title="OtherViews" id="7263">
-                                                                                                <items>
-                                                                                                    <menuItem title="Query Favorites" hidden="YES" id="7264"/>
-                                                                                                    <menuItem title="Save Query to Favorites" tag="100000" toolTip="Save current query, selection, or - if no selection or current query could be found - the entire content to Favorite." id="7265">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Save All to Favorites" tag="100001" alternate="YES" toolTip="Save editor content to Favorite. Press ⌥ to restrict for current query or selection." id="7269">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Edit Favorites..." id="7266"/>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7267"/>
-                                                                                                    <menuItem title="..placeholder for seachfield.." id="7268">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <outlet property="view" destination="6431" id="7303"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7270"/>
-                                                                                                </items>
+                                                                                                    </menu>
+                                                                                                </popUpButtonCell>
                                                                                                 <connections>
-                                                                                                    <outlet property="delegate" destination="134" id="7306"/>
+                                                                                                    <action selector="chooseQueryFavorite:" target="134" id="7316"/>
                                                                                                 </connections>
-                                                                                            </menu>
-                                                                                        </popUpButtonCell>
-                                                                                        <connections>
-                                                                                            <action selector="chooseQueryFavorite:" target="134" id="7316"/>
-                                                                                        </connections>
-                                                                                    </popUpButton>
-                                                                                    <popUpButton toolTip="Choose a query from your recent queries (⌥⌘Y)" verticalHuggingPriority="750" id="7217">
-                                                                                        <rect key="frame" x="177" y="213" width="145" height="22"/>
-                                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                                        <popUpButtonCell key="cell" type="recessed" title="Query History" bezelStyle="recessed" alignment="center" controlSize="small" lineBreakMode="clipping" borderStyle="borderAndBezel" inset="2" pullsDown="YES" preferredEdge="maxY" selectedItem="7273" id="7271">
-                                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
-                                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                                            <string key="keyEquivalent">y</string>
-                                                                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                            <menu key="menu" title="OtherViews" id="7272">
-                                                                                                <items>
-                                                                                                    <menuItem title="Query History" hidden="YES" id="7273"/>
-                                                                                                    <menuItem title="Copy History" tag="300000" toolTip="Copy all history items onto the clipboard." id="7279">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                                                                            </popUpButton>
+                                                                                            <popUpButton toolTip="Choose a query from your recent queries (⌥⌘Y)" verticalHuggingPriority="750" id="7217">
+                                                                                                <rect key="frame" x="177" y="0.0" width="145" height="22"/>
+                                                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                                <popUpButtonCell key="cell" type="recessed" title="Query History" bezelStyle="recessed" alignment="center" controlSize="small" lineBreakMode="clipping" borderStyle="borderAndBezel" inset="2" pullsDown="YES" preferredEdge="maxY" selectedItem="7273" id="7271">
+                                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
+                                                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                                                    <string key="keyEquivalent">y</string>
+                                                                                                    <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                    <menu key="menu" title="OtherViews" id="7272">
+                                                                                                        <items>
+                                                                                                            <menuItem title="Query History" hidden="YES" id="7273"/>
+                                                                                                            <menuItem title="Copy History" tag="300000" toolTip="Copy all history items onto the clipboard." id="7279">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="copyQueryHistory:" target="134" id="7312"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Save History…" tag="300001" alternate="YES" toolTip="Save all history items to file. Press ⌥ to copy all history items onto the clipboard." id="7276">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="saveQueryHistory:" target="134" id="7324"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Clear History" tag="300002" id="7277">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="clearQueryHistory:" target="134" id="7311"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7278"/>
+                                                                                                            <menuItem title="..placeholder for seachfield.." id="7274">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask"/>
+                                                                                                                <connections>
+                                                                                                                    <outlet property="view" destination="6447" id="7299"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="7275"/>
+                                                                                                        </items>
                                                                                                         <connections>
-                                                                                                            <action selector="copyQueryHistory:" target="134" id="7312"/>
+                                                                                                            <outlet property="delegate" destination="134" id="7302"/>
                                                                                                         </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Save History…" tag="300001" alternate="YES" toolTip="Save all history items to file. Press ⌥ to copy all history items onto the clipboard." id="7276">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="saveQueryHistory:" target="134" id="7324"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Clear History" tag="300002" id="7277">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="clearQueryHistory:" target="134" id="7311"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7278"/>
-                                                                                                    <menuItem title="..placeholder for seachfield.." id="7274">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask"/>
-                                                                                                        <connections>
-                                                                                                            <outlet property="view" destination="6447" id="7299"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="7275"/>
-                                                                                                </items>
+                                                                                                    </menu>
+                                                                                                </popUpButtonCell>
                                                                                                 <connections>
-                                                                                                    <outlet property="delegate" destination="134" id="7302"/>
+                                                                                                    <action selector="chooseQueryHistory:" target="134" id="7326"/>
+                                                                                                    <binding destination="1907" name="hidden" keyPath="values.CustomQueryMaxHistoryItems" id="7290">
+                                                                                                        <dictionary key="options">
+                                                                                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                                                                        </dictionary>
+                                                                                                    </binding>
                                                                                                 </connections>
-                                                                                            </menu>
-                                                                                        </popUpButtonCell>
-                                                                                        <connections>
-                                                                                            <action selector="chooseQueryHistory:" target="134" id="7326"/>
-                                                                                            <binding destination="1907" name="hidden" keyPath="values.CustomQueryMaxHistoryItems" id="7290">
-                                                                                                <dictionary key="options">
-                                                                                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                                                                                </dictionary>
-                                                                                            </binding>
-                                                                                        </connections>
-                                                                                    </popUpButton>
+                                                                                            </popUpButton>
+                                                                                            <popUpButton verticalHuggingPriority="750" id="8316" customClass="SPComboPopupButton">
+                                                                                                <rect key="frame" x="507" y="0.0" width="180" height="22"/>
+                                                                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                                                                                <popUpButtonCell key="cell" type="roundRect" title="Run Current" bezelStyle="roundedRect" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="8319" id="8317" customClass="SPComboPopupButtonCell">
+                                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                                                    <menu key="menu" title="OtherViews" id="8318">
+                                                                                                        <items>
+                                                                                                            <menuItem title="Run Current" hidden="YES" id="8319"/>
+                                                                                                            <menuItem title="Run Current Query" tag="2" keyEquivalent="r" id="8323">
+                                                                                                                <connections>
+                                                                                                                    <action selector="runPrimaryQueryAction:" target="134" id="8329"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem isSeparatorItem="YES" id="8327"/>
+                                                                                                            <menuItem title="Run All Queries" tag="1" keyEquivalent="r" id="8324">
+                                                                                                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                                                                                                <connections>
+                                                                                                                    <action selector="runSecondaryQueryAction:" target="134" id="8330"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                            <menuItem title="Switch Default" id="8321">
+                                                                                                                <connections>
+                                                                                                                    <action selector="switchDefaultQueryAction:" target="134" id="8333"/>
+                                                                                                                </connections>
+                                                                                                            </menuItem>
+                                                                                                        </items>
+                                                                                                    </menu>
+                                                                                                </popUpButtonCell>
+                                                                                                <connections>
+                                                                                                    <action selector="runPrimaryQueryAction:" target="134" id="8328"/>
+                                                                                                </connections>
+                                                                                            </popUpButton>
+                                                                                        </subviews>
+                                                                                    </customView>
                                                                                     <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="7223">
                                                                                         <rect key="frame" x="-1" y="-1" width="697" height="214"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1709,39 +1744,6 @@ Gw
                                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                                         </tableHeaderView>
                                                                                     </scrollView>
-                                                                                    <popUpButton verticalHuggingPriority="750" id="8316" customClass="SPComboPopupButton">
-                                                                                        <rect key="frame" x="507" y="213" width="180" height="22"/>
-                                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                                                                        <popUpButtonCell key="cell" type="roundRect" title="Run Current" bezelStyle="roundedRect" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="8319" id="8317" customClass="SPComboPopupButtonCell">
-                                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                                            <menu key="menu" title="OtherViews" id="8318">
-                                                                                                <items>
-                                                                                                    <menuItem title="Run Current" hidden="YES" id="8319"/>
-                                                                                                    <menuItem title="Run Current Query" tag="2" keyEquivalent="r" id="8323">
-                                                                                                        <connections>
-                                                                                                            <action selector="runPrimaryQueryAction:" target="134" id="8329"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem isSeparatorItem="YES" id="8327"/>
-                                                                                                    <menuItem title="Run All Queries" tag="1" keyEquivalent="r" id="8324">
-                                                                                                        <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                                                                                        <connections>
-                                                                                                            <action selector="runSecondaryQueryAction:" target="134" id="8330"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                    <menuItem title="Switch Default" id="8321">
-                                                                                                        <connections>
-                                                                                                            <action selector="switchDefaultQueryAction:" target="134" id="8333"/>
-                                                                                                        </connections>
-                                                                                                    </menuItem>
-                                                                                                </items>
-                                                                                            </menu>
-                                                                                        </popUpButtonCell>
-                                                                                        <connections>
-                                                                                            <action selector="runPrimaryQueryAction:" target="134" id="8328"/>
-                                                                                        </connections>
-                                                                                    </popUpButton>
                                                                                 </subviews>
                                                                             </customView>
                                                                         </subviews>
@@ -3678,7 +3680,7 @@ DQ
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="ouK-7i-Xtd">
                             <rect key="frame" x="1" y="1" width="318" height="168"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textView importsGraphics="NO" richText="NO" findStyle="panel" allowsUndo="YES" usesFontPanel="YES" verticallyResizable="YES" smartInsertDelete="YES" id="8230" customClass="SPTextView">
                                     <rect key="frame" x="0.0" y="0.0" width="318" height="168"/>
@@ -3791,7 +3793,7 @@ DQ
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="w4Z-p1-GZA">
                             <rect key="frame" x="1" y="1" width="366" height="204"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" id="8219">
                                     <rect key="frame" x="0.0" y="0.0" width="366" height="204"/>
