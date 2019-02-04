@@ -532,6 +532,10 @@ typedef struct {
 {
     NSRect cellFrame = [cell frame];
 	CGFloat insetLabelWidth = 0;
+	bool isDarkMode = false;
+	if (@available(*, macOS 10.14))
+		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
+			isDarkMode = true;
 
     // close button
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed] && [cell isHighlighted]) {
@@ -613,7 +617,11 @@ typedef struct {
 	if (cell.state != NSOnState) {
 		NSMutableAttributedString *newLabelString = labelString.mutableCopy;
 		
-		[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor darkGrayColor] range:NSMakeRange(0, newLabelString.length)];
+		if (isDarkMode) {
+			[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor lightGrayColor] range:NSMakeRange(0, newLabelString.length)];
+		} else {
+			[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor darkGrayColor] range:NSMakeRange(0, newLabelString.length)];
+		}
 		
 		labelString = newLabelString.copy;
 	}
