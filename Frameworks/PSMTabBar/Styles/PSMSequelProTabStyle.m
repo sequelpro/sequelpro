@@ -92,11 +92,6 @@ typedef struct {
 			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
 		}
 
-		isDarkMode = false;
-		if (@available(*, macOS 10.14)) {
-			isDarkMode = NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua;
-		}
-
 		NSBundle *bundle = [PSMTabBarControl bundle];
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose"]];
@@ -449,6 +444,11 @@ typedef struct {
 // Step 2
 - (void)drawBackgroundInRect:(NSRect)rect
 {
+	bool isDarkMode = false;
+	if (@available(*, macOS 10.14))
+		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
+			isDarkMode = true;
+
 	// Draw for our whole bounds; it'll be automatically clipped to fit the appropriate drawing area
 	rect = [tabBar bounds];
 	
@@ -625,7 +625,11 @@ typedef struct {
 - (NSColor *)fillColorForCell:(PSMTabBarCell *)cell
 {
 	NSColor *fillColor = nil;
-	
+	bool isDarkMode = false;
+	if (@available(*, macOS 10.14))
+		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
+			isDarkMode = true;
+
 	// Set up colours
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		if ([cell state] == NSOnState) { //active window, active cell
@@ -723,7 +727,11 @@ typedef struct {
 - (NSColor *)_lineColorForTabCellDrawing
 {
 	NSColor *lineColor = nil;
-
+	bool isDarkMode = false;
+	if (@available(*, macOS 10.14))
+		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
+			isDarkMode = true;
+	
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		if (isDarkMode) {
 			lineColor = [NSColor colorWithCalibratedWhite:0.29f alpha:.42f];
