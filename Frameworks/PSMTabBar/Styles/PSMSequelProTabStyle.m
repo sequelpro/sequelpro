@@ -109,6 +109,8 @@ typedef struct {
 		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:
 										[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
 										[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName, nil, nil];
+		
+		systemIsDarkMode = false;
     }
     return self;
 }
@@ -399,6 +401,10 @@ typedef struct {
 // Step 1
 - (void)drawTabBar:(PSMTabBarControl *)bar inRect:(NSRect)rect
 {
+	if (@available(*, macOS 10.14)) {
+		systemIsDarkMode = NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua;
+	}
+
 	if (orientation != [bar orientation]) {
 		orientation = [bar orientation];
 	}
@@ -444,11 +450,6 @@ typedef struct {
 // Step 2
 - (void)drawBackgroundInRect:(NSRect)rect
 {
-	bool isDarkMode = false;
-	if (@available(*, macOS 10.14))
-		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
-			isDarkMode = true;
-
 	// Draw for our whole bounds; it'll be automatically clipped to fit the appropriate drawing area
 	rect = [tabBar bounds];
 	
@@ -477,7 +478,7 @@ typedef struct {
 		shadowAlpha = 0.3f;
 	}
 	
-	if (isDarkMode) {
+	if (systemIsDarkMode) {
 		backgroundCalibratedWhite -= 0.55f;
 		lineCalibratedWhite -= 0.39f;
 		shadowAlpha -= 0.1f;
@@ -532,10 +533,6 @@ typedef struct {
 {
     NSRect cellFrame = [cell frame];
 	CGFloat insetLabelWidth = 0;
-	bool isDarkMode = false;
-	if (@available(*, macOS 10.14))
-		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
-			isDarkMode = true;
 
     // close button
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed] && [cell isHighlighted]) {
@@ -616,13 +613,12 @@ typedef struct {
 	NSAttributedString *labelString = cell.attributedStringValue;
 	if (cell.state != NSOnState) {
 		NSMutableAttributedString *newLabelString = labelString.mutableCopy;
-		
-		if (isDarkMode) {
-			[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor lightGrayColor] range:NSMakeRange(0, newLabelString.length)];
-		} else {
-			[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor darkGrayColor] range:NSMakeRange(0, newLabelString.length)];
+		NSColor *textColor = [NSColor darkGrayColor];
+		if (systemIsDarkMode) {
+			textColor = [NSColor lightGrayColor];
 		}
 		
+		[newLabelString addAttribute:NSForegroundColorAttributeName value:textColor range:NSMakeRange(0, newLabelString.length)];
 		labelString = newLabelString.copy;
 	}
 	
@@ -633,22 +629,18 @@ typedef struct {
 - (NSColor *)fillColorForCell:(PSMTabBarCell *)cell
 {
 	NSColor *fillColor = nil;
-	bool isDarkMode = false;
-	if (@available(*, macOS 10.14))
-		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
-			isDarkMode = true;
 
 	// Set up colours
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		if ([cell state] == NSOnState) { //active window, active cell
 			float tabWhiteComponent = 0.795f;
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.02f;
-			if (isDarkMode) tabWhiteComponent -= 0.55f;
+			if (systemIsDarkMode) tabWhiteComponent -= 0.55f;
 			
 			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 		} else { //active window, background cell
 			float tabWhiteComponent = 0.68f;
-			if (isDarkMode) tabWhiteComponent -= 0.51f;
+			if (systemIsDarkMode) tabWhiteComponent -= 0.51f;
 			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
@@ -664,7 +656,7 @@ typedef struct {
 		if ([cell state] == NSOnState) { //background window, active cell
 			float tabWhiteComponent = 0.957f;
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.01f;
-			if (isDarkMode) tabWhiteComponent -= 0.75f;
+			if (systemIsDarkMode) tabWhiteComponent -= 0.75f;
 
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			if (cell.backgroundColor) {
@@ -675,7 +667,7 @@ typedef struct {
 			
 		} else { //background window, background cell
 			float tabWhiteComponent = 0.86f;
-			if (isDarkMode) tabWhiteComponent -= 0.7f;
+			if (systemIsDarkMode) tabWhiteComponent -= 0.7f;
 			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
@@ -735,20 +727,16 @@ typedef struct {
 - (NSColor *)_lineColorForTabCellDrawing
 {
 	NSColor *lineColor = nil;
-	bool isDarkMode = false;
-	if (@available(*, macOS 10.14))
-		if (NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua)
-			isDarkMode = true;
 	
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
-		if (isDarkMode) {
+		if (systemIsDarkMode) {
 			lineColor = [NSColor colorWithCalibratedWhite:0.29f alpha:.42f];
 		} else {
 			lineColor = [NSColor grayColor];
 		}
 	}
 	else {
-		if (isDarkMode) {
+		if (systemIsDarkMode) {
 			lineColor = [NSColor colorWithCalibratedWhite:0.19f alpha:.42f];
 		} else {
 			lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];

@@ -29,6 +29,7 @@
 {
 	BOOL systemVersionIsAtLeast10_7_0;
 	BOOL systemVersionIsAtLeast10_10_0;
+	BOOL systemIsDarkMode;
 	
     NSImage *sequelProCloseButton;
     NSImage *sequelProCloseButtonDown;
