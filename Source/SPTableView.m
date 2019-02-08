@@ -40,6 +40,10 @@
 
 @end
 
+@interface NSTableView (ApplePrivate)
+- (BOOL)_allowTabbingIntoCells;
+@end
+
 @interface SPTableView ()
 
 - (void)_doubleClickAction;
@@ -154,19 +158,51 @@
 }
 
 /**
- * On becomeFirstResponder, if editing is disabled, override the super and just
- * display instead; this prevents the selected cell from automatically editing
- * if the table is backtabbed to.
+ * THIS IS A HACK!
+ *
+ * When you do the following steps:
+ *
+ *   b.1) Have "Tab all controls" enabled in System Prefs
+ *   b.2) Click on a row in the table view
+ *   b.3) Set the focus to the next responder after the table view (e.g. by pressing "tab")
+ *   b.4) Set the focus back to the table view by pressing "shift"+"tab"
+ *
+ * Cocoa would automatically start editing the table cell, which is not always desirable.
+ *
+ * Previously we overrode -becomeFirstResponder, which is the call ultimately triggering the
+ * edit. However, when looking at the implementation of -becomeFirstResponder it becomes clear
+ * that Apple has not intended for developers to override this method or provided any other way
+ * to influence the behaviour and since our overridden method would omit some internal method calls
+ * this caused other issues (#3214).
+ *
+ * We could still solve this by overriding it and hooking another of the three public API
+ * calls it makes:
+ *   a) -[NSTableView acceptsFirstResponder]
+ *   b) -[NSTableColumn isEditable]
+ *   c) -[NSTableView editColumn:row:withEvent:select:]
+ *
+ * But this would still be a hack as we would be relying on implementation internals and
+ * each methods has some problem:
+ *
+ * We can't use a) because it is called too early and won't trigger a necessary
+ * drawing update, leaving us with the same issue that we tried to solve here.
+ *
+ * While c) looks to be the better method to cancel an edit, it actually is too
+ * late and will cause erratic behaviour with the focus ring.
+ *
+ * Which leaves b), which luckily is a primitive ivar setter
+ * and not an observable property and doesn't trigger any side effects like
+ * rerendering (tested with 10.9 and 10.14). BUT: Up to getting to the point where this
+ * method is called, a lot of decision making is involved to determine the column to call
+ * this on and it won't be called for view-based table views and group rows (full width cells)
+ * anyway.
+ *
+ * So if we have to use a hack anyway, let's just go with the easiest thing and override
+ * the internal method call that can cancel the edit right where we want it to (at least in 10.9 - 10.4).
  */
-- (BOOL)becomeFirstResponder 
+- (BOOL)_allowTabbingIntoCells
 {
-	if (tabEditingDisabled) {
-		[self display];
-		
-		return YES;
-	}
-	
-	return [super becomeFirstResponder];
+	return (tabEditingDisabled ? NO : [super _allowTabbingIntoCells]);
 }
 
 - (void)keyDown:(NSEvent *)theEvent
