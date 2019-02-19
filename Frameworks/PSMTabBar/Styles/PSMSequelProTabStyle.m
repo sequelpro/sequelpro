@@ -615,7 +615,7 @@ typedef struct {
 		NSMutableAttributedString *newLabelString = labelString.mutableCopy;
 		NSColor *textColor = [NSColor darkGrayColor];
 		if (systemIsDarkMode) {
-			textColor = [NSColor lightGrayColor];
+			textColor = [cell backgroundColor] ? [NSColor blackColor] : [NSColor lightGrayColor];
 		}
 		
 		[newLabelString addAttribute:NSForegroundColorAttributeName value:textColor range:NSMakeRange(0, newLabelString.length)];
@@ -637,7 +637,11 @@ typedef struct {
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.02f;
 			if (systemIsDarkMode) tabWhiteComponent -= 0.55f;
 			
-			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
+			if([cell backgroundColor]) {
+				fillColor = systemIsDarkMode ? [[cell backgroundColor] shadowWithLevel:0.25] : [cell backgroundColor];;
+			}
 		} else { //active window, background cell
 			float tabWhiteComponent = 0.68f;
 			if (systemIsDarkMode) tabWhiteComponent -= 0.51f;
@@ -646,7 +650,7 @@ typedef struct {
 			
 			if([cell backgroundColor]) {
 				//should be a slightly darker variant of the color
-				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
+				fillColor = systemIsDarkMode ? [[cell backgroundColor] shadowWithLevel:0.40] : [[cell backgroundColor] shadowWithLevel:0.15];
 				
 				// also desaturate the color
 				fillColor = [NSColor colorWithCalibratedHue:fillColor.hueComponent saturation:fillColor.saturationComponent * 0.4 brightness:fillColor.brightnessComponent alpha:1.0f];
