@@ -246,9 +246,17 @@
 		}
 	}
 
-	// Check if ESCAPE is hit and use it to cancel row editing if supported
-	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)]) {
-		if ([(id<SPTableViewDelegate>)[self delegate] cancelRowEditing]) return;
+	// Check if ESCAPE is hit
+	else if ([theEvent keyCode] == 53) {
+		// Use it to cancel row editing if supported
+		if ([[self delegate] respondsToSelector:@selector(cancelRowEditing)]) {
+			if ([(id<SPTableViewDelegate>)[self delegate] cancelRowEditing]) return;
+		}
+		// If more rows is selected, cancel selection of all
+		else if ([self numberOfSelectedRows] > 1) {
+			[self deselectAll:nil];
+		}
+		return;
 	}
 	
 	// If the Tab key is used, but tab editing is disabled, change focus rather than entering edit mode.
