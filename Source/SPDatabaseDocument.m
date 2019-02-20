@@ -5895,7 +5895,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
-	leftPaneWidth -= 12;
+	leftPaneWidth -= 9;
 
 	// make sure it's not too small or to big
 	if (leftPaneWidth < 130) leftPaneWidth = 130;
