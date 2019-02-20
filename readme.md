@@ -27,6 +27,6 @@ Please see our [projects page](https://github.com/sequelpro/sequelpro/projects).
 License
 =======
 
-Copyright (c) 2002-2018 Sequel Pro & CocoaMySQL Teams. All rights reserved.
+Copyright (c) 2002-2019 Sequel Pro & CocoaMySQL Teams. All rights reserved.
 
 Sequel Pro is free and open source software, licensed under [MIT](https://opensource.org/licenses/MIT). See [LICENSE](https://github.com/sequelpro/sequelpro/blob/master/LICENSE) for full details.
