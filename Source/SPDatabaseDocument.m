@@ -100,6 +100,7 @@ static NSString *SPNewDatabaseName = @"SPNewDatabaseName";
 static NSString *SPNewDatabaseCopyContent = @"SPNewDatabaseCopyContent";
 
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
+static BOOL isOSAtLeast10_14;
 
 @interface SPDatabaseDocument ()
 
@@ -146,6 +147,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 @synthesize customQueryInstance;
 
 #pragma mark -
+
++ (void)initialize {
+	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+}
 
 - (id)init
 {
@@ -5895,7 +5900,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
-	leftPaneWidth -= 9;
+	leftPaneWidth -= isOSAtLeast10_14 ? 9 : 12;
 
 	// make sure it's not too small or to big
 	if (leftPaneWidth < 130) leftPaneWidth = 130;
