@@ -524,6 +524,8 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 	[indexedFields removeAllObjects];
 
 	if ([fields count]) [indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+	
+	[indexedColumnsTableView reloadData];
 }
 
 /**
@@ -883,9 +885,12 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 			[tempIndexedColumns release];
 		}
 
-		// Reset indexed fields to default
-		[indexedFields removeAllObjects];
-		[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+		SPMainQSync(^{
+			// Reset indexed fields to default
+			[indexedFields removeAllObjects];
+			[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+			[indexedColumnsTableView reloadData];
+		});
 
 		[dbDocument endTask];
 	}
