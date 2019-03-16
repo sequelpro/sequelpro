@@ -54,6 +54,7 @@ typedef struct {
 
 - (NSColor *)_lineColorForTabCellDrawing;
 - (void)_drawTabCell:(PSMTabBarCell *)cell withBackgroundColor:(NSColor *)backgroundColor lineColor:(NSColor *)lineColor;
+- (BOOL)isInDarkMode;
 
 @end
 
@@ -78,9 +79,11 @@ typedef struct {
 		if ([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
 			NSOperatingSystemVersion os10_7_0 = {10,7,0};
 			NSOperatingSystemVersion os10_10_0 = {10,10,0};
+			NSOperatingSystemVersion os10_14_0 = {10,14,0};
 
 			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
 			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
+			systemVersionIsAtLeast10_14_0 = [procInfo isOperatingSystemAtLeastVersion:os10_14_0];
 		}
 		else {
 			SInt32 versionMajor = 0;
@@ -90,6 +93,7 @@ typedef struct {
 			
 			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
 			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
+			systemVersionIsAtLeast10_14_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 14));
 		}
 
 		NSBundle *bundle = [PSMTabBarControl bundle];
@@ -109,8 +113,6 @@ typedef struct {
 		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:
 										[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
 										[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName, nil, nil];
-		
-		systemIsDarkMode = false;
     }
     return self;
 }
@@ -130,6 +132,22 @@ typedef struct {
 	[_objectCountStringAttributes release];
 	
     [super dealloc];
+}
+
+#pragma mark -
+#pragma mark Detect Dark Aqua Mode
+
+- (BOOL)isInDarkMode
+{
+	if(systemVersionIsAtLeast10_14_0) {
+		NSAppearance *appearance = [NSAppearance currentAppearance] ?: [NSApp effectiveAppearance];
+		NSAppearanceName match = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+
+		if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
+			return YES;
+		}
+	}
+	return NO;
 }
 
 #pragma mark -
@@ -401,10 +419,6 @@ typedef struct {
 // Step 1
 - (void)drawTabBar:(PSMTabBarControl *)bar inRect:(NSRect)rect
 {
-	if (@available(*, macOS 10.14)) {
-		systemIsDarkMode = NSAppearance.currentAppearance.name == NSAppearanceNameDarkAqua;
-	}
-
 	if (orientation != [bar orientation]) {
 		orientation = [bar orientation];
 	}
@@ -478,7 +492,7 @@ typedef struct {
 		shadowAlpha = 0.3f;
 	}
 	
-	if (systemIsDarkMode) {
+	if ([self isInDarkMode]) {
 		backgroundCalibratedWhite -= 0.55f;
 		lineCalibratedWhite -= 0.39f;
 		shadowAlpha -= 0.1f;
@@ -614,7 +628,7 @@ typedef struct {
 	if (cell.state != NSOnState) {
 		NSMutableAttributedString *newLabelString = labelString.mutableCopy;
 		NSColor *textColor = [NSColor darkGrayColor];
-		if (systemIsDarkMode) {
+		if ([self isInDarkMode]) {
 			textColor = [cell backgroundColor] ? [NSColor blackColor] : [NSColor lightGrayColor];
 		}
 		
@@ -635,22 +649,22 @@ typedef struct {
 		if ([cell state] == NSOnState) { //active window, active cell
 			float tabWhiteComponent = 0.795f;
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.02f;
-			if (systemIsDarkMode) tabWhiteComponent -= 0.55f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.55f;
 			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
 			if([cell backgroundColor]) {
-				fillColor = systemIsDarkMode ? [[cell backgroundColor] shadowWithLevel:0.25] : [cell backgroundColor];;
+				fillColor = [self isInDarkMode] ? [[cell backgroundColor] shadowWithLevel:0.25] : [cell backgroundColor];;
 			}
 		} else { //active window, background cell
 			float tabWhiteComponent = 0.68f;
-			if (systemIsDarkMode) tabWhiteComponent -= 0.51f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.51f;
 			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
 			if([cell backgroundColor]) {
 				//should be a slightly darker variant of the color
-				fillColor = systemIsDarkMode ? [[cell backgroundColor] shadowWithLevel:0.40] : [[cell backgroundColor] shadowWithLevel:0.15];
+				fillColor = [self isInDarkMode] ? [[cell backgroundColor] shadowWithLevel:0.40] : [[cell backgroundColor] shadowWithLevel:0.15];
 				
 				// also desaturate the color
 				fillColor = [NSColor colorWithCalibratedHue:fillColor.hueComponent saturation:fillColor.saturationComponent * 0.4 brightness:fillColor.brightnessComponent alpha:1.0f];
@@ -660,7 +674,7 @@ typedef struct {
 		if ([cell state] == NSOnState) { //background window, active cell
 			float tabWhiteComponent = 0.957f;
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.01f;
-			if (systemIsDarkMode) tabWhiteComponent -= 0.75f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.75f;
 
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			if (cell.backgroundColor) {
@@ -671,7 +685,7 @@ typedef struct {
 			
 		} else { //background window, background cell
 			float tabWhiteComponent = 0.86f;
-			if (systemIsDarkMode) tabWhiteComponent -= 0.7f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.7f;
 			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
@@ -733,14 +747,14 @@ typedef struct {
 	NSColor *lineColor = nil;
 	
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
-		if (systemIsDarkMode) {
+		if ([self isInDarkMode]) {
 			lineColor = [NSColor colorWithCalibratedWhite:0.29f alpha:.42f];
 		} else {
 			lineColor = [NSColor grayColor];
 		}
 	}
 	else {
-		if (systemIsDarkMode) {
+		if ([self isInDarkMode]) {
 			lineColor = [NSColor colorWithCalibratedWhite:0.19f alpha:.42f];
 		} else {
 			lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
