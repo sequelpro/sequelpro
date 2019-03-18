@@ -1180,7 +1180,7 @@
                                                                     <button toolTip="Toggle between editing simple text cells as a spreadsheet or in pop-up sheets" id="5201">
                                                                         <rect key="frame" x="124" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_edit_mode" imagePosition="overlaps" alignment="center" alternateImage="button_edit_mode_selected" inset="2" id="5202">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_edit_modeTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_edit_mode_selectedTemplate" inset="2" id="5202">
                                                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
@@ -1239,7 +1239,7 @@
                                                                     <button toolTip="Show/Hide table content filters" horizontalHuggingPriority="750" verticalHuggingPriority="750" id="LYg-Ux-Lph">
                                                                         <rect key="frame" x="155" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_filter" imagePosition="overlaps" alignment="center" alternateImage="button_filter_active" inset="2" id="WNc-7G-qPQ">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_filterTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_filter_activeTemplate" inset="2" id="WNc-7G-qPQ">
                                                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
@@ -1363,7 +1363,7 @@
                                                     <button toolTip="Toggle between editing simple text cells as a spreadsheet or in pop-up sheets" id="8012">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_edit_mode" imagePosition="only" alignment="center" alternateImage="button_edit_mode_selected" inset="2" id="8013">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_edit_modeTemplate" imagePosition="only" alignment="center" alternateImage="button_edit_mode_selectedTemplate" inset="2" id="8013">
                                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
@@ -4995,10 +4995,10 @@ Gw
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_duplicateTemplate" width="15" height="10"/>
         <image name="button_editTemplate" width="11" height="10"/>
-        <image name="button_edit_mode" width="30" height="22"/>
-        <image name="button_edit_mode_selected" width="30" height="22"/>
-        <image name="button_filter" width="30" height="22"/>
-        <image name="button_filter_active" width="30" height="22"/>
+        <image name="button_edit_modeTemplate" width="10" height="10"/>
+        <image name="button_edit_mode_selectedTemplate" width="10" height="10"/>
+        <image name="button_filterTemplate" width="11" height="10"/>
+        <image name="button_filter_activeTemplate" width="11" height="10"/>
         <image name="button_leftTemplate" width="7" height="10"/>
         <image name="button_pagination" width="30" height="22"/>
         <image name="button_pane_hideTemplate" width="10" height="10"/>

@@ -75,8 +75,6 @@
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
 		17AED4161888BD67008E380F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		17B548631E81FFA600175D5A /* SPCreateDatabaseInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17B548621E81FFA600175D5A /* SPCreateDatabaseInfo.m */; };
-		17B548731E82B02100175D5A /* button_edit_mode_selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 17B548681E82B02100175D5A /* button_edit_mode_selected@2x.png */; };
-		17B548741E82B02100175D5A /* button_edit_mode@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 17B548691E82B02100175D5A /* button_edit_mode@2x.png */; };
 		17B548771E82B02100175D5A /* button_pagination@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 17B5486C1E82B02100175D5A /* button_pagination@2x.png */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
@@ -233,8 +231,6 @@
 		582E939F168296F3003459FD /* link-arrow-highlighted@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E939B168296F3003459FD /* link-arrow-highlighted@2x.png */; };
 		582E93A0168296F3003459FD /* link-arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E939C168296F3003459FD /* link-arrow@2x.png */; };
 		582E940E1682A2AD003459FD /* button_bar_spacer@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E940D1682A2AD003459FD /* button_bar_spacer@2x.png */; };
-		582E941F16835DD4003459FD /* button_edit_mode_selected.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E941D16835DD4003459FD /* button_edit_mode_selected.png */; };
-		582E942016835DD4003459FD /* button_edit_mode.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E941E16835DD4003459FD /* button_edit_mode.png */; };
 		582E942E1683658A003459FD /* clearconsole.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E942D1683658A003459FD /* clearconsole.png */; };
 		582E944A168374C1003459FD /* field-small-square.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E9449168374C1003459FD /* field-small-square.png */; };
 		582E944C16837986003459FD /* hideconsole.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E944B16837986003459FD /* hideconsole.png */; };
@@ -386,6 +382,10 @@
 		8831EFBE2240159E00D10172 /* button_pane_showTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFBC2240159E00D10172 /* button_pane_showTemplate.pdf */; };
 		8831EFC12240166D00D10172 /* button_select_allTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFBF2240166D00D10172 /* button_select_allTemplate.pdf */; };
 		8831EFC22240166D00D10172 /* button_select_noneTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFC02240166D00D10172 /* button_select_noneTemplate.pdf */; };
+		8831EFC7224016E000D10172 /* button_filterTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFC3224016DF00D10172 /* button_filterTemplate.pdf */; };
+		8831EFC8224016E000D10172 /* button_filter_activeTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFC4224016DF00D10172 /* button_filter_activeTemplate.pdf */; };
+		8831EFC9224016E000D10172 /* button_edit_mode_selectedTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFC5224016E000D10172 /* button_edit_mode_selectedTemplate.pdf */; };
+		8831EFCA224016E000D10172 /* button_edit_modeTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFC6224016E000D10172 /* button_edit_modeTemplate.pdf */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		9BE765682376A00C82FB93AA /* SPHelpViewerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */; };
 		9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE768F3989033CEDDC2027E /* SPFillView.m */; };
@@ -411,10 +411,6 @@
 		B5E2C5FA0F2353B5007446E0 /* table-property.png in Resources */ = {isa = PBXBuildFile; fileRef = B5E2C5F90F2353B5007446E0 /* table-property.png */; };
 		B5E92F190F75B2D100012500 /* ExportDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F170F75B2D100012500 /* ExportDialog.xib */; };
 		B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E92F1B0F75B2E800012500 /* SPExportController.m */; };
-		BA6B043D20A4FB0B00B012E1 /* button_filter_active@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = BA6B043920A4FB0A00B012E1 /* button_filter_active@2x.png */; };
-		BA6B043E20A4FB0B00B012E1 /* button_filter@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = BA6B043C20A4FB0B00B012E1 /* button_filter@2x.png */; };
-		BA6B044120A4FEDC00B012E1 /* button_filter_active.png in Resources */ = {isa = PBXBuildFile; fileRef = BA6B043F20A4FEDB00B012E1 /* button_filter_active.png */; };
-		BA6B044220A4FEDC00B012E1 /* button_filter.png in Resources */ = {isa = PBXBuildFile; fileRef = BA6B044020A4FEDC00B012E1 /* button_filter.png */; };
 		BAC6BAF920A0D22400247837 /* FilterTableWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = BAC6BAF720A0D22400247837 /* FilterTableWindow.xib */; };
 		BAE25E0120B32BDA00DD9A40 /* HelpViewer.xib in Resources */ = {isa = PBXBuildFile; fileRef = BAE25DFF20B32BDA00DD9A40 /* HelpViewer.xib */; };
 		BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */; };
@@ -728,8 +724,6 @@
 		17A7773711C52E61001E27B4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/IndexesView.xib; sourceTree = "<group>"; };
 		17B548611E81FFA600175D5A /* SPCreateDatabaseInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCreateDatabaseInfo.h; sourceTree = "<group>"; };
 		17B548621E81FFA600175D5A /* SPCreateDatabaseInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCreateDatabaseInfo.m; sourceTree = "<group>"; };
-		17B548681E82B02100175D5A /* button_edit_mode_selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_edit_mode_selected@2x.png"; sourceTree = "<group>"; };
-		17B548691E82B02100175D5A /* button_edit_mode@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_edit_mode@2x.png"; sourceTree = "<group>"; };
 		17B5486C1E82B02100175D5A /* button_pagination@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_pagination@2x.png"; sourceTree = "<group>"; };
 		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
@@ -923,8 +917,6 @@
 		582E939B168296F3003459FD /* link-arrow-highlighted@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-highlighted@2x.png"; sourceTree = "<group>"; };
 		582E939C168296F3003459FD /* link-arrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow@2x.png"; sourceTree = "<group>"; };
 		582E940D1682A2AD003459FD /* button_bar_spacer@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_bar_spacer@2x.png"; sourceTree = "<group>"; };
-		582E941D16835DD4003459FD /* button_edit_mode_selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_edit_mode_selected.png; sourceTree = "<group>"; };
-		582E941E16835DD4003459FD /* button_edit_mode.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_edit_mode.png; sourceTree = "<group>"; };
 		582E942D1683658A003459FD /* clearconsole.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = clearconsole.png; sourceTree = "<group>"; };
 		582E9449168374C1003459FD /* field-small-square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "field-small-square.png"; sourceTree = "<group>"; };
 		582E944B16837986003459FD /* hideconsole.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = hideconsole.png; sourceTree = "<group>"; };
@@ -1125,6 +1117,10 @@
 		8831EFBC2240159E00D10172 /* button_pane_showTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_pane_showTemplate.pdf; sourceTree = "<group>"; };
 		8831EFBF2240166D00D10172 /* button_select_allTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_allTemplate.pdf; sourceTree = "<group>"; };
 		8831EFC02240166D00D10172 /* button_select_noneTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_noneTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC3224016DF00D10172 /* button_filterTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filterTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC4224016DF00D10172 /* button_filter_activeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filter_activeTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC5224016E000D10172 /* button_edit_mode_selectedTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_mode_selectedTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC6224016E000D10172 /* button_edit_modeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_modeTemplate.pdf; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
@@ -1160,10 +1156,6 @@
 		B5E92F1A0F75B2E800012500 /* SPExportController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportController.h; sourceTree = "<group>"; };
 		B5E92F1B0F75B2E800012500 /* SPExportController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportController.m; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		BA6B043920A4FB0A00B012E1 /* button_filter_active@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_filter_active@2x.png"; sourceTree = "<group>"; };
-		BA6B043C20A4FB0B00B012E1 /* button_filter@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_filter@2x.png"; sourceTree = "<group>"; };
-		BA6B043F20A4FEDB00B012E1 /* button_filter_active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_filter_active.png; sourceTree = "<group>"; };
-		BA6B044020A4FEDC00B012E1 /* button_filter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_filter.png; sourceTree = "<group>"; };
 		BAC6BAF820A0D22400247837 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/FilterTableWindow.xib; sourceTree = "<group>"; };
 		BAE25E0020B32BDA00DD9A40 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/HelpViewer.xib; sourceTree = "<group>"; };
 		BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEncodingPopupAccessory.h; sourceTree = "<group>"; };
@@ -2013,6 +2005,10 @@
 				8831EFBC2240159E00D10172 /* button_pane_showTemplate.pdf */,
 				8831EFBF2240166D00D10172 /* button_select_allTemplate.pdf */,
 				8831EFC02240166D00D10172 /* button_select_noneTemplate.pdf */,
+				8831EFC5224016E000D10172 /* button_edit_mode_selectedTemplate.pdf */,
+				8831EFC6224016E000D10172 /* button_edit_modeTemplate.pdf */,
+				8831EFC4224016DF00D10172 /* button_filter_activeTemplate.pdf */,
+				8831EFC3224016DF00D10172 /* button_filterTemplate.pdf */,
 				8831EFB12240143600D10172 /* button_bar_handleTemplate.pdf */,
 				3E242D4B20FEB44D0015470D /* button_bar_spacer_dark.png */,
 				3E242D4E20FEB44D0015470D /* button_bar_spacer_dark@2x.png */,
@@ -2020,14 +2016,6 @@
 				C9AD7C8216761B3300234EEE /* button_action@2x.png */,
 				C9C9943F1678A439001F5DA8 /* button_bar_spacer.png */,
 				582E940D1682A2AD003459FD /* button_bar_spacer@2x.png */,
-				582E941D16835DD4003459FD /* button_edit_mode_selected.png */,
-				17B548681E82B02100175D5A /* button_edit_mode_selected@2x.png */,
-				582E941E16835DD4003459FD /* button_edit_mode.png */,
-				17B548691E82B02100175D5A /* button_edit_mode@2x.png */,
-				BA6B043F20A4FEDB00B012E1 /* button_filter_active.png */,
-				BA6B043920A4FB0A00B012E1 /* button_filter_active@2x.png */,
-				BA6B044020A4FEDC00B012E1 /* button_filter.png */,
-				BA6B043C20A4FB0B00B012E1 /* button_filter@2x.png */,
 				58C3506A10B9AA8B00D37E14 /* button_pagination.png */,
 				17B5486C1E82B02100175D5A /* button_pagination@2x.png */,
 				BC09D7D812A786FB0030DB64 /* cancel-clicked-highlighted.png */,
@@ -2811,13 +2799,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				17B548731E82B02100175D5A /* button_edit_mode_selected@2x.png in Resources */,
 				17E641D10EF02036001BC333 /* grabber-horizontal.png in Resources */,
 				17E641D20EF02036001BC333 /* grabber-vertical.png in Resources */,
 				17E641F20EF02036001BC333 /* toolbar-switch-to-structure.png in Resources */,
 				17E641F30EF02036001BC333 /* toolbar-switch-to-table-info.png in Resources */,
 				17E6420A0EF020CB001BC333 /* DBView.xib in Resources */,
-				BA6B043D20A4FB0B00B012E1 /* button_filter_active@2x.png in Resources */,
+				8831EFC9224016E000D10172 /* button_edit_mode_selectedTemplate.pdf in Resources */,
 				17E641FA0EF02088001BC333 /* Growl Registration Ticket.growlRegDict in Resources */,
 				17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */,
 				17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */,
@@ -2849,13 +2836,13 @@
 				BCA6F631100FA7D700E80253 /* FieldEditorSheet.xib in Resources */,
 				58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */,
 				58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */,
-				BA6B044120A4FEDC00B012E1 /* button_filter_active.png in Resources */,
 				58D2E230101222870063EF1D /* link-arrow.png in Resources */,
 				581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */,
 				581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */,
 				4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */,
 				BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */,
 				BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */,
+				8831EFC7224016E000D10172 /* button_filterTemplate.pdf in Resources */,
 				173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */,
 				BCB56197106F893F00167321 /* ContentFilters.plist in Resources */,
 				BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */,
@@ -2870,6 +2857,7 @@
 				17CC993B10B4C9C80034CD7A /* License.rtf in Resources */,
 				58C3506B10B9AA8B00D37E14 /* button_pagination.png in Resources */,
 				58C3507510B9ADEA00D37E14 /* ContentPaginationView.xib in Resources */,
+				8831EFC8224016E000D10172 /* button_filter_activeTemplate.pdf in Resources */,
 				BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */,
 				BC962D661144EACA006170BD /* CompletionTokens.plist in Resources */,
 				17E0937E114AE154007FC1B4 /* SPTableInfoPrintTemplate.html in Resources */,
@@ -2903,9 +2891,7 @@
 				8831EFBE2240159E00D10172 /* button_pane_showTemplate.pdf in Resources */,
 				8831EFB22240143600D10172 /* button_bar_handleTemplate.pdf in Resources */,
 				C9F92710162D38D70051CB2E /* toolbar-switch-to-table-info@2x.png in Resources */,
-				BA6B044220A4FEDC00B012E1 /* button_filter.png in Resources */,
 				C9F92712162D39E60051CB2E /* toolbar-switch-to-browse.png in Resources */,
-				BA6B043E20A4FB0B00B012E1 /* button_filter@2x.png in Resources */,
 				C9F92714162D39FE0051CB2E /* toolbar-switch-to-browse@2x.png in Resources */,
 				C9AD7C781676138000234EEE /* database-small@2x.png in Resources */,
 				C9AD7C7B1676158C00234EEE /* toolbar-switch-to-sql.png in Resources */,
@@ -2922,7 +2908,7 @@
 				8831EFAE2240135400D10172 /* button_duplicateTemplate.pdf in Resources */,
 				C9C994491678B3E6001F5DA8 /* table-small-square.png in Resources */,
 				C9C9944A1678B3E6001F5DA8 /* table-small-square@2x.png in Resources */,
-				17B548741E82B02100175D5A /* button_edit_mode@2x.png in Resources */,
+				8831EFCA224016E000D10172 /* button_edit_modeTemplate.pdf in Resources */,
 				C9C9944D1678BCFA001F5DA8 /* table-small.png in Resources */,
 				C9C9944E1678BCFA001F5DA8 /* table-small@2x.png in Resources */,
 				582E939D168296F3003459FD /* link-arrow-clicked@2x.png in Resources */,
@@ -2933,8 +2919,6 @@
 				8831EFB62240150A00D10172 /* button_add_folderTemplate.pdf in Resources */,
 				582E940E1682A2AD003459FD /* button_bar_spacer@2x.png in Resources */,
 				50F530521ABCF66B002F2C1A /* resetTemplate.pdf in Resources */,
-				582E941F16835DD4003459FD /* button_edit_mode_selected.png in Resources */,
-				582E942016835DD4003459FD /* button_edit_mode.png in Resources */,
 				8831EFBD2240159E00D10172 /* button_pane_hideTemplate.pdf in Resources */,
 				BAE25E0120B32BDA00DD9A40 /* HelpViewer.xib in Resources */,
 				8831EFA8224011B700D10172 /* button_addTemplate.pdf in Resources */,
