@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <development version="5100" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPProcessListController">
@@ -169,11 +169,11 @@
                                 </tableView>
                             </subviews>
                         </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="15">
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="15">
                             <rect key="frame" x="-100" y="-100" width="358" height="11"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
-                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="16">
+                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="16">
                             <rect key="frame" x="576" y="17" width="11" height="251"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
@@ -216,7 +216,7 @@
                     <button toolTip="Refresh process list (⌘R)" id="75">
                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" state="on" imageScaling="proportionallyDown" inset="2" id="85">
+                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" imageScaling="proportionallyDown" inset="2" id="85">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                             <string key="keyEquivalent">r</string>
@@ -234,7 +234,7 @@
                             <font key="font" metaFont="smallSystem"/>
                             <menu key="menu" title="OtherViews" id="78">
                                 <items>
-                                    <menuItem image="button_actionTemplate" hidden="YES" id="82"/>
+                                    <menuItem image="button_action" hidden="YES" id="82"/>
                                     <menuItem title="Show Process ID" state="on" toolTip="Toggle the display of the Process ID column" id="84">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
@@ -424,7 +424,7 @@ Gw
                                 <real key="minimum" value="1"/>
                             </numberFormatter>
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
@@ -436,7 +436,7 @@ Gw
         </window>
     </objects>
     <resources>
-        <image name="button_actionTemplate" width="18" height="10"/>
-        <image name="button_refreshTemplate" width="9" height="10"/>
+        <image name="button_action" width="30" height="22"/>
+        <image name="button_refresh" width="30" height="22"/>
     </resources>
 </document>
