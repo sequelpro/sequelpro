@@ -348,7 +348,7 @@
                                 <button toolTip="Toggle the visibility of the Information panel" id="7959">
                                     <rect key="frame" x="92" y="-1" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pane_hide" imagePosition="only" alignment="center" alternateImage="button_pane_show" inset="2" id="7960">
+                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pane_hideTemplate" imagePosition="only" alignment="center" alternateImage="button_pane_showTemplate" inset="2" id="7960">
                                         <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -820,7 +820,7 @@
                                                                     <button hidden="YES" toolTip="Reveal the collapsed indexes pane" id="7457">
                                                                         <rect key="frame" x="124" y="-1" width="33" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_info_pane_show" imagePosition="overlaps" alignment="center" alternateImage="button_info_pane_show" state="on" inset="2" id="7458">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pane_showTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_pane_showTemplate" state="on" inset="2" id="7458">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
@@ -1350,7 +1350,7 @@
                                                     <button toolTip="Toggle the visibility of the Query Information Pane" id="7970">
                                                         <rect key="frame" x="6" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pane_hide" imagePosition="only" alignment="center" alternateImage="button_pane_show" inset="2" id="7971">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pane_hideTemplate" imagePosition="only" alignment="center" alternateImage="button_pane_showTemplate" inset="2" id="7971">
                                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">a</string>
@@ -1392,7 +1392,7 @@
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                         <clipView key="contentView" drawsBackground="NO" id="npE-bg-ppa">
                                                                                             <rect key="frame" x="1" y="1" width="695" height="141"/>
-                                                                                            <autoresizingMask key="autoresizingMask"/>
+                                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                             <subviews>
                                                                                                 <textView focusRingType="none" importsGraphics="NO" richText="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" allowsDocumentBackgroundColorChange="YES" allowsUndo="YES" usesRuler="YES" id="8254" customClass="SPTextView">
                                                                                                     <rect key="frame" x="0.0" y="0.0" width="695" height="141"/>
@@ -1699,7 +1699,7 @@ Gw
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                         <clipView key="contentView" id="NVV-XL-mVZ">
                                                                                             <rect key="frame" x="1" y="0.0" width="695" height="213"/>
-                                                                                            <autoresizingMask key="autoresizingMask"/>
+                                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                             <subviews>
                                                                                                 <tableView identifier="CustomQueryResultsTableView" focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" autosaveColumns="NO" rowHeight="16" headerView="7227" id="7224" customClass="SPCopyTable">
                                                                                                     <rect key="frame" x="0.0" y="0.0" width="695" height="196"/>
@@ -1774,7 +1774,7 @@ Gw
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="Nr9-eI-xLJ">
                                                                             <rect key="frame" x="0.0" y="0.0" width="671" height="74"/>
-                                                                            <autoresizingMask key="autoresizingMask"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <textView editable="NO" drawsBackground="NO" importsGraphics="NO" richText="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" allowsNonContiguousLayout="YES" id="8248">
                                                                                     <rect key="frame" x="0.0" y="0.0" width="671" height="74"/>
@@ -4999,11 +4999,10 @@ Gw
         <image name="button_edit_mode_selected" width="30" height="22"/>
         <image name="button_filter" width="30" height="22"/>
         <image name="button_filter_active" width="30" height="22"/>
-        <image name="button_info_pane_show" width="30" height="22"/>
         <image name="button_leftTemplate" width="7" height="10"/>
         <image name="button_pagination" width="30" height="22"/>
-        <image name="button_pane_hide" width="30" height="22"/>
-        <image name="button_pane_show" width="30" height="22"/>
+        <image name="button_pane_hideTemplate" width="10" height="10"/>
+        <image name="button_pane_showTemplate" width="10" height="10"/>
         <image name="button_refreshTemplate" width="9" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>
         <image name="button_rightTemplate" width="7" height="10"/>
