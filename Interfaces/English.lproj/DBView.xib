@@ -782,7 +782,7 @@
                                                                     <button toolTip="Delete selected field (⌫)" verticalHuggingPriority="750" id="5136">
                                                                         <rect key="frame" x="30" y="0.0" width="32" height="23"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_remove" imagePosition="overlaps" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5137">
+                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_removeTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_removeTemplate" enabled="NO" state="on" inset="2" id="5137">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent"></string>
@@ -994,7 +994,7 @@
                                                                     <button toolTip="Delete selected index" id="5152">
                                                                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="overlaps" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5153">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_removeTemplate" enabled="NO" state="on" inset="2" id="5153">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
@@ -1155,7 +1155,7 @@
                                                                     <button toolTip="Delete selected row(s) (⌫)" id="5177">
                                                                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" inset="2" id="5182">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" alternateImage="button_removeTemplate" enabled="NO" inset="2" id="5182">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent"></string>
@@ -2374,7 +2374,7 @@ Gw
                                                     <button toolTip="Delete selected relation(s) (⌫)" id="5561">
                                                         <rect key="frame" x="37" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5564">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" alternateImage="button_removeTemplate" enabled="NO" state="on" inset="2" id="5564">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent"></string>
@@ -2561,7 +2561,7 @@ Gw
                                                     <button toolTip="Delete selected relation(s) (⌫)" id="6696">
                                                         <rect key="frame" x="37" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="6718">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" alternateImage="button_removeTemplate" enabled="NO" state="on" inset="2" id="6718">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent"></string>
@@ -5005,7 +5005,7 @@ Gw
         <image name="button_pane_hide" width="30" height="22"/>
         <image name="button_pane_show" width="30" height="22"/>
         <image name="button_refresh" width="30" height="22"/>
-        <image name="button_remove" width="30" height="22"/>
+        <image name="button_removeTemplate" width="10" height="10"/>
         <image name="button_right" width="30" height="22"/>
         <image name="grabber-horizontal" width="10" height="8"/>
     </resources>

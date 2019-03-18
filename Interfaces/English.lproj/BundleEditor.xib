@@ -168,7 +168,7 @@
                                     <button toolTip="Remove selected Bundle (⌘⌫)" id="732">
                                         <rect key="frame" x="30" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="735">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="735">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent"></string>
@@ -840,6 +840,6 @@ DQ
         <image name="button_action" width="30" height="22"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handle" width="11" height="23"/>
-        <image name="button_remove" width="30" height="22"/>
+        <image name="button_removeTemplate" width="10" height="10"/>
     </resources>
 </document>
