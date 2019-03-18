@@ -123,7 +123,7 @@
                                     <button toolTip="Delete selected favorite (⌫)" id="17">
                                         <rect key="frame" x="32" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="20">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="20">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent"></string>
@@ -135,7 +135,7 @@
                                     <button toolTip="Add favorite (⌥⌘A)" id="18">
                                         <rect key="frame" x="0.0" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="19">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_addTemplate" imagePosition="overlaps" alignment="center" inset="2" id="19">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent">a</string>
@@ -148,7 +148,7 @@
                                     <imageView id="347">
                                         <rect key="frame" x="162" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="348"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="348"/>
                                     </imageView>
                                     <popUpButton toolTip="(⌥⎋)" id="349">
                                         <rect key="frame" x="64" y="0.0" width="36" height="23"/>
@@ -162,7 +162,7 @@ Gw
                                             <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                             <menu key="menu" title="OtherViews" id="351">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="358"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="358"/>
                                                     <menuItem title="Duplicate" keyEquivalent="d" id="359">
                                                         <connections>
                                                             <action selector="duplicateQueryFavorite:" target="-2" id="372"/>
@@ -505,9 +505,9 @@ Gw
         </arrayController>
     </objects>
     <resources>
-        <image name="button_action" width="16" height="16"/>
-        <image name="button_add" width="16" height="16"/>
-        <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_remove" width="32" height="23"/>
+        <image name="button_actionTemplate" width="16" height="16"/>
+        <image name="button_addTemplate" width="16" height="16"/>
+        <image name="button_bar_handleTemplate" width="16" height="16"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
     </resources>
 </document>

@@ -158,7 +158,7 @@
                     <button toolTip="Clear Console" id="73">
                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="roundTextured" title="Clear" bezelStyle="texturedRounded" image="button_clear" imagePosition="only" alignment="center" alternateImage="button_clear" state="on" imageScaling="proportionallyDown" inset="2" id="74">
+                        <buttonCell key="cell" type="roundTextured" title="Clear" bezelStyle="texturedRounded" image="button_clearTemplate" imagePosition="only" alignment="center" alternateImage="button_clearTemplate" state="on" imageScaling="proportionallyDown" inset="2" id="74">
                             <behavior key="behavior" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -174,7 +174,7 @@
                             <font key="font" metaFont="menu"/>
                             <menu key="menu" title="OtherViews" id="79">
                                 <items>
-                                    <menuItem image="button_action" hidden="YES" id="83"/>
+                                    <menuItem image="button_actionTemplate" hidden="YES" id="83"/>
                                     <menuItem title="Show Time Stamps" state="on" id="80">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
@@ -327,7 +327,7 @@
         </menu>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
-        <image name="button_clear" width="30" height="22"/>
+        <image name="button_actionTemplate" width="30" height="22"/>
+        <image name="button_clearTemplate" width="30" height="22"/>
     </resources>
 </document>

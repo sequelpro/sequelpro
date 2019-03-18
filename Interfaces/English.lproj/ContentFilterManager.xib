@@ -58,12 +58,12 @@
                                     <imageView id="382">
                                         <rect key="frame" x="198" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="383"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="383"/>
                                     </imageView>
                                     <button toolTip="Add filter (⌥⌘A)" id="384">
                                         <rect key="frame" x="-1" y="-1" width="32" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="385">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_addTemplate" imagePosition="overlaps" alignment="center" inset="2" id="385">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent">a</string>
@@ -76,7 +76,7 @@
                                     <button toolTip="Delete selected filter (⌫)" id="387">
                                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="388">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="388">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent"></string>
@@ -97,7 +97,7 @@ Gw
                                             <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                             <menu key="menu" title="OtherViews" id="393">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="400"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="400"/>
                                                     <menuItem title="Duplicate" keyEquivalent="d" id="401">
                                                         <connections>
                                                             <action selector="duplicateContentFilter:" target="-1" id="408"/>
@@ -409,9 +409,9 @@ Gw
         </arrayController>
     </objects>
     <resources>
-        <image name="button_action" width="16" height="16"/>
-        <image name="button_add" width="16" height="16"/>
-        <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_remove" width="32" height="23"/>
+        <image name="button_actionTemplate" width="16" height="16"/>
+        <image name="button_addTemplate" width="16" height="16"/>
+        <image name="button_bar_handleTemplate" width="16" height="16"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
     </resources>
 </document>

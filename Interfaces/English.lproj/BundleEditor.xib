@@ -121,7 +121,7 @@
                                     <imageView id="1267">
                                         <rect key="frame" x="127" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="1268"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="1268"/>
                                     </imageView>
                                     <popUpButton id="1247">
                                         <rect key="frame" x="60" y="0.0" width="36" height="23"/>
@@ -131,7 +131,7 @@
                                             <font key="font" metaFont="system"/>
                                             <menu key="menu" title="OtherViews" id="1249">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="1250"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="1250"/>
                                                     <menuItem title="Duplicate Bundle" keyEquivalent="d" id="1269">
                                                         <connections>
                                                             <action selector="duplicateCommandBundle:" target="-2" id="1275"/>
@@ -168,7 +168,7 @@
                                     <button toolTip="Remove selected Bundle (⌘⌫)" id="732">
                                         <rect key="frame" x="30" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="735">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="735">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent"></string>
@@ -181,7 +181,7 @@
                                     <button toolTip="Add Bundle (⌥⌘A)" id="733">
                                         <rect key="frame" x="-1" y="0.0" width="32" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="734">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_addTemplate" imagePosition="overlaps" alignment="center" inset="2" id="734">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <string key="keyEquivalent">a</string>
@@ -837,9 +837,9 @@ DQ
         </window>
     </objects>
     <resources>
-        <image name="button_action" width="16" height="16"/>
-        <image name="button_add" width="16" height="16"/>
-        <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_remove" width="32" height="23"/>
+        <image name="button_actionTemplate" width="16" height="16"/>
+        <image name="button_addTemplate" width="16" height="16"/>
+        <image name="button_bar_handleTemplate" width="16" height="16"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
     </resources>
 </document>

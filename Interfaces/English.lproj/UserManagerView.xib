@@ -119,7 +119,7 @@
                                             <font key="font" metaFont="smallSystem"/>
                                             <menu key="menu" title="OtherViews" id="1012">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="1019"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="1019"/>
                                                     <menuItem title="Add Host" id="1029">
                                                         <connections>
                                                             <action selector="addHost:" target="-2" id="1034"/>
@@ -144,7 +144,7 @@
                                     <button toolTip="Remove User" id="1007">
                                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="1010">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="1010">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
@@ -160,7 +160,7 @@
                                     <button toolTip="Add User" id="1008">
                                         <rect key="frame" x="-1" y="-1" width="32" height="25"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="overlaps" alignment="center" inset="2" id="1009">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_addTemplate" imagePosition="overlaps" alignment="center" inset="2" id="1009">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
@@ -176,7 +176,7 @@
                                     <imageView id="1003">
                                         <rect key="frame" x="162" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="1004"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="1004"/>
                                     </imageView>
                                 </subviews>
                             </customView>
@@ -1362,9 +1362,9 @@ DQ
     <resources>
         <image name="NSLeftFacingTriangleTemplate" width="9" height="9"/>
         <image name="NSRightFacingTriangleTemplate" width="9" height="9"/>
-        <image name="button_action" width="16" height="16"/>
-        <image name="button_add" width="16" height="16"/>
-        <image name="button_bar_handle" width="16" height="16"/>
-        <image name="button_remove" width="32" height="23"/>
+        <image name="button_actionTemplate" width="16" height="16"/>
+        <image name="button_addTemplate" width="16" height="16"/>
+        <image name="button_bar_handleTemplate" width="16" height="16"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
     </resources>
 </document>

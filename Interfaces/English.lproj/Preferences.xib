@@ -258,7 +258,7 @@ Gw
                                 <button toolTip="Remove Theme" id="2255">
                                     <rect key="frame" x="31" y="-1" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" inset="2" id="2256">
+                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="2256">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                         <string key="keyEquivalent"></string>
@@ -271,7 +271,7 @@ Gw
                                 <button toolTip="Duplicate Theme" id="2253">
                                     <rect key="frame" x="-1" y="-1" width="33" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicate" imagePosition="overlaps" alignment="center" inset="2" id="2258">
+                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicateTemplate" imagePosition="overlaps" alignment="center" inset="2" id="2258">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                         <string key="keyEquivalent">d</string>
@@ -1727,8 +1727,8 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
     </objects>
     <resources>
         <image name="NSAdvanced" width="32" height="32"/>
-        <image name="button_duplicate" width="33" height="23"/>
-        <image name="button_remove" width="32" height="23"/>
+        <image name="button_duplicateTemplate" width="33" height="23"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
         <image name="resetTemplate" width="16" height="16"/>
     </resources>
 </document>

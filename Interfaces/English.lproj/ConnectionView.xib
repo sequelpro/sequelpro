@@ -83,12 +83,12 @@
                                 <popUpButton id="5824">
                                     <rect key="frame" x="2" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_action" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825" customClass="SPTableFooterPopUpButtonCell">
+                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_actionTemplate" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825" customClass="SPTableFooterPopUpButtonCell">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" title="OtherViews" id="5826">
                                             <items>
-                                                <menuItem state="on" image="button_action" hidden="YES" id="5833"/>
+                                                <menuItem state="on" image="button_actionTemplate" hidden="YES" id="5833"/>
                                                 <menuItem title="Rename" id="5883">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <connections>
@@ -172,7 +172,7 @@
                                 <imageView id="5858">
                                     <rect key="frame" x="175" y="0.0" width="25" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="5859"/>
+                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handleTemplate" id="5859"/>
                                 </imageView>
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="4910">
                                     <rect key="frame" x="0.0" y="23" width="200" height="490"/>
@@ -224,7 +224,7 @@
                                 <button id="5853">
                                     <rect key="frame" x="69" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add" imagePosition="overlaps" alignment="center" alternateImage="button_add" inset="2" id="5854">
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_addTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_addTemplate" inset="2" id="5854">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -235,7 +235,7 @@
                                 <button id="5851">
                                     <rect key="frame" x="35" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folder" imagePosition="only" alignment="center" alternateImage="button_add_folder" inset="2" id="5852">
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folderTemplate" imagePosition="only" alignment="center" alternateImage="button_add_folderTemplate" inset="2" id="5852">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -2591,10 +2591,10 @@ DQ
         </customView>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
-        <image name="button_add" width="30" height="22"/>
-        <image name="button_add_folder" width="30" height="22"/>
-        <image name="button_bar_handle" width="15" height="23"/>
+        <image name="button_actionTemplate" width="30" height="22"/>
+        <image name="button_addTemplate" width="30" height="22"/>
+        <image name="button_add_folderTemplate" width="30" height="22"/>
+        <image name="button_bar_handleTemplate" width="15" height="23"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
     </resources>
