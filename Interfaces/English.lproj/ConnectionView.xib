@@ -235,7 +235,7 @@
                                 <button id="5851">
                                     <rect key="frame" x="35" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folder" imagePosition="only" alignment="center" alternateImage="button_add_folder" inset="2" id="5852">
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folderTemplate" imagePosition="only" alignment="center" alternateImage="button_add_folderTemplate" inset="2" id="5852">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -2593,7 +2593,7 @@ DQ
     <resources>
         <image name="button_action" width="30" height="22"/>
         <image name="button_addTemplate" width="10" height="10"/>
-        <image name="button_add_folder" width="30" height="22"/>
+        <image name="button_add_folderTemplate" width="14" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
