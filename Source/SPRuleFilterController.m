@@ -1345,16 +1345,14 @@ BOOL SerIsGroup(NSDictionary *dict)
 		NSString *sql = [parser filterString];
 		// SPTableFilterParser will return nil if it doesn't like the arguments and NSMutableString doesn't like nil
 		if(!sql) {
-			if(err && ! [[values objectOrNilAtIndex:0] isEqualToString:@""]) {
-				*err = [
-						NSError errorWithDomain:SPErrorDomain
-						code:3
-						userInfo:@{
-								   NSLocalizedDescriptionKey: NSLocalizedString(
-																				@"No valid SQL expression could be generated. Make sure that you have filled in all required fields.",
-																				@"filter to sql conversion : internal error : SPTableFilterParser failed"),
-																				}
-						];
+			// Fire error only if any field have some text
+			if(err && (! [[values objectOrNilAtIndex:0] isEqualToString:@""] || ([values objectOrNilAtIndex:1] && ! [[values objectOrNilAtIndex:1] isEqualToString:@""]))) {
+				*err = [NSError errorWithDomain:SPErrorDomain code:3 userInfo:@{
+					NSLocalizedDescriptionKey: NSLocalizedString(
+						@"No valid SQL expression could be generated. Make sure that you have filled in all required fields.",
+						@"filter to sql conversion : internal error : SPTableFilterParser failed"),
+					}
+				];
 			}
 			[parser release];
 			return;
