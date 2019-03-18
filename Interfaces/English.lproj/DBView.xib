@@ -712,7 +712,7 @@
                                                                     <button toolTip="Edit Table Details (⌘4)" id="6009">
                                                                         <rect key="frame" x="628" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_edit" imagePosition="overlaps" alignment="center" enabled="NO" state="on" inset="2" id="6010">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_editTemplate" imagePosition="overlaps" alignment="center" enabled="NO" state="on" inset="2" id="6010">
                                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">4</string>
@@ -4994,7 +4994,7 @@ Gw
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handle" width="11" height="23"/>
         <image name="button_duplicate" width="30" height="22"/>
-        <image name="button_edit" width="30" height="22"/>
+        <image name="button_editTemplate" width="11" height="10"/>
         <image name="button_edit_mode" width="30" height="22"/>
         <image name="button_edit_mode_selected" width="30" height="22"/>
         <image name="button_filter" width="30" height="22"/>
