@@ -234,7 +234,7 @@
                             <font key="font" metaFont="smallSystem"/>
                             <menu key="menu" title="OtherViews" id="78">
                                 <items>
-                                    <menuItem image="button_action" hidden="YES" id="82"/>
+                                    <menuItem image="button_actionTemplate" hidden="YES" id="82"/>
                                     <menuItem title="Show Process ID" state="on" toolTip="Toggle the display of the Process ID column" id="84">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
@@ -436,7 +436,7 @@ Gw
         </window>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_refreshTemplate" width="9" height="10"/>
     </resources>
 </document>

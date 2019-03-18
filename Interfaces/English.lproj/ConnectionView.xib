@@ -83,12 +83,12 @@
                                 <popUpButton id="5824">
                                     <rect key="frame" x="2" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_action" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825" customClass="SPTableFooterPopUpButtonCell">
+                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_actionTemplate" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825" customClass="SPTableFooterPopUpButtonCell">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" title="OtherViews" id="5826">
                                             <items>
-                                                <menuItem state="on" image="button_action" hidden="YES" id="5833"/>
+                                                <menuItem state="on" image="button_actionTemplate" hidden="YES" id="5833"/>
                                                 <menuItem title="Rename" id="5883">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <connections>
@@ -2591,7 +2591,7 @@ DQ
         </customView>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_add_folderTemplate" width="14" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>

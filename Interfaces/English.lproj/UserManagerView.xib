@@ -120,7 +120,7 @@
                                             <font key="font" metaFont="smallSystem"/>
                                             <menu key="menu" title="OtherViews" id="1012">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="1019"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="1019"/>
                                                     <menuItem title="Add Host" id="1029">
                                                         <connections>
                                                             <action selector="addHost:" target="-2" id="1034"/>
@@ -1351,7 +1351,7 @@ DQ
     <resources>
         <image name="NSLeftFacingTriangleTemplate" width="9" height="12"/>
         <image name="NSRightFacingTriangleTemplate" width="9" height="12"/>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>

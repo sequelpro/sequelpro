@@ -364,7 +364,7 @@
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" title="OtherViews" id="7861">
                                             <items>
-                                                <menuItem state="on" image="button_action" hidden="YES" id="7862"/>
+                                                <menuItem state="on" image="button_actionTemplate" hidden="YES" id="7862"/>
                                                 <menuItem title="Rename Table..." toolTip="Rename the selected item" id="7917">
                                                     <modifierMask key="keyEquivalentModifierMask"/>
                                                     <connections>
@@ -730,7 +730,7 @@
                                                                             <font key="font" metaFont="menu"/>
                                                                             <menu key="menu" title="OtherViews" id="8027">
                                                                                 <items>
-                                                                                    <menuItem state="on" image="button_action" hidden="YES" id="8028"/>
+                                                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="8028"/>
                                                                                     <menuItem title="View Columns" id="8055">
                                                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                                                         <menu key="submenu" title="View Columns" id="8056">
@@ -1222,7 +1222,7 @@
                                                                     <button toolTip="Jump to page (⌘J) or view pagination options" id="6653">
                                                                         <rect key="frame" x="616" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_pagination" imagePosition="overlaps" alignment="center" inset="2" id="6654">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_paginationTemplate" imagePosition="overlaps" alignment="center" inset="2" id="6654">
                                                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                                             <font key="font" metaFont="smallSystem"/>
                                                                             <string key="keyEquivalent">j</string>
@@ -1320,7 +1320,7 @@
                                                             <font key="font" metaFont="menu"/>
                                                             <menu key="menu" title="OtherViews" id="7977">
                                                                 <items>
-                                                                    <menuItem state="on" image="button_action" hidden="YES" id="7978"/>
+                                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="7978"/>
                                                                     <menuItem title="Export Result" id="8005">
                                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                                         <menu key="submenu" title="Export Result" id="8006">
@@ -1444,7 +1444,7 @@
                                                                                                     <font key="font" metaFont="menu"/>
                                                                                                     <menu key="menu" title="OtherViews" autoenablesItems="NO" id="7232">
                                                                                                         <items>
-                                                                                                            <menuItem image="button_action" hidden="YES" id="7247"/>
+                                                                                                            <menuItem image="button_actionTemplate" hidden="YES" id="7247"/>
                                                                                                             <menuItem title="Previous Query from History" tag="3" keyEquivalent="" toolTip="Replaces the current query by the previous one coming from the history." id="7243">
                                                                                                                 <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                                                                                                 <connections>
@@ -4990,7 +4990,7 @@ Gw
         <image name="NSApplicationIcon" width="32" height="32"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_duplicateTemplate" width="15" height="10"/>
@@ -5000,7 +5000,7 @@ Gw
         <image name="button_filterTemplate" width="11" height="10"/>
         <image name="button_filter_activeTemplate" width="11" height="10"/>
         <image name="button_leftTemplate" width="7" height="10"/>
-        <image name="button_pagination" width="30" height="22"/>
+        <image name="button_paginationTemplate" width="18" height="10"/>
         <image name="button_pane_hideTemplate" width="10" height="10"/>
         <image name="button_pane_showTemplate" width="10" height="10"/>
         <image name="button_refreshTemplate" width="9" height="10"/>

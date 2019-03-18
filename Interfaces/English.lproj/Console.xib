@@ -174,7 +174,7 @@
                             <font key="font" metaFont="menu"/>
                             <menu key="menu" title="OtherViews" id="79">
                                 <items>
-                                    <menuItem image="button_action" hidden="YES" id="83"/>
+                                    <menuItem image="button_actionTemplate" hidden="YES" id="83"/>
                                     <menuItem title="Show Time Stamps" state="on" id="80">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>
@@ -327,7 +327,7 @@
         </menu>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_clearTemplate" width="10" height="10"/>
     </resources>
 </document>

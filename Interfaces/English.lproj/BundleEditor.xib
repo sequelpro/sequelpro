@@ -131,7 +131,7 @@
                                             <font key="font" metaFont="menu"/>
                                             <menu key="menu" title="OtherViews" id="1249">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="1250"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="1250"/>
                                                     <menuItem title="Duplicate Bundle" keyEquivalent="d" id="1269">
                                                         <connections>
                                                             <action selector="duplicateCommandBundle:" target="-2" id="1275"/>
@@ -837,7 +837,7 @@ DQ
         </window>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>

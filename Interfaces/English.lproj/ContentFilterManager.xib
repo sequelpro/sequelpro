@@ -94,7 +94,7 @@ Gw
                                             <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                             <menu key="menu" title="OtherViews" id="393">
                                                 <items>
-                                                    <menuItem state="on" image="button_action" hidden="YES" id="400"/>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="400"/>
                                                     <menuItem title="Duplicate" keyEquivalent="d" id="401">
                                                         <connections>
                                                             <action selector="duplicateContentFilter:" target="-1" id="408"/>
@@ -406,7 +406,7 @@ Gw
         </arrayController>
     </objects>
     <resources>
-        <image name="button_action" width="30" height="22"/>
+        <image name="button_actionTemplate" width="18" height="10"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>
