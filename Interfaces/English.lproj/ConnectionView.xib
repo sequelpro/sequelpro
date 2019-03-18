@@ -172,7 +172,7 @@
                                 <imageView id="5858">
                                     <rect key="frame" x="175" y="0.0" width="25" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="5859"/>
+                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handleTemplate" id="5859"/>
                                 </imageView>
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="4910">
                                     <rect key="frame" x="0.0" y="23" width="200" height="490"/>
@@ -2594,7 +2594,7 @@ DQ
         <image name="button_action" width="30" height="22"/>
         <image name="button_addTemplate" width="10" height="10"/>
         <image name="button_add_folder" width="30" height="22"/>
-        <image name="button_bar_handle" width="11" height="23"/>
+        <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
     </resources>

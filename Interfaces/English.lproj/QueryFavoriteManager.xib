@@ -145,7 +145,7 @@
                                     <imageView id="347">
                                         <rect key="frame" x="162" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="348"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handleTemplate" id="348"/>
                                     </imageView>
                                     <popUpButton toolTip="(⌥⎋)" id="349">
                                         <rect key="frame" x="64" y="0.0" width="36" height="23"/>
@@ -504,7 +504,7 @@ Gw
     <resources>
         <image name="button_action" width="30" height="22"/>
         <image name="button_addTemplate" width="10" height="10"/>
-        <image name="button_bar_handle" width="11" height="23"/>
+        <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>
     </resources>
 </document>

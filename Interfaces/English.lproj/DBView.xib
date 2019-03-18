@@ -332,7 +332,7 @@
                                 <imageView id="7848">
                                     <rect key="frame" x="199" y="0.0" width="15" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="7849"/>
+                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handleTemplate" id="7849"/>
                                 </imageView>
                                 <button toolTip="Add new table" id="7850">
                                     <rect key="frame" x="-1" y="0.0" width="32" height="23"/>
@@ -4992,7 +4992,7 @@ Gw
         <image name="NSGoRightTemplate" width="9" height="12"/>
         <image name="button_action" width="30" height="22"/>
         <image name="button_addTemplate" width="10" height="10"/>
-        <image name="button_bar_handle" width="11" height="23"/>
+        <image name="button_bar_handleTemplate" width="6" height="10"/>
         <image name="button_duplicateTemplate" width="15" height="10"/>
         <image name="button_editTemplate" width="11" height="10"/>
         <image name="button_edit_mode" width="30" height="22"/>
