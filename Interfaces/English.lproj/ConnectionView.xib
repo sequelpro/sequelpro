@@ -83,7 +83,7 @@
                                 <popUpButton id="5824">
                                     <rect key="frame" x="2" y="0.0" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_actionTemplate" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825" customClass="SPTableFooterPopUpButtonCell">
+                                    <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" alternateImage="button_actionTemplate" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="5833" id="5825">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="menu"/>
                                         <menu key="menu" title="OtherViews" id="5826">
