@@ -449,7 +449,7 @@
                                 <button toolTip="Refresh table list" id="7954">
                                     <rect key="frame" x="61" y="0.0" width="32" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_refresh" imagePosition="only" alignment="center" alternateImage="button_refresh" inset="2" id="7955">
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_refreshTemplate" imagePosition="only" alignment="center" alternateImage="button_refreshTemplate" inset="2" id="7955">
                                         <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -794,7 +794,7 @@
                                                                     <button toolTip="Refresh table structure (⌘R)" id="5134">
                                                                         <rect key="frame" x="93" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5135">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" state="on" inset="2" id="5135">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">r</string>
@@ -1005,7 +1005,7 @@
                                                                     <button toolTip="Refresh table indexes (⌘R)" id="5151">
                                                                         <rect key="frame" x="61" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5154">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" state="on" inset="2" id="5154">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">r</string>
@@ -1142,7 +1142,7 @@
                                                                     <button toolTip="Refresh table contents (⌘R)" id="5176">
                                                                         <rect key="frame" x="93" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" inset="2" id="5183">
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" inset="2" id="5183">
                                                                             <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">r</string>
@@ -2361,7 +2361,7 @@ Gw
                                                     <button toolTip="Refresh table relations (⌘R)" id="5560">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5565">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" state="on" inset="2" id="5565">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">r</string>
@@ -2548,7 +2548,7 @@ Gw
                                                     <button toolTip="Refresh table relations (⌘R)" id="6697">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="6717">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refreshTemplate" imagePosition="overlaps" alignment="center" alternateImage="button_refreshTemplate" state="on" inset="2" id="6717">
                                                             <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">r</string>
@@ -5004,7 +5004,7 @@ Gw
         <image name="button_pagination" width="30" height="22"/>
         <image name="button_pane_hide" width="30" height="22"/>
         <image name="button_pane_show" width="30" height="22"/>
-        <image name="button_refresh" width="30" height="22"/>
+        <image name="button_refreshTemplate" width="9" height="10"/>
         <image name="button_removeTemplate" width="10" height="10"/>
         <image name="button_right" width="30" height="22"/>
         <image name="grabber-horizontal" width="10" height="8"/>

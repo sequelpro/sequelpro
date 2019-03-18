@@ -390,6 +390,7 @@
 		8831EFAA2240128700D10172 /* button_removeTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFA92240128600D10172 /* button_removeTemplate.pdf */; };
 		8831EFAC2240131500D10172 /* button_editTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFAB2240131400D10172 /* button_editTemplate.pdf */; };
 		8831EFAE2240135400D10172 /* button_duplicateTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFAD2240135300D10172 /* button_duplicateTemplate.pdf */; };
+		8831EFB0224013AF00D10172 /* button_refreshTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8831EFAF224013AF00D10172 /* button_refreshTemplate.pdf */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		9BE765682376A00C82FB93AA /* SPHelpViewerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */; };
 		9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE768F3989033CEDDC2027E /* SPFillView.m */; };
@@ -476,8 +477,6 @@
 		C9AD7C781676138000234EEE /* database-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C771676138000234EEE /* database-small@2x.png */; };
 		C9AD7C7B1676158C00234EEE /* toolbar-switch-to-sql.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C791676158C00234EEE /* toolbar-switch-to-sql.png */; };
 		C9AD7C7C1676158C00234EEE /* toolbar-switch-to-sql@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C7A1676158C00234EEE /* toolbar-switch-to-sql@2x.png */; };
-		C9AD7C7F167619B400234EEE /* button_refresh.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C7D167619B400234EEE /* button_refresh.png */; };
-		C9AD7C80167619B400234EEE /* button_refresh@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C7E167619B400234EEE /* button_refresh@2x.png */; };
 		C9AD7C8316761B3300234EEE /* button_action.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C8116761B3300234EEE /* button_action.png */; };
 		C9AD7C8416761B3300234EEE /* button_action@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C8216761B3300234EEE /* button_action@2x.png */; };
 		C9AD7C891676204300234EEE /* button_info_pane_hide.png in Resources */ = {isa = PBXBuildFile; fileRef = C9AD7C851676204300234EEE /* button_info_pane_hide.png */; };
@@ -1143,6 +1142,7 @@
 		8831EFA92240128600D10172 /* button_removeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_removeTemplate.pdf; sourceTree = "<group>"; };
 		8831EFAB2240131400D10172 /* button_editTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_editTemplate.pdf; sourceTree = "<group>"; };
 		8831EFAD2240135300D10172 /* button_duplicateTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_duplicateTemplate.pdf; sourceTree = "<group>"; };
+		8831EFAF224013AF00D10172 /* button_refreshTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_refreshTemplate.pdf; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
@@ -1254,8 +1254,6 @@
 		C9AD7C771676138000234EEE /* database-small@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small@2x.png"; sourceTree = "<group>"; };
 		C9AD7C791676158C00234EEE /* toolbar-switch-to-sql.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-sql.png"; sourceTree = "<group>"; };
 		C9AD7C7A1676158C00234EEE /* toolbar-switch-to-sql@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-sql@2x.png"; sourceTree = "<group>"; };
-		C9AD7C7D167619B400234EEE /* button_refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_refresh.png; sourceTree = "<group>"; };
-		C9AD7C7E167619B400234EEE /* button_refresh@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_refresh@2x.png"; sourceTree = "<group>"; };
 		C9AD7C8116761B3300234EEE /* button_action.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_action.png; sourceTree = "<group>"; };
 		C9AD7C8216761B3300234EEE /* button_action@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_action@2x.png"; sourceTree = "<group>"; };
 		C9AD7C851676204300234EEE /* button_info_pane_hide.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_info_pane_hide.png; sourceTree = "<group>"; };
@@ -2030,6 +2028,7 @@
 			children = (
 				8831EFA5224011B700D10172 /* button_addTemplate.pdf */,
 				8831EFAB2240131400D10172 /* button_editTemplate.pdf */,
+				8831EFAF224013AF00D10172 /* button_refreshTemplate.pdf */,
 				8831EFA92240128600D10172 /* button_removeTemplate.pdf */,
 				8831EFAD2240135300D10172 /* button_duplicateTemplate.pdf */,
 				3E242D4B20FEB44D0015470D /* button_bar_spacer_dark.png */,
@@ -2064,8 +2063,6 @@
 				C9C9943C1678A117001F5DA8 /* button_pane_hide@2x.png */,
 				C9C994431678A5CD001F5DA8 /* button_pane_show.png */,
 				C9C994441678A5CD001F5DA8 /* button_pane_show@2x.png */,
-				C9AD7C7D167619B400234EEE /* button_refresh.png */,
-				C9AD7C7E167619B400234EEE /* button_refresh@2x.png */,
 				58C3506610B9A57300D37E14 /* button_right.png */,
 				17B5486E1E82B02100175D5A /* button_right@2x.png */,
 				582E94291683628C003459FD /* button_select_all.png */,
@@ -2882,6 +2879,7 @@
 				B58DA73C0FF8BBA500FDDACD /* PrintAccessory.xib in Resources */,
 				B58DA73A0FF8BB9E00FDDACD /* SSHQuestionDialog.xib in Resources */,
 				B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */,
+				8831EFB0224013AF00D10172 /* button_refreshTemplate.pdf in Resources */,
 				3E242D4F20FEB44D0015470D /* button_bar_spacer_dark.png in Resources */,
 				588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */,
 				588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */,
@@ -2953,8 +2951,6 @@
 				C9AD7C781676138000234EEE /* database-small@2x.png in Resources */,
 				C9AD7C7B1676158C00234EEE /* toolbar-switch-to-sql.png in Resources */,
 				C9AD7C7C1676158C00234EEE /* toolbar-switch-to-sql@2x.png in Resources */,
-				C9AD7C7F167619B400234EEE /* button_refresh.png in Resources */,
-				C9AD7C80167619B400234EEE /* button_refresh@2x.png in Resources */,
 				50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */,
 				C9AD7C8316761B3300234EEE /* button_action.png in Resources */,
 				C9AD7C8416761B3300234EEE /* button_action@2x.png in Resources */,
