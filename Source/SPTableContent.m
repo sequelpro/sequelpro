@@ -175,13 +175,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		tableRowsSelectable = YES;
 		isFirstChangeInView = YES;
 
-		showFilterRuleEditor = NO;
-
 		isFiltered = NO;
 		isLimited = NO;
 		isInterruptedLoad = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
+
+		showFilterRuleEditor = [prefs boolForKey:SPRuleFilterEditorLastVisibilityChoice];
 
 		usedQuery = [[NSString alloc] initWithString:@""];
 
@@ -1350,6 +1350,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (IBAction)toggleRuleEditorVisible:(id)sender
 {
 	BOOL shouldShow = !showFilterRuleEditor;
+	[prefs setBool:shouldShow forKey:SPRuleFilterEditorLastVisibilityChoice];
 	[self setRuleEditorVisible:shouldShow animate:YES];
 	// if this was the active filter before, it no longer can be the active filter when it is hidden
 	if(activeFilter == SPTableContentFilterSourceRuleFilter && !shouldShow) {

@@ -177,6 +177,7 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 NSString *SPFavoriteColorList                    = @"FavoriteColorList";
 NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
 NSString *SPMonospacedFontSize                   = @"MonospacedFontSize";
+NSString *SPRuleFilterEditorLastVisibilityChoice = @"RuleFilterEditorLastVisibilityChoice";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
