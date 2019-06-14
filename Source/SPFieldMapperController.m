@@ -1828,7 +1828,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[m addItem:[NSMenuItem separatorItem]];
 	
 	NSMenuItem *menuItem = [m addItemWithTitle:NSLocalizedString(@"Add Value or Expression…", @"add global value or expression menu item") action:@selector(addGlobalSourceVariable:) keyEquivalent:@"g"];
-	[menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
+	[menuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption|NSEventModifierFlagCommand)];
 	
 	//create all menu items for the "DEFAULT" rows. We will use menuNeedsUpdate: to hide all items that are not needed.
 	//This works because NSTableView will copy the menu before showing it, so menuNeedsUpdate: will work on a disposable copy

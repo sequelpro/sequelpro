@@ -261,7 +261,7 @@
 	
 	// If the Tab key is used, but tab editing is disabled, change focus rather than entering edit mode.
 	else if (tabEditingDisabled && [[theEvent characters] length] && [[theEvent characters] characterAtIndex:0] == NSTabCharacter) {
-		if (([theEvent modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
+		if (([theEvent modifierFlags] & NSEventModifierFlagShift) != NSEventModifierFlagShift) {
 			[[self window] selectKeyViewFollowingView:self];
 		} 
 		else {

@@ -1887,7 +1887,7 @@ set_input:
 		[alert addButtonWithTitle:NSLocalizedString(@"Replace", @"Replace button")];
 		[[[alert buttons] objectAtIndex:0] setTag:SPExportErrorReplaceFiles];
 		[[[alert buttons] objectAtIndex:0] setKeyEquivalent:@"r"];
-		[[[alert buttons] objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[[[alert buttons] objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
 		[[[alert buttons] objectAtIndex:1] setTag:SPExportErrorCancelExport];
@@ -1897,7 +1897,7 @@ set_input:
 			[alert addButtonWithTitle:NSLocalizedString(@"Skip existing", @"skip existing button")];
 			[[[alert buttons] objectAtIndex:2] setTag:SPExportErrorSkipErrorFiles];
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalent:@"s"];
-			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 		}
 	}
 	// If one or multiple files failed, but only due to unhandled errors, show a short dialog
@@ -1942,7 +1942,7 @@ set_input:
 			[alert addButtonWithTitle:NSLocalizedString(@"Skip problems", @"skip problems button")];
 			[[[alert buttons] objectAtIndex:1] setTag:SPExportErrorSkipErrorFiles];
 			[[[alert buttons] objectAtIndex:1] setKeyEquivalent:@"s"];
-			[[[alert buttons] objectAtIndex:1] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[[alert buttons] objectAtIndex:1] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 		}
 	}
 

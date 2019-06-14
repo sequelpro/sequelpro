@@ -1317,7 +1317,7 @@
         if (overClose && 
 			![self disableTabClose] && 
 			![cell isCloseButtonSuppressed] &&
-			([self allowsBackgroundTabClosing] || [[cell representedObject] isEqualTo:[tabView selectedTabViewItem]] || [theEvent modifierFlags] & NSCommandKeyMask)) {
+			([self allowsBackgroundTabClosing] || [[cell representedObject] isEqualTo:[tabView selectedTabViewItem]] || [theEvent modifierFlags] & NSEventModifierFlagCommand)) {
             [cell setCloseButtonOver:NO];
             [cell setCloseButtonPressed:YES];
 			_closeClicked = YES;
@@ -1422,7 +1422,7 @@
 			NSRect iconRect = [mouseDownCell closeButtonRectForFrame:mouseDownCellFrame];
 			
 			if ((NSMouseInRect(mousePt, iconRect,[self isFlipped])) && ![self disableTabClose] && ![cell isCloseButtonSuppressed] && [mouseDownCell closeButtonPressed]) {
-				if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != 0) {
+				if (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagOption) != 0) {
 					//If the user is holding Option, close all other tabs
 					NSEnumerator	*enumerator = [[[[self cells] copy] autorelease] objectEnumerator];
 					PSMTabBarCell	*otherCell;

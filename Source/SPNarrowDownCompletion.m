@@ -829,12 +829,12 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 			// skip the rest
 		}
 		else if(t == NSKeyDown) {
-			NSUInteger flags = [event modifierFlags];
-			unichar key      = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			NSEventModifierFlags flags = [event modifierFlags];
+			unichar key                = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 
 			// Check if user pressed ⌥ to allow composing of accented characters.
 			// e.g. for US keyboard "⌥u a" to insert ä
-			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0) {
+			if (([event modifierFlags] & (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand)) == NSEventModifierFlagOption || [[event characters] length] == 0) {
 				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 
 				if (autoCompletionMode) {
@@ -853,7 +853,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 				theParseRange = NSMakeRange(theParseRange.location, theParseRange.length+[[event characters] length]);
 				[self filter];
 			}
-			else if((flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask)) {
+			else if((flags & NSEventModifierFlagOption) || (flags & NSEventModifierFlagCommand)) {
 				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 				[theView setCompletionIsOpen:NO];
 				[self close];
@@ -861,7 +861,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 				break;
 			}
 			else if([event keyCode] == 53) { // escape
-				if(flags & NSControlKeyMask) {
+				if(flags & NSEventModifierFlagControl) {
 					fuzzyMode = YES;
 					[self filter];
 				}
@@ -1114,7 +1114,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 	else {
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
 		if([selectedItem objectForKey:@"isRef"] 
-		    && ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
+		    && ([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagShift))
 		    && [(NSString*)[selectedItem objectForKey:@"path"] length] && theAliasName == nil) {
 
 			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
@@ -1147,7 +1147,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 
 	// Pressing CTRL while inserting an item the suggestion list keeps open
 	// to allow to add more field/table names comma separated
-	if([selectedItem objectForKey:@"isRef"] && [[NSApp currentEvent] modifierFlags] & (NSControlKeyMask)) {
+	if([selectedItem objectForKey:@"isRef"] && [[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagControl)) {
 		[theView insertText:@", "];
 		theCharRange = [theView selectedRange];
 		theParseRange = [theView selectedRange];

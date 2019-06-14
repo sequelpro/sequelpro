@@ -1874,11 +1874,11 @@
 							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
 							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
 							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
-							NSUInteger mask = 0;
-							if([theMods rangeOfString:@"^"].length) mask = mask | NSControlKeyMask;
-							if([theMods rangeOfString:@"@"].length) mask = mask | NSCommandKeyMask;
-							if([theMods rangeOfString:@"~"].length) mask = mask | NSAlternateKeyMask;
-							if([theMods rangeOfString:@"$"].length) mask = mask | NSShiftKeyMask;
+							NSEventModifierFlags mask = 0;
+							if([theMods rangeOfString:@"^"].length) mask = mask | NSEventModifierFlagControl;
+							if([theMods rangeOfString:@"@"].length) mask = mask | NSEventModifierFlagCommand;
+							if([theMods rangeOfString:@"~"].length) mask = mask | NSEventModifierFlagOption;
+							if([theMods rangeOfString:@"$"].length) mask = mask | NSEventModifierFlagShift;
 
 							if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
 								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
@@ -1943,7 +1943,7 @@
 	// Add default menu items
 	NSMenuItem *anItem;
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundle Editor", @"bundle editor menu item label") action:@selector(openBundleEditor:) keyEquivalent:@"b"];
-	[anItem setKeyEquivalentModifierMask:(NSCommandKeyMask|NSAlternateKeyMask|NSControlKeyMask)];
+	[anItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand|NSEventModifierFlagOption|NSEventModifierFlagControl)];
 	[menu addItem:anItem];
 	[anItem release];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Reload Bundles", @"reload bundles menu item label") action:@selector(reloadBundles:) keyEquivalent:@""];

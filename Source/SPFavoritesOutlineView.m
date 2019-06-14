@@ -97,7 +97,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	}
 	// If the Tab key is used, change focus rather than entering edit mode.
 	if ([[event characters] length] && [[event characters] characterAtIndex:0] == NSTabCharacter) {
-		if (([event modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
+		if (([event modifierFlags] & NSEventModifierFlagShift) != NSEventModifierFlagShift) {
 			[[self window] selectKeyViewFollowingView:self];
 		} 
 		else {

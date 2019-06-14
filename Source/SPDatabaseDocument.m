@@ -968,7 +968,7 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 #else
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"]; // Esc = Cancel
@@ -5404,7 +5404,7 @@ static BOOL isOSAtLeast10_14;
 				NSEvent* event = [NSApp currentEvent];
 				if ([event type] == NSKeyDown) {
 					unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-					if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+					if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 						userTerminated = YES;
 						break;
 					}
@@ -5598,7 +5598,7 @@ static BOOL isOSAtLeast10_14;
 								NSEvent* event = [NSApp currentEvent];
 								if ([event type] == NSKeyDown) {
 									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+									if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 										userTerminated = YES;
 										break;
 									}
@@ -5637,7 +5637,7 @@ static BOOL isOSAtLeast10_14;
 								NSEvent* event = [NSApp currentEvent];
 								if ([event type] == NSKeyDown) {
 									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+									if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 										userTerminated = YES;
 										break;
 									}
@@ -7241,7 +7241,7 @@ static BOOL isOSAtLeast10_14;
 
 			// Change the alert's cancel button to have the key equivalent of return
 			[[buttons objectAtIndex:0] setKeyEquivalent:@"p"];
-			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 			[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 			[alert beginSheetModalForWindow:[self parentWindow] modalDelegate:self didEndSelector:@selector(printWarningDidEnd:returnCode:contextInfo:) contextInfo:NULL];

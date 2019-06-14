@@ -326,7 +326,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 
 		// Change the alert's cancel button to have the key equivalent of return
 		[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeTrigger"];

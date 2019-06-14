@@ -304,7 +304,7 @@
 		// Choose favorite
 		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
 
-		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand))
 			replaceContent = !replaceContent;
 		if(replaceContent) {
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
@@ -331,7 +331,7 @@
 
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
 		[textView breakUndoCoalescing];
-		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand))
 			replaceContent = !replaceContent;
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
@@ -418,7 +418,7 @@
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
-		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagControl))
 			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
 			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
@@ -545,7 +545,7 @@
 
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow]
@@ -2157,13 +2157,13 @@
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
-    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+	NSEventModifierFlags modifierFlags = [[NSApp currentEvent] modifierFlags];
     
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
 	if (sortField && [[tableColumn identifier] integerValue] == [sortField integerValue]) {
         BOOL invert = NO;
-        if (modifierFlags & NSShiftKeyMask) {
+        if (modifierFlags & NSEventModifierFlagShift) {
             invert = YES;
         }
         
@@ -2175,7 +2175,7 @@
 		}
 	} else {
         // When the column is not sorted, allow to sort in reverse order using Shift+click
-        if (modifierFlags & NSShiftKeyMask) {
+        if (modifierFlags & NSEventModifierFlagShift) {
             isDesc = YES;
         } else {
             isDesc = NO;

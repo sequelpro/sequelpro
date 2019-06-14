@@ -2162,13 +2162,13 @@ retry:
 								object:nil];
 
 
-	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+	NSEventModifierFlags allFlags = (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
+	if (([theEvent modifierFlags] & allFlags) == NSEventModifierFlagOption || [[theEvent characters] length] == 0)
 	{
 		[super keyDown: theEvent];
 		return;
@@ -2177,7 +2177,7 @@ retry:
 	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
-	long curFlags = ([theEvent modifierFlags] & allFlags);
+	NSEventModifierFlags curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
 
@@ -2191,7 +2191,7 @@ retry:
 									selector:@selector(doAutoCompletion) 
 									object:nil];
 
-		if(curFlags==(NSControlKeyMask))
+		if(curFlags==(NSEventModifierFlagControl))
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
 			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
@@ -2214,7 +2214,7 @@ retry:
 		// Is TAB trigger active change selection according to {SHIFT}TAB
 		if(snippetControlCounter > -1){
 
-			if(curFlags==(NSShiftKeyMask)) { // select previous snippet
+			if(curFlags==(NSEventModifierFlagShift)) { // select previous snippet
 
 				currentSnippetIndex--;
 
@@ -2270,7 +2270,7 @@ retry:
 #endif
 	}
   
-	if(curFlags & NSCommandKeyMask) {
+	if(curFlags & NSEventModifierFlagCommand) {
 		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
 			[self makeTextSizeLarger];
@@ -3116,7 +3116,7 @@ retry:
 		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
 		NSMenuItem *showMySQLHelpForMenuItem = [[NSMenuItem alloc] initWithTitle:showMySQLHelpFor action:@selector(showMySQLHelpForCurrentWord:) keyEquivalent:@"h"];
 		[showMySQLHelpForMenuItem setTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG];
-		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
+		[showMySQLHelpForMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl];
 		[menu insertItem:showMySQLHelpForMenuItem atIndex:4];
 		[showMySQLHelpForMenuItem release];
 	} else {

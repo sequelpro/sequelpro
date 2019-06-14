@@ -114,21 +114,21 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+	NSEventModifierFlags allFlags = (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0) {
+	if (([theEvent modifierFlags] & allFlags) == NSEventModifierFlagOption || [[theEvent characters] length] == 0) {
 		[super keyDown: theEvent];
 		return;
 	}
 
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
-	long curFlags = ([theEvent modifierFlags] & allFlags);
+	NSEventModifierFlags curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if (curFlags & NSCommandKeyMask) {
+	if (curFlags & NSEventModifierFlagCommand) {
 		if ([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
@@ -156,7 +156,7 @@
 	// or a RETURN but not for each char due to writing speed
 	if ([charactersIgnMod isEqualToString:@" "] ||
 	    [theEvent keyCode] == 36 ||
-	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	    [theEvent modifierFlags] & (NSEventModifierFlagCommand|NSEventModifierFlagControl|NSEventModifierFlagOption))
 	{
 		[(SPFieldEditorController *)[self delegate] setDoGroupDueToChars];
 	}

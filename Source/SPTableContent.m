@@ -1028,7 +1028,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		// If the clause has the placeholder $BINARY that placeholder will be replaced
 		// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 		// replaced by @"".
-		BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask) > 0);
+		BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagShift) > 0);
 
 		NSError *err = nil;
 		NSString *filter = [ruleFilterController sqlWhereExpressionWithBinary:caseSensitive error:&err];
@@ -1398,13 +1398,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			return;
 		}
 
-		NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+		NSEventModifierFlags modifierFlags = [[NSApp currentEvent] modifierFlags];
 
 		// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 		// header is clicked several times
 		if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
 			BOOL invert = NO;
-			if (modifierFlags & NSShiftKeyMask) {
+			if (modifierFlags & NSEventModifierFlagShift) {
 				invert = YES;
 			}
 
@@ -1418,7 +1418,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 		else {
 			// When the column is not sorted, allow to sort in reverse order using Shift+click
-			if (modifierFlags & NSShiftKeyMask) {
+			if (modifierFlags & NSEventModifierFlagShift) {
 				isDesc = YES;
 			} else {
 				isDesc = NO;
@@ -1830,7 +1830,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 #else
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
@@ -4254,7 +4254,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
-		if ([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask)) {
+		if ([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagCommand|NSEventModifierFlagShift|NSEventModifierFlagOption)) {
 			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
 		}
 		else {

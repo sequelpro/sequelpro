@@ -574,12 +574,12 @@
 
 	// Update the "Close window" item
 	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close Window", @"Close Window menu item")];
-	[closeWindowMenuItem setKeyEquivalentModifierMask:(NSCommandKeyMask | NSShiftKeyMask)];
+	[closeWindowMenuItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand | NSEventModifierFlagShift)];
 
 	// Ensure the "Close tab" item is enabled and has the standard shortcut
 	[closeTabMenuItem setEnabled:YES];
 	[closeTabMenuItem setKeyEquivalent:@"w"];
-	[closeTabMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[closeTabMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 }
 
 /**
@@ -594,7 +594,7 @@
 
 	// Update the "Close window" item to show only "Close"
 	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close", @"Close menu item")];
-	[closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[closeWindowMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 }
 
 /**

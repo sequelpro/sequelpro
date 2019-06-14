@@ -486,7 +486,7 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 #ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 #else
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"]; // Return = OK
@@ -657,7 +657,7 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"t"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	if ([tablesListView numberOfSelectedRows] == 1) {

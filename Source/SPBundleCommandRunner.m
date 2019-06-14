@@ -245,7 +245,7 @@
 		if(!event) continue;
 		if ([event type] == NSKeyDown) {
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+			if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 				[bashTask terminate];
 				userTerminated = YES;
 				break;

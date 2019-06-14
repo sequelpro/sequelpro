@@ -86,7 +86,7 @@ typedef enum {
 		editTextViewWasChanged = NO;
 
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
-		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[editSheetOkButton setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 
 		if([editTextView respondsToSelector:@selector(setUsesFindBar:)])
 			// 10.7+

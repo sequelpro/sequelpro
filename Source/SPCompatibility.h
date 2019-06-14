@@ -165,6 +165,11 @@ typedef struct {
 #define NSAlertStyleCritical      NSCriticalAlertStyle
 
 #define NSEventModifierFlagShift                      NSShiftKeyMask
+#define NSEventModifierFlagControl                    NSControlKeyMask
+#define NSEventModifierFlagOption                     NSAlternateKeyMask
+#define NSEventModifierFlagCommand                    NSCommandKeyMask
+#define NSEventModifierFlagNumericPad                 NSNumericPadKeyMask
+#define NSEventModifierFlagFunction                   NSFunctionKeyMask
 #define NSEventModifierFlagDeviceIndependentFlagsMask NSDeviceIndependentModifierFlagsMask
 
 @interface NSWindow (Sierra)

@@ -483,7 +483,7 @@
 - (void)keyDown:(NSEvent *)theEvent
 {
 
-	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+	NSEventModifierFlags allFlags = (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand);
 	
 	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
@@ -492,9 +492,9 @@
 		return;
 	}
 	unichar insertedCharacter = [characters characterAtIndex:0];
-	long curFlags = ([theEvent modifierFlags] & allFlags);
+	NSEventModifierFlags curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if(curFlags & NSCommandKeyMask) {
+	if(curFlags & NSEventModifierFlagCommand) {
 		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
@@ -534,7 +534,7 @@
 	// or a RETURN but not for each char due to writing speed
 	if ([charactersIgnMod isEqualToString:@" "] ||
 	    [theEvent keyCode] == 36 || 
-	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	    [theEvent modifierFlags] & (NSEventModifierFlagCommand|NSEventModifierFlagControl|NSEventModifierFlagOption))
 	{
 		[(SPBundleEditorController *)[self delegate] setDoGroupDueToChars];
 	}

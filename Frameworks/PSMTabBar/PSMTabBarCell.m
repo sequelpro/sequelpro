@@ -201,7 +201,7 @@
 
 - (BOOL)closeButtonOver
 {
-    return (_closeButtonOver && ([_customControlView allowsBackgroundTabClosing] || ([self tabState] & PSMTab_SelectedMask) || [[NSApp currentEvent] modifierFlags] & NSCommandKeyMask));
+    return (_closeButtonOver && ([_customControlView allowsBackgroundTabClosing] || ([self tabState] & PSMTab_SelectedMask) || [[NSApp currentEvent] modifierFlags] & NSEventModifierFlagCommand));
 }
 
 - (void)setCloseButtonOver:(BOOL)value
@@ -386,7 +386,7 @@
     }
 	
 	// scrubtastic
-	if ([_customControlView allowsScrubbing] && ([theEvent modifierFlags] & NSAlternateKeyMask))
+	if ([_customControlView allowsScrubbing] && ([theEvent modifierFlags] & NSEventModifierFlagOption))
 		[_customControlView tabClick:self];
 	
 	// tell the control we only need to redraw the affected tab

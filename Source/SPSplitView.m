@@ -249,7 +249,7 @@ static BOOL isOSAtLeast10_7;
 		animationDuration = 0.25f;
 
 		// Make it a slow animation if appropriate
-		if ([[NSApp currentEvent] type] == NSLeftMouseUp && [[NSApp currentEvent] modifierFlags] & NSShiftKeyMask) {
+		if ([[NSApp currentEvent] type] == NSLeftMouseUp && [[NSApp currentEvent] modifierFlags] & NSEventModifierFlagShift) {
 			animationDuration *= 10;
 		}
 

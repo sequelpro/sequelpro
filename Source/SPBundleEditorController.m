@@ -685,7 +685,7 @@
 	
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedBundles"];
@@ -1137,15 +1137,15 @@
 		theChar =[[aRecorder keyCharsIgnoringModifiers] lowercaseString];
 	[keyEq setString:@""];
 	if(newKeyCombo.code > -1) {
-		if(newKeyCombo.flags & NSControlKeyMask)
+		if(newKeyCombo.flags & NSEventModifierFlagControl)
 			[keyEq appendString:@"^"];
-		if(newKeyCombo.flags & NSAlternateKeyMask)
+		if(newKeyCombo.flags & NSEventModifierFlagOption)
 			[keyEq appendString:@"~"];
-		if(newKeyCombo.flags & NSShiftKeyMask) {
+		if(newKeyCombo.flags & NSEventModifierFlagShift) {
 			[keyEq appendString:@"$"];
 			theChar = [theChar uppercaseString];
 		}
-		if(newKeyCombo.flags & NSCommandKeyMask)
+		if(newKeyCombo.flags & NSEventModifierFlagCommand)
 			[keyEq appendString:@"@"];
 		if(theChar)
 			[keyEq appendString:theChar];
