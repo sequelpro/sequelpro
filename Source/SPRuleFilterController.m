@@ -203,7 +203,7 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 
 #pragma mark -
 
-@interface SPRuleFilterController () <NSRuleEditorDelegate>
+@interface SPRuleFilterController () <NSRuleEditorDelegate, NSTextFieldDelegate>
 
 @property (readwrite, assign, nonatomic) CGFloat preferredHeight;
 
@@ -223,6 +223,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 - (void)_resize;
 - (void)openContentFilterManagerForFilterType:(NSString *)filterType;
 - (IBAction)filterTable:(id)sender;
+- (IBAction)resetFilter:(id)sender;
 - (IBAction)_menuItemInRuleEditorClicked:(id)sender;
 - (void)_pretendPlayRuleEditorForCriteria:(NSMutableArray *)criteria displayValues:(NSMutableArray *)displayValues inRow:(NSInteger)row;
 - (void)_ensureValidOperatorCache:(ColumnNode *)col;
@@ -346,8 +347,8 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 	// make the rule editor reload the criteria
 	[filterRuleEditor reloadCriteria];
 
-	// disable UI if no criteria exist
-	[self setEnabled:([columns count] != 0)];
+	// disable UI if no criteria exist (enable otherwise)
+	[self setEnabled:YES];
 }
 
 - (NSInteger)ruleEditor:(NSRuleEditor *)editor numberOfChildrenForCriterion:(nullable id)criterion withRowType:(NSRuleEditorRowType)rowType
@@ -495,6 +496,8 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 			[textField sizeToFit];
 			[textField setTarget:self];
 			[textField setAction:@selector(_textFieldAction:)];
+			[textField setDelegate:self]; // see -control:textView:doCommandBySelector:
+			[textField setToolTip:NSLocalizedString(@"Enter the value to apply the filter condition with.\nPress ↩ to apply the filter or ⇧⌫ to remove this rule.", @"table content : rule filter editor : text input field : tooltip")];
 			if([node initialValue]) [textField setStringValue:[node initialValue]];
 			NSRect frame = [textField frame];
 			//adjust width, to make the field wider
@@ -511,6 +514,37 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 	}
 	
 	return nil;
+}
+
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector
+{
+	// if the user presses shift+backspace or shift+delete we'll try to remove the whole rule
+	NSEvent *event = [NSApp currentEvent];
+	if(
+		( commandSelector == @selector(deleteBackward:) || commandSelector == @selector(deleteForward:) ) &&
+		[event type] == NSKeyDown &&
+		([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagShift
+	) {
+		NSInteger row = [filterRuleEditor rowForDisplayValue:control];
+
+		if(row != NSNotFound) {
+			// we'll do the actual processing async, because we are currently in the stack of the object which will be dropped by this action.
+			// so we want the delegate method to have finished first, just to be safe
+			SPMainLoopAsync(^{
+				// if we are about to remove the only row in existance, treat it as a reset instead
+				if([[_modelContainer model] count] == 1) {
+					[self resetFilter:nil];
+				}
+				else {
+					[filterRuleEditor removeRowAtIndex:row];
+					[self filterTable:nil]; // trigger a new filtering for convenience. I don't know if that is always the preferred approach...
+				}
+			});
+			return YES;
+		}
+	}
+
+	return NO;
 }
 
 - (IBAction)_textFieldAction:(id)sender
@@ -650,6 +684,13 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 - (IBAction)filterTable:(id)sender
 {
 	if(target && action) [target performSelector:action withObject:self];
+}
+
+- (IBAction)resetFilter:(id)sender
+{
+	[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
+	[self addFilterExpression];
+	if(target && action) [target performSelector:action withObject:nil];
 }
 
 - (void)_resize
@@ -939,9 +980,10 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 
 - (void)setEnabled:(BOOL)_enabled
 {
-	enabled = _enabled;
-	[filterButton setEnabled:_enabled];
-	[filterRuleEditor setEnabled:_enabled];
+	enabled = _enabled && [columns count] != 0;
+	[filterButton setEnabled:enabled];
+	[resetButton setEnabled:enabled];
+	[filterRuleEditor setEnabled:enabled];
 }
 
 - (NSString *)sqlWhereExpressionWithBinary:(BOOL)isBINARY error:(NSError **)err

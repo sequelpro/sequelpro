@@ -86,6 +86,8 @@
 typedef NSUInteger NSCellHitResult;
 // This bitfield is available since 10.0 but only got a "name" in 10.10
 typedef NSUInteger NSAutoresizingMaskOptions;
+// This enum has been around since 10.0 but only got a "name" in 10.10
+typedef NSUInteger NSEventModifierFlags;
 
 @compatibility_alias NSTitlebarAccessoryViewController NSViewController;
 
@@ -161,6 +163,9 @@ typedef struct {
 #define NSAlertStyleInformational NSInformationalAlertStyle
 #define NSAlertStyleWarning       NSWarningAlertStyle
 #define NSAlertStyleCritical      NSCriticalAlertStyle
+
+#define NSEventModifierFlagShift                      NSShiftKeyMask
+#define NSEventModifierFlagDeviceIndependentFlagsMask NSDeviceIndependentModifierFlagsMask
 
 @interface NSWindow (Sierra)
 + (void)setAllowsAutomaticWindowTabbing:(BOOL)arg;

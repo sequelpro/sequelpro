@@ -1271,6 +1271,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		activeFilter = SPTableContentFilterSourceRuleFilter;
 		resetPaging = YES;
 	}
+	else if (sender == nil) {
+		activeFilter = SPTableContentFilterSourceNone;
+		resetPaging = YES;
+	}
 #endif
 
 	NSString *taskString;
@@ -1362,6 +1366,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 {
 	// we can't change the state of the button here, because the mouse click already changed it
 	if(show) {
+		[ruleFilterController setEnabled:YES];
 		if([ruleFilterController isEmpty]) {
 			[ruleFilterController addFilterExpression];
 			// the sizing will be updated automatically by adding a row
@@ -1371,6 +1376,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 	}
 	else {
+		[ruleFilterController setEnabled:NO]; // disable it to not trigger any key bindings when hidden
 		[self updateFilterRuleEditorSize:0.0 animate:animate];
 	}
 	showFilterRuleEditor = show;

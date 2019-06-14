@@ -1284,7 +1284,7 @@
                                                                             <userDefinedRuntimeAttribute type="string" keyPath="systemColorOfName" value="gridColor"/>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </customView>
-                                                                    <button verticalHuggingPriority="750" misplaced="YES" id="4676">
+                                                                    <button toolTip="Query the current table using the filter conditions defined above" verticalHuggingPriority="750" misplaced="YES" id="4676">
                                                                         <rect key="frame" x="616" y="5" width="54" height="19"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                                         <buttonCell key="cell" type="roundRect" title="Filter" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4677">
@@ -1293,6 +1293,21 @@
                                                                         </buttonCell>
                                                                         <connections>
                                                                             <action selector="filterTable:" target="ki9-Po-bdr" id="eAC-YD-du3"/>
+                                                                        </connections>
+                                                                    </button>
+                                                                    <button toolTip="Delete any defined filter conditions and reload the table (⌘⎋)" verticalHuggingPriority="750" id="jxG-hC-fxV">
+                                                                        <rect key="frame" x="20" y="5" width="34" height="19"/>
+                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                        <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="button_clear" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ZFV-bp-3r6">
+                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                            <font key="font" metaFont="smallSystem"/>
+                                                                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                                                        </buttonCell>
+                                                                        <connections>
+                                                                            <action selector="resetFilter:" target="ki9-Po-bdr" id="g9u-T3-TZd"/>
                                                                         </connections>
                                                                     </button>
                                                                 </subviews>
@@ -4445,6 +4460,7 @@ Gw
             <connections>
                 <outlet property="filterButton" destination="4676" id="9tZ-dW-BR3"/>
                 <outlet property="filterRuleEditor" destination="FF9-z2-9od" id="RW4-XM-XQS"/>
+                <outlet property="resetButton" destination="jxG-hC-fxV" id="7mm-bC-Kd3"/>
                 <outlet property="tableContentViewBelow" destination="36" id="ZGh-dM-J6C"/>
                 <outlet property="tableDataInstance" destination="4702" id="e69-W6-UwN"/>
                 <outlet property="tableDocumentInstance" destination="-2" id="2Xe-WU-zRw"/>
@@ -5009,6 +5025,7 @@ Gw
         <image name="button_action" width="30" height="22"/>
         <image name="button_add" width="30" height="22"/>
         <image name="button_bar_handle" width="11" height="23"/>
+        <image name="button_clear" width="30" height="22"/>
         <image name="button_duplicate" width="30" height="22"/>
         <image name="button_edit" width="30" height="22"/>
         <image name="button_edit_mode" width="30" height="22"/>

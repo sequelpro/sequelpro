@@ -42,6 +42,7 @@ NSString * const SPRuleFilterHeightChangedNotification;
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet NSView *tableContentViewBelow;
 	IBOutlet NSButton *filterButton;
+	IBOutlet NSButton *resetButton;
 
 	NSMutableArray *columns;
 	NSMutableDictionary *contentFilters;
