@@ -241,7 +241,9 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
                             displayValues:(NSArray *)oldDisplayValues;
 - (void)_ensureValidOperatorCache:(ColumnNode *)col;
 static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
-
+- (IBAction)addFilter:(id)sender;
+- (void)_updateButtonStates;
+- (void)_doChangeToRuleEditorData:(void (^)(void))duringBlock;
 @end
 
 @implementation SPRuleFilterController
@@ -259,6 +261,8 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		target = nil;
 		action = NULL;
 		opNodeCacheVersion = 1;
+		isDoingChangeCausedOutsideOfRuleEditor = NO;
+		previousRowCount = 0;
 
 		// Init default filters for Content Browser
 		contentFilters = [[NSMutableDictionary alloc] init];
@@ -297,7 +301,19 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 
 - (void)awakeFromNib
 {
-	[filterRuleEditor bind:@"rows" toObject:_modelContainer withKeyPath:@"model" options:nil];
+	// move the add filter button over the filter button (since only one of them can be visible at a time)
+	NSRect filterRect = [filterButton frame];
+	NSRect addFilterRect = [addFilterButton frame];
+	CGFloat widthContainer = [[filterButton superview] frame].size.width;
+	CGFloat deltaR = widthContainer - (filterRect.origin.x + filterRect.size.width);
+	addFilterRect.origin.x = widthContainer - deltaR - addFilterRect.size.width;
+	addFilterRect.origin.y = filterRect.origin.y;
+	addFilterRect.size.height = filterRect.size.height;
+	[addFilterButton setFrame:addFilterRect];
+
+	[self _doChangeToRuleEditorData:^{
+		[filterRuleEditor bind:@"rows" toObject:_modelContainer withKeyPath:@"model" options:nil];
+	}];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(_contentFiltersHaveBeenUpdated:)
@@ -333,32 +349,34 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 
 - (void)setColumns:(NSArray *)dataColumns;
 {
-	// we have to access the model in the same way the rule editor does for it to realize the changes
-	[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
+	[self _doChangeToRuleEditorData:^{
+		// we have to access the model in the same way the rule editor does for it to realize the changes
+		[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
 
-	[columns removeAllObjects];
+		[columns removeAllObjects];
 
-	//without a table there is nothing to filter
-	if(dataColumns) {
-		//sort column names if enabled
-		NSArray *columnDefinitions = dataColumns;
-		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAlphabeticalTableSorting]) {
-			NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-			columnDefinitions = [columnDefinitions sortedArrayUsingDescriptors:@[sortDescriptor]];
+		//without a table there is nothing to filter
+		if(dataColumns) {
+			//sort column names if enabled
+			NSArray *columnDefinitions = dataColumns;
+			if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAlphabeticalTableSorting]) {
+				NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
+				columnDefinitions = [columnDefinitions sortedArrayUsingDescriptors:@[sortDescriptor]];
+			}
+
+			// get the columns
+			for (NSDictionary *colDef in columnDefinitions) {
+				ColumnNode *node = [[ColumnNode alloc] init];
+				[node setName:[colDef objectForKey:@"name"]];
+				[node setTypegrouping:[colDef objectForKey:@"typegrouping"]];
+				[columns addObject:node];
+				[node release];
+			}
 		}
 
-		// get the columns
-		for (NSDictionary *colDef in columnDefinitions) {
-			ColumnNode *node = [[ColumnNode alloc] init];
-			[node setName:[colDef objectForKey:@"name"]];
-			[node setTypegrouping:[colDef objectForKey:@"typegrouping"]];
-			[columns addObject:node];
-			[node release];
-		}
-	}
-
-	// make the rule editor reload the criteria
-	[filterRuleEditor reloadCriteria];
+		// make the rule editor reload the criteria
+		[filterRuleEditor reloadCriteria];
+	}];
 
 	// disable UI if no criteria exist (enable otherwise)
 	[self setEnabled:YES];
@@ -467,7 +485,7 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		case RuleNodeTypeColumn: {
 			/*
 			 * We could also return a string here, but we want a hook into the selection process so we can preserve
-			 * the other values in a row when a user changes the column (also see comment below)
+			 * the other values in a row when a user changes the column (also see the comment below)
 			 */
 			NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[(ColumnNode *)criterion name] action:NULL keyEquivalent:@""];
 			[item setRepresentedObject:@{
@@ -561,7 +579,9 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 					[self resetFilter:nil];
 				}
 				else {
-					[filterRuleEditor removeRowAtIndex:row];
+					[self _doChangeToRuleEditorData:^{
+						[filterRuleEditor removeRowAtIndex:row];
+					}];
 					[self filterTable:nil]; // trigger a new filtering for convenience. I don't know if that is always the preferred approach...
 				}
 			});
@@ -612,7 +632,7 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 	NSMutableArray *criteria = [[filterRuleEditor criteriaForRow:row] mutableCopy];
 	NSMutableArray *displayValues = [[filterRuleEditor displayValuesForRow:row] mutableCopy];
 
-	// find the position of the previous node (just for safety)
+	// find the position of the previous node
 	NSUInteger nodeIndex = NSNotFound;
 	NSUInteger i = 0;
 	for(RuleNode *obj in criteria) {
@@ -654,7 +674,9 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		[oldDisplayValues release];
 
 		//and update the row to its new state
-		[filterRuleEditor setCriteria:criteria andDisplayValues:displayValues forRowAtIndex:row];
+		[self _doChangeToRuleEditorData:^{
+			[filterRuleEditor setCriteria:criteria andDisplayValues:displayValues forRowAtIndex:row];
+		}];
 
 		if(hasFirstResponderInRow) {
 			// make the next possible object after the opnode the new next responder (since the previous one is gone now)
@@ -753,9 +775,15 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 
 - (IBAction)resetFilter:(id)sender
 {
-	[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
-	[self addFilterExpression];
+	[self _doChangeToRuleEditorData:^{
+		[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
+	}];
 	if(target && action) [target performSelector:action withObject:nil];
+}
+
+- (IBAction)addFilter:(id)sender
+{
+	[self addFilterExpression];
 }
 
 - (void)_resize
@@ -788,11 +816,36 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 	// We can't do this here, because it will cause rows to jump around when removing them (the add case works fine, though)
 	[self performSelector:@selector(_resize) withObject:nil afterDelay:0.2];
 	//[self _resize];
+	[self _updateButtonStates];
+
+	// if the user removed the last row in the editor by pressing "-" (and only then) we immediately want to trigger a filter reset.
+	// There are two problems with that:
+	// - The rule editor is very liberal in the use of this notification. Receiving it does not mean the number of rows actually did change
+	// - There is no direct way to know whether the action was triggered by the user, so we can only try to exclude all other causes of changes
+	NSInteger newRowCount = [filterRuleEditor numberOfRows];
+	if(!isDoingChangeCausedOutsideOfRuleEditor && previousRowCount > 0 && newRowCount == 0) {
+		if(target && action) [target performSelector:action withObject:nil];
+	}
+	previousRowCount = newRowCount;
+}
+
+- (void)_updateButtonStates
+{
+	BOOL empty = [self isEmpty];
+	[addFilterButton setHidden:!empty];
+	[filterButton setHidden:empty];
+
+	[resetButton setEnabled:(enabled && !empty)];
+	[filterButton setEnabled:(enabled && !empty)];
+	[filterRuleEditor setEnabled:enabled];
+	[addFilterButton setEnabled:(enabled && empty)];
 }
 
 - (void)dealloc
 {
-	[filterRuleEditor unbind:@"rows"];
+	[self _doChangeToRuleEditorData:^{
+		[filterRuleEditor unbind:@"rows"];
+	}];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	// WARNING: THIS MUST COME AFTER -unbind:! See the class comment on ModelContainer for the reasoning
 	SPClear(_modelContainer);
@@ -1007,8 +1060,10 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 {
 	// invalidate our OpNode caches
 	opNodeCacheVersion++;
-	//tell the rule editor to reload its criteria
-	[filterRuleEditor reloadCriteria];
+	[self _doChangeToRuleEditorData:^{
+		//tell the rule editor to reload its criteria
+		[filterRuleEditor reloadCriteria];
+	}];
 }
 
 - (void)_ensureValidOperatorCache:(ColumnNode *)col
@@ -1029,8 +1084,10 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 {
 	// reject this if no table columns exist: would cause invalid state (empty filter rows)
 	if(![columns count]) return;
-	
-	[filterRuleEditor insertRowAtIndex:0 withType:NSRuleEditorRowTypeSimple asSubrowOfRow:-1 animate:NO];
+
+	[self _doChangeToRuleEditorData:^{
+		[filterRuleEditor insertRowAtIndex:0 withType:NSRuleEditorRowTypeSimple asSubrowOfRow:-1 animate:NO];
+	}];
 }
 
 - (NSRuleEditor *)view
@@ -1046,9 +1103,7 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 - (void)setEnabled:(BOOL)_enabled
 {
 	enabled = _enabled && [columns count] != 0;
-	[filterButton setEnabled:enabled];
-	[resetButton setEnabled:enabled];
-	[filterRuleEditor setEnabled:enabled];
+	[self _updateButtonStates];
 }
 
 - (NSString *)sqlWhereExpressionWithBinary:(BOOL)isBINARY error:(NSError **)err
@@ -1180,9 +1235,11 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 		}
 	}
 
-	// we have to access the model in the same way the rule editor does for it to realize the changes
-	NSMutableArray *proxy = [_modelContainer mutableArrayValueForKey:@"model"];
-	[proxy setArray:newModel];
+	[self _doChangeToRuleEditorData:^{
+		// we have to access the model in the same way the rule editor does for it to realize the changes
+		NSMutableArray *proxy = [_modelContainer mutableArrayValueForKey:@"model"];
+		[proxy setArray:newModel];
+	}];
 
 	[newModel release];
 }
@@ -1464,6 +1521,17 @@ BOOL SerIsGroup(NSDictionary *dict)
 	}
 	
 	if(wrap) [out appendString:@")"];
+}
+
+- (void)_doChangeToRuleEditorData:(void (^)(void))duringBlock
+{
+	@try {
+		isDoingChangeCausedOutsideOfRuleEditor = YES;
+		duringBlock();
+	}
+	@finally {
+		isDoingChangeCausedOutsideOfRuleEditor = NO;
+	}
 }
 
 @end

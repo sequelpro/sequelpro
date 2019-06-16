@@ -1260,7 +1260,7 @@
                                                                             <rect key="frame" x="0.0" y="0.0" width="694" height="40"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <ruleEditor nestingMode="compound" rowHeight="29" id="FF9-z2-9od">
+                                                                                <ruleEditor nestingMode="compound" canRemoveAllRows="YES" rowHeight="29" id="FF9-z2-9od">
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                                                                     <connections>
                                                                                         <outlet property="delegate" destination="ki9-Po-bdr" id="rFd-07-AiC"/>
@@ -1277,39 +1277,49 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
                                                                     </scrollView>
-                                                                    <customView misplaced="YES" id="GJn-1I-e7O" customClass="SPFillView">
-                                                                        <rect key="frame" x="0.0" y="30" width="695" height="1"/>
+                                                                    <customView id="PYQ-BU-KtR" customClass="SPButtonBar">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="695" height="23"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                                        <userDefinedRuntimeAttributes>
-                                                                            <userDefinedRuntimeAttribute type="string" keyPath="systemColorOfName" value="gridColor"/>
-                                                                        </userDefinedRuntimeAttributes>
-                                                                    </customView>
-                                                                    <button toolTip="Query the current table using the filter conditions defined above" verticalHuggingPriority="750" misplaced="YES" id="4676">
-                                                                        <rect key="frame" x="616" y="5" width="54" height="19"/>
-                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundRect" title="Filter" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4677">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                        </buttonCell>
-                                                                        <connections>
-                                                                            <action selector="filterTable:" target="ki9-Po-bdr" id="eAC-YD-du3"/>
-                                                                        </connections>
-                                                                    </button>
-                                                                    <button toolTip="Delete any defined filter conditions and reload the table (⌘⎋)" verticalHuggingPriority="750" id="jxG-hC-fxV">
-                                                                        <rect key="frame" x="20" y="5" width="34" height="19"/>
-                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" image="button_clear" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ZFV-bp-3r6">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                            <string key="keyEquivalent" base64-UTF8="YES">
+                                                                        <subviews>
+                                                                            <button toolTip="Delete any defined filter conditions and reload the table (⌘⎋)" verticalHuggingPriority="750" id="jxG-hC-fxV">
+                                                                                <rect key="frame" x="0.0" y="-1" width="32" height="23"/>
+                                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                                <buttonCell key="cell" type="roundTextured" title="Reset" bezelStyle="texturedRounded" image="button_clear" imagePosition="only" alignment="center" alternateImage="button_clear" state="on" imageScaling="proportionallyDown" inset="2" id="ZFV-bp-3r6">
+                                                                                    <behavior key="behavior" lightByContents="YES"/>
+                                                                                    <font key="font" metaFont="system"/>
+                                                                                    <string key="keyEquivalent" base64-UTF8="YES">
 Gw
 </string>
-                                                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                                                                        </buttonCell>
-                                                                        <connections>
-                                                                            <action selector="resetFilter:" target="ki9-Po-bdr" id="g9u-T3-TZd"/>
-                                                                        </connections>
-                                                                    </button>
+                                                                                    <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                                                                </buttonCell>
+                                                                                <connections>
+                                                                                    <action selector="resetFilter:" target="ki9-Po-bdr" id="g9u-T3-TZd"/>
+                                                                                </connections>
+                                                                            </button>
+                                                                            <button toolTip="Query the current table using the filter conditions defined above" verticalHuggingPriority="750" id="4676">
+                                                                                <rect key="frame" x="630" y="2" width="55" height="17"/>
+                                                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                                <buttonCell key="cell" type="roundRect" title="Filter" bezelStyle="roundedRect" alignment="center" controlSize="small" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4677">
+                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                                </buttonCell>
+                                                                                <connections>
+                                                                                    <action selector="filterTable:" target="ki9-Po-bdr" id="eAC-YD-du3"/>
+                                                                                </connections>
+                                                                            </button>
+                                                                            <button toolTip="Adds a new filter condition which can be used to limit the results displayed below" verticalHuggingPriority="750" id="0Aa-pO-d8N">
+                                                                                <rect key="frame" x="537" y="2" width="85" height="17"/>
+                                                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                                <buttonCell key="cell" type="roundRect" title="Add Filter" bezelStyle="roundedRect" alignment="center" controlSize="small" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aLV-Ao-lho">
+                                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                                </buttonCell>
+                                                                                <connections>
+                                                                                    <action selector="addFilter:" target="ki9-Po-bdr" id="zQF-wf-G26"/>
+                                                                                </connections>
+                                                                            </button>
+                                                                        </subviews>
+                                                                    </customView>
                                                                 </subviews>
                                                             </customView>
                                                         </subviews>
@@ -4458,6 +4468,7 @@ Gw
         </customObject>
         <customObject id="ki9-Po-bdr" userLabel="SPRuleFilter" customClass="SPRuleFilterController">
             <connections>
+                <outlet property="addFilterButton" destination="0Aa-pO-d8N" id="KIf-sT-187"/>
                 <outlet property="filterButton" destination="4676" id="9tZ-dW-BR3"/>
                 <outlet property="filterRuleEditor" destination="FF9-z2-9od" id="RW4-XM-XQS"/>
                 <outlet property="resetButton" destination="jxG-hC-fxV" id="7mm-bC-Kd3"/>

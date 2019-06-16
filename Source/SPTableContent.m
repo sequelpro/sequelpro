@@ -1365,9 +1365,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (void)setRuleEditorVisible:(BOOL)show animate:(BOOL)animate
 {
 	// we can't change the state of the button here, because the mouse click already changed it
-	if(show) {
+	if((showFilterRuleEditor = show)) {
 		[ruleFilterController setEnabled:YES];
-		if([ruleFilterController isEmpty]) {
+		// if it was the user who enabled the filter (indicated by the animation) add an empty row by default
+		if([ruleFilterController isEmpty] && animate) {
 			[ruleFilterController addFilterExpression];
 			// the sizing will be updated automatically by adding a row
 		}
@@ -1379,7 +1380,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		[ruleFilterController setEnabled:NO]; // disable it to not trigger any key bindings when hidden
 		[self updateFilterRuleEditorSize:0.0 animate:animate];
 	}
-	showFilterRuleEditor = show;
 }
 
 - (void)setUsedQuery:(NSString *)query
@@ -3184,7 +3184,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 										[tableDataInstance columnNames], @"columnNames",
 										[tableDataInstance getConstraints], @"constraints",
 										nil];
-		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+		[[self onMainThread] setTableDetails:tableDetails];
 		isFirstChangeInView = NO;
 	}
 
@@ -3456,8 +3456,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	NSRect ruleEditorRect = [[[ruleFilterController view] enclosingScrollView] frame];
 
-	//adjust for the UI elements below the rule editor, but only if the view height should not be 0 (ie. hidden)
-	CGFloat containerRequestedHeight =  requestedHeight ? requestedHeight + ruleEditorRect.origin.y : 0;
+	//adjust for the UI elements below the rule editor, but only if the view should not be hidden
+	CGFloat containerRequestedHeight = showFilterRuleEditor ? requestedHeight + ruleEditorRect.origin.y : 0;
 
 	//the rule editor can ask for about one-third of the available space before we have it use it's scrollbar
 	CGFloat topContainerGivenHeight = MIN(containerRequestedHeight,(availableHeight / 3));
