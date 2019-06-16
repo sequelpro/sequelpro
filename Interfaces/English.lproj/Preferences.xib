@@ -73,7 +73,7 @@
         <customObject id="331" userLabel="Updater" customClass="SUUpdater"/>
         <userDefaultsController representsSharedInstance="YES" id="117"/>
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="1" userLabel="PreferencesPanel">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" unifiedTitleAndToolbar="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="430" y="486" width="580" height="172"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1178"/>
