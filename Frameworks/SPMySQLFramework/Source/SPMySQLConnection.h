@@ -191,6 +191,7 @@
 - (BOOL)checkConnectionIfNecessary;
 - (double)timeConnected;
 - (BOOL)userTriggeredDisconnect;
+- (BOOL)isNotMariadb103;
 
 #pragma mark -
 #pragma mark Connection utility
