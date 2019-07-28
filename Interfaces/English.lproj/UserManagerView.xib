@@ -176,7 +176,7 @@
                                     <imageView id="1003">
                                         <rect key="frame" x="162" y="0.0" width="15" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="1004"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="button_bar_handleTemplate" id="1004"/>
                                     </imageView>
                                 </subviews>
                             </customView>
