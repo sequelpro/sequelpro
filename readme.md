@@ -15,7 +15,7 @@ Build Instructions
  * Click "Clone in Desktop" on the right sidebar of our [GitHub page](https://github.com/sequelpro/sequelpro)
  * Open `sequel-pro.xcodeproj`
  * Click the `Run` button in the toolbar
- * If the above doesn't work, please file a [bug report](https://github.com/sequelpro/sequelpro/issues/new)
+ * If the above doesn't work, please file a [bug report](https://github.com/Hubertnator/sequelpro/issues)
 
 Contributing
 =======
