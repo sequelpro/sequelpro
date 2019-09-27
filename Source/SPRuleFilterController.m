@@ -42,6 +42,7 @@ typedef NS_ENUM(NSInteger, RuleNodeType) {
 	RuleNodeTypeOperator,
 	RuleNodeTypeArgument,
 	RuleNodeTypeConnector,
+	RuleNodeTypeEnable,
 };
 
 NSString * const SPRuleFilterHeightChangedNotification = @"SPRuleFilterHeightChanged";
@@ -107,6 +108,11 @@ const NSString * const SerFilterExprValues = @"filterValues";
  * This item is not designed to be serialized to disk
  */
 const NSString * const SerFilterExprDefinition = @"_filterDefinition";
+/**
+ * Expression Nodes only:
+ * Is the filter expression enabled for filtering?
+ */
+const NSString * const SerFilterExprEnabled = @"enabled";
 
 #pragma mark -
 
@@ -115,7 +121,7 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 }
 @property(assign, nonatomic) RuleNodeType type;
 /**
- * This method checks if a node other can take the place of self in a filter row.
+ * This method checks if another node can take the place of self in a filter row.
  * The RuleNode implementation checks only that both nodes are of the same type.
  */
 - (BOOL)isViableReplacementFor:(RuleNode *)other;
@@ -173,6 +179,12 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 @property (assign, nonatomic) NSUInteger labelIndex;
 @end
 
+@interface EnableNode : RuleNode {
+	BOOL initialState;
+}
+@property (assign, nonatomic) BOOL initialState;
+@end
+
 #pragma mark -
 
 /**
@@ -222,7 +234,7 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 - (void)_contentFiltersHaveBeenUpdated:(NSNotification *)notification;
 + (NSDictionary *)_flattenSerializedFilter:(NSDictionary *)in;
 static BOOL SerIsGroup(NSDictionary *dict);
-- (NSDictionary *)_serializedFilterIncludingFilterDefinition:(BOOL)includeDefinition;
+- (NSDictionary *)_serializedFilterIncludingFilterDefinition:(BOOL)includeDefinition withDisabled:(BOOL)includeDisabled;
 + (void)_writeFilterTree:(NSDictionary *)in toString:(NSMutableString *)out wrapInParenthesis:(BOOL)wrap binary:(BOOL)isBINARY error:(NSError **)err;
 - (NSMutableDictionary *)_restoreSerializedFilter:(NSDictionary *)serialized;
 static void _addIfNotNil(NSMutableArray *array, id toAdd);
@@ -389,12 +401,16 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		return 2;
 	}
 	else if(!criterion && rowType == NSRuleEditorRowTypeSimple) {
-		return [columns count];
+		return 1; // enable checkbox
 	}
 	else if(rowType == NSRuleEditorRowTypeSimple) {
-		// the children of the columns are their operators
 		RuleNodeType type = [(RuleNode *)criterion type];
-		if(type == RuleNodeTypeColumn) {
+		// the children of the enable checkbox are the columns
+		if(type == RuleNodeTypeEnable) {
+			return [columns count];
+		}
+		// the children of the columns are their operators
+		else if(type == RuleNodeTypeColumn) {
 			ColumnNode *node = (ColumnNode *)criterion;
 			[self _ensureValidOperatorCache:node];
 			return [[node operatorCache] count];
@@ -432,13 +448,17 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 		}
 		return [node autorelease];
 	}
-	// this is the column field
+	// this is the enable checkbox
 	else if(!criterion && rowType == NSRuleEditorRowTypeSimple) {
-		return [columns objectAtIndex:index];
+		return [[[EnableNode alloc] init] autorelease];
 	}
 	else if(rowType == NSRuleEditorRowTypeSimple) {
-		// the children of the columns are their operators
 		RuleNodeType type = [(RuleNode *) criterion type];
+		// this is the column field
+		if (type == RuleNodeTypeEnable) {
+			return [columns objectAtIndex:index];
+		}
+		// the children of the columns are their operators
 		if (type == RuleNodeTypeColumn) {
 			return [[criterion operatorCache] objectAtIndex:index];
 		}
@@ -482,6 +502,20 @@ static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 {
 	switch([(RuleNode *)criterion type]) {
 		case RuleNodeTypeString: return [(StringNode *)criterion value];
+		case RuleNodeTypeEnable: {
+			EnableNode *node = (EnableNode *)criterion;
+			NSButton *check = [[NSButton alloc] init];
+			[check setTitle:NSLocalizedString(@"Enable Filter", @"table Content : rule filter editor : row : enable filter expression checkbox")];
+			[check setToolTip:NSLocalizedString(@"When unchecked this filter expression will not be applied", @"table Content : rule filter editor : row : enable filter expression checkbox : tooltip")];
+			// see +checkboxWithTitle:target:action: in 10.12+
+			[check setButtonType:NSSwitchButton];
+			[check setBezelStyle:NSBezelStyleRegularSquare];
+			[check setBordered:NO];
+			[check setImagePosition:NSImageOnly];
+			[check sizeToFit];
+			[check setState:([node initialState] ? NSOnState : NSOffState)];
+			return [check autorelease];
+		}
 		case RuleNodeTypeColumn: {
 			/*
 			 * We could also return a string here, but we want a hook into the selection process so we can preserve
@@ -1113,7 +1147,7 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 
 	@autoreleasepool {
 		//get the serialized filter and try to optimise it
-		NSDictionary *filterTree = [[self class] _flattenSerializedFilter:[self _serializedFilterIncludingFilterDefinition:YES]];
+		NSDictionary *filterTree = [[self class] _flattenSerializedFilter:[self _serializedFilterIncludingFilterDefinition:YES withDisabled:NO]];
 
 		// build it recursively
 		[[self class] _writeFilterTree:filterTree toString:filterString wrapInParenthesis:NO binary:isBINARY error:&innerError];
@@ -1137,15 +1171,15 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 
 - (NSDictionary *)serializedFilter
 {
-	return [self _serializedFilterIncludingFilterDefinition:NO];
+	return [self _serializedFilterIncludingFilterDefinition:NO withDisabled:YES];
 }
 
-- (NSDictionary *)_serializedFilterIncludingFilterDefinition:(BOOL)includeDefinition
+- (NSDictionary *)_serializedFilterIncludingFilterDefinition:(BOOL)includeDefinition withDisabled:(BOOL)includeDisabled
 {
 	NSMutableArray *rootItems = [NSMutableArray arrayWithCapacity:[[_modelContainer model] count]];
 	for(NSDictionary *item in [_modelContainer model]) {
-		NSDictionary *sub = [self _serializeSubtree:item includingDefinition:includeDefinition];
-		if(sub) [rootItems addObject:sub];
+		NSDictionary *sub = [self _serializeSubtree:item includingDefinition:includeDefinition withDisabled:includeDisabled];
+		_addIfNotNil(rootItems, sub);
 	}
 	//the root serialized filter can either be an AND of multiple root items or a single root item
 	if([rootItems count] == 1) {
@@ -1160,7 +1194,7 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 	}
 }
 
-- (NSDictionary *)_serializeSubtree:(NSDictionary *)item includingDefinition:(BOOL)includeDefinition
+- (NSDictionary *)_serializeSubtree:(NSDictionary *)item includingDefinition:(BOOL)includeDefinition withDisabled:(BOOL)includeDisabled
 {
 	NSRuleEditorRowType rowType = (NSRuleEditorRowType)[[item objectForKey:@"rowType"] unsignedIntegerValue];
 	// check if we have an AND or OR compound row
@@ -1169,29 +1203,38 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 		NSArray *subrows = [item objectForKey:@"subrows"];
 		NSMutableArray *children = [[NSMutableArray alloc] initWithCapacity:[subrows count]];
 		for(NSDictionary *subitem in subrows) {
-			NSDictionary *sub = [self _serializeSubtree:subitem includingDefinition:includeDefinition];
-			if(sub) [children addObject:sub];
+			NSDictionary *sub = [self _serializeSubtree:subitem includingDefinition:includeDefinition withDisabled:includeDisabled];
+			_addIfNotNil(children, sub);
 		}
-		StringNode *node = [[item objectForKey:@"criteria"] objectAtIndex:0];
-		BOOL isConjunction = [@"AND" isEqualToString:[node value]];
-		NSDictionary *out = @{
-			SerFilterClass: SerFilterClassGroup,
-			SerFilterGroupIsConjunction: @(isConjunction),
-			SerFilterGroupChildren: children,
-		};
+		NSDictionary *out = nil;
+		// if we are empty return nil instead (can happen if all children are disabled)
+		if([children count]) {
+			StringNode *node = [[item objectForKey:@"criteria"] objectAtIndex:0];
+			BOOL isConjunction = [@"AND" isEqualToString:[node value]];
+			out = @{
+				SerFilterClass: SerFilterClassGroup,
+				SerFilterGroupIsConjunction: @(isConjunction),
+				SerFilterGroupChildren: children,
+			};
+		}
 		[children release];
 		return out;
 	}
 	else {
 		NSArray *criteria = [item objectForKey:@"criteria"];
 		NSArray *displayValues = [item objectForKey:@"displayValues"];
-		if([criteria count] < 2 || [criteria count] != [displayValues count]) {
+		// 3 == checkbox + column + operator
+		if([criteria count] < 3 || [criteria count] != [displayValues count]) {
 			return nil;
 		}
-		ColumnNode *col = [criteria objectAtIndex:0];
-		OpNode *op = [criteria objectAtIndex:1];
+		BOOL isEnabled = ([(NSButton *)[displayValues objectAtIndex:0] state] == NSOnState);
+		if(!isEnabled && !includeDisabled) {
+			return nil;
+		}
+		ColumnNode *col = [criteria objectAtIndex:1];
+		OpNode *op = [criteria objectAtIndex:2];
 		NSMutableArray *filterValues = [[NSMutableArray alloc] initWithCapacity:2];
-		for (NSUInteger i = 2; i < [criteria count]; ++i) { // the first two must always be column and operator
+		for (NSUInteger i = 3; i < [criteria count]; ++i) { // see above for first three
 			if([(RuleNode *)[criteria objectAtIndex:i] type] != RuleNodeTypeArgument) continue;
 			// if we found an argument, the displayValue will be an NSTextField we can ask for the value
 			NSString *value = [(NSTextField *)[displayValues objectAtIndex:i] stringValue];
@@ -1203,6 +1246,7 @@ BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
 			SerFilterExprType: [[op settings] objectForKey:@"filterType"],
 			SerFilterExprComparison: [op name],
 			SerFilterExprValues: filterValues,
+			SerFilterExprEnabled: @(isEnabled),
 		};
 		if(includeDefinition) {
 			out = [NSMutableDictionary dictionaryWithDictionary:out];
@@ -1274,8 +1318,9 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 		[obj setObject:@(NSRuleEditorRowTypeSimple) forKey:@"rowType"];
 		//simple rows can't have child rows
 		[obj setObject:[NSMutableArray array] forKey:@"subrows"];
-		
-		NSMutableArray *criteria = [NSMutableArray arrayWithCapacity:5];
+
+		// 6 == enable checkbox + column + op + first arg + connector + second arg
+		NSMutableArray *criteria = [NSMutableArray arrayWithCapacity:6];
 
 		//first look up the column, bail if it doesn't exist anymore or types changed
 		NSString *columnName = [serialized objectForKey:SerFilterExprColumn];
@@ -1284,6 +1329,16 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 			SPLog(@"cannot deserialize unknown column: %@", columnName);
 			goto fail;
 		}
+
+		// add enable checkbox
+		NSNumber *enabledValue = [serialized objectForKey:SerFilterExprEnabled];
+		EnableNode *enabler = [[EnableNode alloc] init];
+		// for backwards compatibility. this key was added later
+		//                        vvvvvvvvvvvvv
+		[enabler setInitialState:(!enabledValue || [enabledValue boolValue])];
+		[criteria addObject:[enabler autorelease]];
+
+		// add column
 		[criteria addObject:col];
 
 		//next try to find the given operator
@@ -1360,6 +1415,7 @@ fail:
 		SerFilterExprColumn:     colName,
 		SerFilterExprComparison: opName,
 		SerFilterExprValues:     values,
+		SerFilterExprEnabled:    @YES,
 	};
 }
 
@@ -1594,7 +1650,6 @@ BOOL SerIsGroup(NSDictionary *dict)
 
 @end
 
-
 @implementation StringNode
 
 @synthesize value = value;
@@ -1729,6 +1784,32 @@ BOOL SerIsGroup(NSDictionary *dict)
 - (BOOL)isEqual:(id)other {
 	if (other == self) return YES;
 	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ConnectorNode *)other filter]] && labelIndex == [(ConnectorNode *)other labelIndex]) return YES;
+
+	return NO;
+}
+
+@end
+
+@implementation EnableNode
+
+@synthesize initialState = initialState;
+
+- (instancetype)init {
+	self = [super init];
+	if (self) {
+		type = RuleNodeTypeEnable;
+		initialState = YES;
+	}
+	return self;
+}
+
+- (NSUInteger)hash {
+	return (([super hash] << 1) | initialState);
+}
+
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [self initialState] == [(EnableNode *)other initialState]) return YES;
 
 	return NO;
 }

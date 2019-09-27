@@ -1040,7 +1040,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			);
 			return nil;
 		}
-		return filter;
+		return ([filter length] ? filter : nil);
 	}
 
 	return nil;
