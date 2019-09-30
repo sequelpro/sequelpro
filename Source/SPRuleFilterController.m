@@ -1478,6 +1478,7 @@ BOOL SerIsGroup(NSDictionary *dict)
 		if(SerIsGroup(flattened) && [inIsConjunction isEqual:[flattened objectForKey:SerFilterGroupIsConjunction]]) {
 			[flatChildren addObjectsFromArray:[flattened objectForKey:SerFilterGroupChildren]];
 			changed++;
+			continue;
 		}
 		else if(flattened != child) {
 			changed++;
