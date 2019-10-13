@@ -416,6 +416,8 @@
 - (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
+- (NSString *)onePassword;
+
 - (NSString *)connectionID;
 #ifndef SP_CODA /* method decls */
 - (NSString *)tabTitleForTooltip;

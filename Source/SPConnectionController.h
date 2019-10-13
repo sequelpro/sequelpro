@@ -145,6 +145,7 @@
 	IBOutlet NSSecureTextField *sshPasswordField;
 	IBOutlet NSSecureTextField *sshSSHPasswordField;
 	IBOutlet NSButton *sshSSHKeyButton;
+	IBOutlet NSButton *onePasswordButton;
 	IBOutlet NSButton *standardSSLKeyFileButton;
 	IBOutlet NSButton *standardSSLCertificateButton;
 	IBOutlet NSButton *standardSSLCACertButton;

@@ -151,9 +151,7 @@ static unsigned short getRandomPort();
  */
 - (BOOL)setPassword:(NSString *)thePassword
 {
-	if (passwordInKeychain) return NO;
-	password = [[NSString alloc] initWithString:thePassword];
-	
+	password = [[NSString alloc] initWithString:thePassword];	
 	return YES;
 }
 
