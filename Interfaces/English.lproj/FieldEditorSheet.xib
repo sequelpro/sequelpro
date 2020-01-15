@@ -102,6 +102,8 @@
                 <outlet property="editTextView" destination="36" id="52"/>
                 <outlet property="hexTextScrollView" destination="6" id="55"/>
                 <outlet property="hexTextView" destination="35" id="54"/>
+				<outlet property="jsonTextScrollView" destination="1000" id="1055"/>
+				<outlet property="jsonTextView" destination="1002" id="1054"/>
                 <outlet property="window" destination="1" id="70"/>
             </connections>
         </customObject>
@@ -192,7 +194,7 @@ Gw
                         </connections>
                     </button>
                     <popUpButton toolTip="Choose a data format to display the current data by using QuickLook" verticalHuggingPriority="750" id="8">
-                        <rect key="frame" x="401" y="12" width="48" height="25"/>
+                        <rect key="frame" x="421" y="12" width="48" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" imagePosition="only" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" pullsDown="YES" selectedItem="30" id="20">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -208,14 +210,15 @@ Gw
                         </popUpButtonCell>
                     </popUpButton>
                     <segmentedControl verticalHuggingPriority="750" id="9">
-                        <rect key="frame" x="230" y="15" width="163" height="19"/>
+                        <rect key="frame" x="230" y="15" width="182" height="19"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <segmentedCell key="cell" controlSize="small" state="on" borderStyle="border" alignment="left" style="texturedSquare" trackingMode="selectOne" id="19">
                             <font key="font" metaFont="smallSystem"/>
                             <segments>
                                 <segment label="Text" toolTip="Show data as text" width="39"/>
-                                <segment label="Image" toolTip="Try to show data as image" width="83" selected="YES" tag="1"/>
+                                <segment label="Image" toolTip="Try to show data as image" width="53" selected="YES" tag="1"/>
                                 <segment label="Hex" toolTip="Show data hexadecimal" width="37"/>
+								<segment label="JSON" toolTip="Try to show data as JSON" width="53"/>
                             </segments>
                         </segmentedCell>
                         <connections>
@@ -251,6 +254,35 @@ Gw
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
+					<scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="1000">
+						<rect key="frame" x="0.0" y="51" width="667" height="349"/>
+						<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+						<clipView key="contentView" id="1001">
+							<rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+							<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+							<subviews>
+								<textView editable="NO" importsGraphics="NO" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" smartInsertDelete="YES" id="1002">
+									<rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+									<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+									<color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+									<size key="minSize" width="667" height="349"/>
+									<size key="maxSize" width="1334" height="10000000"/>
+									<color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+									<size key="minSize" width="667" height="349"/>
+									<size key="maxSize" width="1334" height="10000000"/>
+								</textView>
+							</subviews>
+							<color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+						</clipView>
+						<scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="1003">
+							<rect key="frame" x="-100" y="-100" width="87" height="18"/>
+							<autoresizingMask key="autoresizingMask"/>
+						</scroller>
+						<scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="1004">
+							<rect key="frame" x="220" y="1" width="11" height="141"/>
+							<autoresizingMask key="autoresizingMask"/>
+						</scroller>
+					</scrollView>
                     <imageView focusRingType="none" id="7" customClass="SPImageView">
                         <rect key="frame" x="0.0" y="51" width="667" height="349"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
