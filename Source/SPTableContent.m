@@ -509,12 +509,19 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	{
 		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[constraint objectForKey:@"ref_columns"] objectAtIndex:0];
+		NSString *refDatabase    = [tableDocumentInstance database];
 		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
+		
+		// Overwrite database name if exists
+		if ([constraint objectForKey:@"ref_database"]) {
+			refDatabase = [constraint objectForKey:@"ref_database"];
+		}
 
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
 											firstRefColumn, @"column",
+											refDatabase, @"database",
 											nil];
 			NSMutableDictionary *rowDictionary = [NSMutableDictionary dictionaryWithDictionary:[dataColumns objectAtIndex:columnIndex]];
 			[rowDictionary setObject:refDictionary forKey:@"foreignkeyreference"];
@@ -2412,6 +2419,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 		else {
 			SPMainQSync(^{
+				// Switch databases if needed
+				if (![[refDictionary objectForKey:@"database"] isEqualToString:[tableDocumentInstance database]]) {
+					NSString *databaseToJumpTo = [refDictionary objectForKey:@"database"];
+					NSString *tableToJumpTo = [refDictionary objectForKey:@"table"];
+					[[tableDocumentInstance onMainThread] selectDatabase:databaseToJumpTo item:tableToJumpTo];
+				}
 				[self setFiltersToRestore:filterSettings];
 				[self setActiveFilterToRestore:SPTableContentFilterSourceRuleFilter];
 				// Attempt to switch to the target table
