@@ -35,6 +35,7 @@
 - (void)_setupTrackingRectsForCell:(PSMTabBarCell *)cell;
 - (void)_positionOverflowMenu;
 - (void)_checkWindowFrame;
+- (void)update:(BOOL)animate updateTabs:(BOOL)updateTabs;
 
     // actions
 - (void)closeTabClick:(id)sender;
@@ -1044,19 +1045,25 @@
 
 - (void)update:(BOOL)animate
 {
+	[self update:animate updateTabs:YES];
+}
+
+- (void)update:(BOOL)animate updateTabs:(BOOL)updateTabs
+{
     // make sure all of our tabs are accounted for before updating,
 	// or only proceed if a drag is in progress (where counts may mismatch)
     if ([[self tabView] numberOfTabViewItems] != (NSInteger)[_cells count] && ![[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
         return;
     }
 
-    // hide/show? (these return if already in desired state)
-    if ( (_hideForSingleTab) && ([_cells count] <= 1) ) {
-        [self hideTabBar:YES animate:YES];
-//        return;
-    } else {
-        [self hideTabBar:NO animate:YES];
-    }
+	if (updateTabs) {
+		// hide/show? (these return if already in desired state)
+		if ( (_hideForSingleTab) && ([_cells count] <= 1) ) {
+			[self hideTabBar:YES animate:YES];
+		} else {
+			[self hideTabBar:NO animate:YES];
+		}
+	}
 	
     [self removeAllToolTips];
     [_controller layoutCells]; //eventually we should only have to call this when we know something has changed
@@ -1691,7 +1698,7 @@
 							   afterDelay:0];
 	}
 
-	[self update:NO];
+	[self update:NO updateTabs:NO];
 }
 
 - (void)viewDidMoveToWindow
