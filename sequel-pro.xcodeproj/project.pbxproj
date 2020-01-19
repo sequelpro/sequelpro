@@ -93,7 +93,7 @@
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
 		17DD52C6115074CB007D8950 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C4115074CB007D8950 /* Localizable.strings */; };
 		17E0937E114AE154007FC1B4 /* SPTableInfoPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */; };
-		17E20E0012D660C3007F75A6 /* OCMock.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		17E20E0012D660C3007F75A6 /* OCMock.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* SPCustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* SPCustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
@@ -2679,7 +2679,7 @@
 		2A37F4A9FDCFA73011CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -3636,7 +3636,6 @@
 		1798AB1D12676EA0000D946A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -3649,7 +3648,6 @@
 		1798AB1E12676EA0000D946A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				PRODUCT_NAME = Localize;
@@ -3660,7 +3658,6 @@
 		1798AB1F12676EA0000D946A /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				PRODUCT_NAME = Localize;
 			};
@@ -3670,7 +3667,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3692,7 +3688,6 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Debug;
@@ -3701,7 +3696,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
@@ -3720,7 +3714,6 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Release;
@@ -3729,7 +3722,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
@@ -3748,7 +3740,6 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Distribution;
@@ -3756,7 +3747,6 @@
 		584754C4120A04560057631F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -3765,7 +3755,6 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
 			};
@@ -3774,7 +3763,6 @@
 		584754C5120A04560057631F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3783,7 +3771,6 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
 				ZERO_LINK = NO;
@@ -3793,14 +3780,12 @@
 		584754C6120A04560057631F /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
 			};
@@ -3810,30 +3795,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = YES;
@@ -3874,8 +3845,6 @@
 		588593F10F7AEB6900ED0E67 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -3888,7 +3857,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MARKETING_VERSION = 1.3;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro;
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -3897,7 +3865,6 @@
 		58B906E811BD989A000826E5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -3909,7 +3876,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 			};
 			name = Debug;
@@ -3917,7 +3883,6 @@
 		58B906E911BD989A000826E5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3929,7 +3894,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 				ZERO_LINK = NO;
 			};
@@ -3938,7 +3902,6 @@
 		58B906EA11BD989A000826E5 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -3948,7 +3911,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 			};
 			name = Distribution;
@@ -3956,8 +3918,6 @@
 		58B9096311C3A42C000826E5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -3977,8 +3937,6 @@
 		58B9096411C3A42C000826E5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -3998,8 +3956,6 @@
 		58B9096511C3A42C000826E5 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
@@ -4017,8 +3973,6 @@
 		58CDB3380FCE13CB00F8ACA3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -4039,8 +3993,6 @@
 		58CDB3390FCE13CB00F8ACA3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
@@ -4062,8 +4014,6 @@
 		58CDB33A0FCE13CB00F8ACA3 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4082,8 +4032,6 @@
 		C05733C808A9546B00998B17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -4096,7 +4044,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MARKETING_VERSION = 1.3;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro;
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4105,8 +4052,6 @@
 		C05733C908A9546B00998B17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
@@ -4120,7 +4065,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				MARKETING_VERSION = 1.3;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro;
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4130,32 +4074,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
@@ -4203,30 +4132,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = YES;
