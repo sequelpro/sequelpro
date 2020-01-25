@@ -822,7 +822,8 @@ static BOOL isOSAtLeast10_7;
 	}
 
 	for (NSUInteger i = 0; i < [[self subviews] count] - 1; i++) {
-		[self setPosition:[[viewDetails objectAtIndex:i] floatValue] ofDividerAtIndex:i];
+        // /1.88 fixes the MacOS Catalina issue with the site picker having random width on startup
+ 		[self setPosition:[[viewDetails objectAtIndex:i] floatValue]/1.88 ofDividerAtIndex:i];
 	}
 }
 
