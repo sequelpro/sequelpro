@@ -51,14 +51,15 @@ CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_
 OUTPUT_DIR='SPMySQLFiles.build'
 
 ESC=`printf '\033'`
-set -A INCLUDE_HEADERS 'my_alloc.h' 'my_list.h' 'mysql_com.h' 'mysql_time.h' 'mysql_version.h' 'mysql.h' 'typelib.h'
+set -A INCLUDE_HEADERS 'my_alloc.h' 'my_command.h' 'my_list.h' 'mysql_com.h' 'mysql_time.h' 'mysql_version.h' 'mysql.h' 'typelib.h' 'mysql/client_plugin.h' 'mysql/plugin_auth_common.h' 'mysql/psi/psi_base.h' 'mysql/psi/psi_memory.h'
 
 usage() 
 {	
 	cat <<!EOF
-Usage: $(basename $0): -s <mysql_source_path> [-q -c -d]
+Usage: $(basename $0): -s <mysql_source_path> [-b <boost-1.59.0 source path>] [-q -c -d]
 
 Where: -s -- Path to the MySQL source directory
+       -b -- Path to Boost 1.59.0 source directory
        -q -- Be quiet during the build. Suppress all compiler messages
        -c -- Clean the source directory instead of building
        -d -- Debug. Output all the build commands
@@ -83,10 +84,12 @@ then
 	exit 1
 fi
 
-while getopts ':s:qcd' OPTION
+BOOST_SOURCE_DIR=
+while getopts ':s:b:qcd' OPTION
 do
     case "$OPTION" in
         s) MYSQL_SOURCE_DIR="$OPTARG";;
+		b) BOOST_SOURCE_DIR="$OPTARG";;
 		q) QUIET='YES';;
 		c) CLEAN='YES';;
         d) DEBUG='YES';;
@@ -99,6 +102,10 @@ then
 	echo "$ESC[1;31mMySQL source directory does not exist at path '${MYSQL_SOURCE_DIR}'.$ESC[0m"
 	echo "$ESC[1;31mExiting...$ESC[0m"
 	exit 1
+fi
+
+if [ -d "$BOOST_SOURCE_DIR" ]; then
+	CONFIGURE_OPTIONS="${CONFIGURE_OPTIONS} -DWITH_BOOST=${BOOST_SOURCE_DIR}"
 fi
 
 # Change to source directory
@@ -244,7 +251,7 @@ then
 fi
 
 # Copy the library
-cp 'libmysql/libmysqlclient.a' "${OUTPUT_DIR}/lib/"
+cp 'archive_output_directory/libmysqlclient.a' "${OUTPUT_DIR}/lib/"
 
 if [ ! $? -eq 0 ]
 then
@@ -255,13 +262,16 @@ fi
 # Copy in the required headers
 for eachheader in ${INCLUDE_HEADERS[@]}
 do
-	cp "include/${eachheader}" "${OUTPUT_DIR}/include/"
+	INC_DIR="$(dirname ${eachheader})"
+	mkdir -p "${OUTPUT_DIR}/include/${INC_DIR}"
+	cp "include/${eachheader}" "${OUTPUT_DIR}/include/${eachheader}"
 	if [ ! $? -eq 0 ]
 	then
 		echo "$ESC[1;31mCould not copy ${eachheader} to output directory! (${MYSQL_SOURCE_DIR}/${OUTPUT_DIR}/include)$ESC[0m"
 		exit 1
 	fi
-done	
+done
+cp libbinlogevents/export/binary_log_types.h "${OUTPUT_DIR}/include/"
 
 echo "$ESC[1mBuilding MySQL client libraries successfully completed.$ESC[0m"
 echo "$ESC[1mSee ${MYSQL_SOURCE_DIR}/${OUTPUT_DIR}/ for the product.$ESC[0m"

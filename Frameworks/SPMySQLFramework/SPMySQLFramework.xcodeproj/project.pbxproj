@@ -632,6 +632,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
+				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
@@ -657,6 +658,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
+				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
@@ -884,6 +886,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
+				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
@@ -976,6 +979,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
+				OTHER_LDFLAGS = "-lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
