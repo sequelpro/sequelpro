@@ -125,19 +125,20 @@ static BOOL isOSAtLeast10_14 = NO;
 
 - (void)themeChanged
 {
-	if(!isOSAtLeast10_14) return;
+	if (@available(macOS 10.14, *)) {
 
-	NSString *match = [[[self window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
-	NSString *newTheme = @"unknown";
-	if([NSAppearanceNameAqua isEqualToString:match]) {
-		newTheme = @"light";
-	}
-	else if([NSAppearanceNameDarkAqua isEqualToString:match]) {
-		newTheme = @"dark";
-	}
+		NSString *match = [[[self window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+		NSString *newTheme = @"unknown";
+		if([NSAppearanceNameAqua isEqualToString:match]) {
+			newTheme = @"light";
+		}
+		else if([NSAppearanceNameDarkAqua isEqualToString:match]) {
+			newTheme = @"dark";
+		}
 
-	NSString *eval = [NSString stringWithFormat:@"window.onThemeChange('%@')", newTheme];
-	[helpWebView stringByEvaluatingJavaScriptFromString:eval];
+		NSString *eval = [NSString stringWithFormat:@"window.onThemeChange('%@')", newTheme];
+		[helpWebView stringByEvaluatingJavaScriptFromString:eval];
+	}
 }
 
 - (void)updateWindowTitle

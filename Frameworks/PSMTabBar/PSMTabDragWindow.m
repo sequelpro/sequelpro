@@ -35,7 +35,7 @@
 		windowFrame.origin.y += windowFrame.size.height - size.height;
 		windowFrame.size = size;
 		
-		if (styleMask | NSBorderlessWindowMask) {
+		if (styleMask | NSWindowStyleMaskBorderless) {
 			windowFrame.size.height += 22;
 		}
 		

@@ -2698,7 +2698,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 }
 
 /**
- * Resize a column when it's double-clicked.  (10.6+)
+ * Resize a column when it's double-clicked.  (10.13+)
  */
 - (CGFloat)tableView:(NSTableView *)tableView sizeToFitWidthOfColumn:(NSInteger)columnIndex
 {

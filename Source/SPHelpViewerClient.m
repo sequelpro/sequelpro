@@ -231,7 +231,7 @@ generate_help:
 	{ // C syntax disallows a new variable directly following a label…
 		NSString *addBodyClass = @"";
 		// Add CSS class if running in dark UI mode (10.14+)
-		if (isOSAtLeast10_14) {
+		if (@available(macOS 10.14, *)) {
 			NSString *match = [[[controller window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 			// aqua is already the default theme
 			if ([NSAppearanceNameDarkAqua isEqualToString:match]) {

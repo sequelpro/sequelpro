@@ -85,7 +85,7 @@ void init(SPButtonBar *obj)
 
 - (BOOL)isInDarkMode
 {
-	if(isOSAtLeast10_14) {
+	if (@available(macOS 10.14, *)) {
 		NSString *match = [[self effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 		if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
 			return YES;
@@ -100,7 +100,7 @@ void init(SPButtonBar *obj)
 	NSRect drawFrame = [self bounds];
 	drawFrame.origin.x = dirtyRect.origin.x;
 	drawFrame.size.width = dirtyRect.size.width;
-	[img drawInRect:drawFrame fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+	[img drawInRect:drawFrame fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0];
 }
 
 @end

@@ -154,7 +154,7 @@
 	<key>CFBundleIconFile</key>
 	<string>appIcon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.sequelpro.SequelPro</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -162,7 +162,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2 Snapshot</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -183,7 +183,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string></string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
@@ -191,13 +191,13 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.13.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>i386</key>
-		<string>10.6.0</string>
+		<string>10.13.0</string>
 		<key>x86_64</key>
-		<string>10.6.0</string>
+		<string>10.13.0</string>
 	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -207,17 +207,17 @@
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
 				<key>NSExceptionMinimumTLSVersion</key>
 				<string>TLSv1.0</string>
-				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
+				<key>NSExceptionRequiresForwardSecrecy</key>
 				<false/>
-				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
 				<key>NSThirdPartyExceptionMinimumTLSVersion</key>
 				<string>TLSv1.0</string>
-				<key>NSRequiresCertificateTransparency</key>
+				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
 				<false/>
 			</dict>
 		</dict>
@@ -225,7 +225,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2019 Sequel Pro and CocoaMySQL team.</string>
+	<string>Copyright 2020 Moballo, LLC</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

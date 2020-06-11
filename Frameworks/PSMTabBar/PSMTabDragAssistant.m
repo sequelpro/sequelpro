@@ -182,7 +182,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
     
     [[NSCursor closedHandCursor] set];
     
-    NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+	NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSPasteboardNameDrag];
     NSImage *dragImage = [cell dragImage];
     [[cell indicator] removeFromSuperview];
     [self distributePlaceholdersInTabBar:control withDraggedCell:cell];

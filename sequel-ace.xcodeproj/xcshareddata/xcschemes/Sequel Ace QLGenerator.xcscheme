@@ -14,39 +14,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-               BuildableName = "SPMySQL.framework"
-               BlueprintName = "SPMySQL.framework"
-               ReferencedContainer = "container:SPMySQLFramework.xcodeproj">
+               BlueprintIdentifier = "584754C1120A04560057631F"
+               BuildableName = "Sequel Pro.qlgenerator"
+               BlueprintName = "Sequel Pro QLGenerator"
+               ReferencedContainer = "container:sequel-pro.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Unit Testing"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "SPMySQL.framework"
-            BlueprintName = "SPMySQL.framework"
-            ReferencedContainer = "container:SPMySQLFramework.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "507FF1D41BC0D7D300104523"
-               BuildableName = "SPMySQL Unit Tests.xctest"
-               BlueprintName = "SPMySQL Unit Tests"
-               ReferencedContainer = "container:SPMySQLFramework.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -59,15 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "SPMySQL.framework"
-            BlueprintName = "SPMySQL.framework"
-            ReferencedContainer = "container:SPMySQLFramework.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -78,10 +50,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
-            BuildableName = "SPMySQL.framework"
-            BlueprintName = "SPMySQL.framework"
-            ReferencedContainer = "container:SPMySQLFramework.xcodeproj">
+            BlueprintIdentifier = "584754C1120A04560057631F"
+            BuildableName = "Sequel Pro.qlgenerator"
+            BlueprintName = "Sequel Pro QLGenerator"
+            ReferencedContainer = "container:sequel-pro.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
