@@ -22,14 +22,20 @@
                     <menu key="submenu" title="Sequel Ace" systemMenu="apple" id="57">
                         <items>
                             <menuItem title="About Sequel Ace" id="58">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="openAboutPanel:" target="213" id="1037"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="199">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
+							<modifierMask key="keyEquivalentModifierMask"/>
+								<connections>
+									<action selector="openAboutPanel:" target="213" id="1037"/>
+								</connections>
+							</menuItem>
+							<menuItem title="Check for Updates..." id="794">
+								<modifierMask key="keyEquivalentModifierMask"/>
+								<connections>
+									<action selector="checkForUpdates:" target="795" id="830"/>
+								</connections>
+							</menuItem>
+							<menuItem isSeparatorItem="YES" id="199">
+								<modifierMask key="keyEquivalentModifierMask" command="YES"/>
+							</menuItem>
                             <menuItem title="Preferences..." keyEquivalent="," id="129">
                                 <connections>
                                     <action selector="openPreferences:" target="213" id="218"/>
