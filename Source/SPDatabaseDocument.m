@@ -929,7 +929,7 @@ static BOOL isOSAtLeast10_14;
 			NSLocalizedString(@"Database Rename Unsupported", @"databsse rename unsupported message"),
 			parentWindow,
 			[NSString stringWithFormat:NSLocalizedString(
-					@"Ranaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
+					@"Renaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
 					@"databsse rename unsupported informative message"), selectedDatabase]
 		);
 		return;
