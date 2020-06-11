@@ -46,16 +46,6 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "380F4ED80FC0B50500B0BFD7"
-               BuildableName = "Unit Tests.xctest"
-               BlueprintName = "Unit Tests"
-               ReferencedContainer = "container:sequel-ace.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -101,6 +91,7 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Distribution"
+      customArchiveName = "Sequel Ace (Release)"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

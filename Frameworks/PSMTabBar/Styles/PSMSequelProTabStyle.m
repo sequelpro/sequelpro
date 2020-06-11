@@ -75,22 +75,11 @@ typedef struct {
 		// and SP itself would need it, the loader will complain about a duplicate class implementation.
 		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
 
-		if ([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
-			NSOperatingSystemVersion os10_7_0 = {10,7,0};
-			NSOperatingSystemVersion os10_10_0 = {10,10,0};
+		NSOperatingSystemVersion os10_7_0 = {10,7,0};
+		NSOperatingSystemVersion os10_10_0 = {10,10,0};
 
-			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
-			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
-		}
-		else {
-			SInt32 versionMajor = 0;
-			SInt32 versionMinor = 0;
-			Gestalt(gestaltSystemVersionMajor, &versionMajor);
-			Gestalt(gestaltSystemVersionMinor, &versionMinor);
-			
-			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
-			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
-		}
+		systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
+		systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
 
 		NSBundle *bundle = [PSMTabBarControl bundle];
 

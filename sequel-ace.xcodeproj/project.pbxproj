@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -309,7 +309,6 @@
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
 		586F457E0FDB280100B428D7 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		5870868410FA3E9C00D58E1C /* SPDataStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 5870868310FA3E9C00D58E1C /* SPDataStorage.m */; };
-		5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */ = {isa = PBXBuildFile; fileRef = 5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */; };
 		5885CF4A116A63B200A85ACB /* SPFileHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = 5885CF49116A63B200A85ACB /* SPFileHandle.m */; };
 		588B2CC80FE5641E00EC5FC0 /* ssh-connected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */; };
 		588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */; };
@@ -364,7 +363,6 @@
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
 		58C61CFA11960312003BAA5D /* SPAlertSheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 584095181107CB6600260CFD /* SPAlertSheets.m */; };
 		58C6C71611FBB17200A3F5E9 /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; };
-		58C6C71F11FBB18000A3F5E9 /* UniversalDetector.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		58CDB3410FCE141900F8ACA3 /* SequelAceTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelAceTunnelAssistant.m */; };
@@ -395,6 +393,7 @@
 		9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9651262424926F1600E65B53 /* SPMySQL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 584D876815140D3500F24774 /* SPMySQL.framework */; };
 		9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 584D876815140D3500F24774 /* SPMySQL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9651262D24928B5A00E65B53 /* UniversalDetector.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9BE765682376A00C82FB93AA /* SPHelpViewerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */; };
 		9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE768F3989033CEDDC2027E /* SPFillView.m */; };
 		9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */; };
@@ -601,12 +600,12 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				9651262D24928B5A00E65B53 /* UniversalDetector.framework in Copy Frameworks */,
 				9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */,
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
 				4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */,
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */,
 				586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in Copy Frameworks */,
-				58C6C71F11FBB18000A3F5E9 /* UniversalDetector.framework in Copy Frameworks */,
 				9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */,
 				58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */,
 			);
@@ -640,7 +639,6 @@
 		11C2109D1180E70800758039 /* SPDatabaseRename.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRename.m; sourceTree = "<group>"; };
 		11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRenameTest.m; sourceTree = "<group>"; };
 		11D44DEF118F5887002AA43C /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Frameworks/OCMock.framework; sourceTree = "<group>"; };
-		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
 		171312CD109D23C700FB465F /* SPTableTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTextFieldCell.m; sourceTree = "<group>"; };
 		17148563125F5FF500321285 /* SPDatabaseCharacterSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseCharacterSets.h; sourceTree = "<group>"; };
@@ -672,12 +670,10 @@
 		173C838311AAD2FF00B8B084 /* SPXMLExporterProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporterProtocol.h; sourceTree = "<group>"; };
 		1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseData.h; sourceTree = "<group>"; };
 		1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseData.m; sourceTree = "<group>"; };
-		174A345112DA4ED000DB0ADE /* create-test-stubs.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "create-test-stubs.pl"; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
 		174CE14110AB9281008F892B /* SPProcessListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessListController.m; sourceTree = "<group>"; };
 		1755A25C16B33BEA00B35787 /* SPSyntaxParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSyntaxParser.h; sourceTree = "<group>"; };
 		175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCategoryAdditions.h; sourceTree = "<group>"; };
-		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
 		176E14CF15570FE300FAF326 /* SPBundleCommandRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleCommandRunner.h; sourceTree = "<group>"; };
 		176E14D015570FE300FAF326 /* SPBundleCommandRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleCommandRunner.m; sourceTree = "<group>"; };
 		177E792B0FCB54EC00E9E122 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
@@ -698,10 +694,8 @@
 		1785EB69127DD79300F468C8 /* SPEditorPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditorPreferencePane.m; sourceTree = "<group>"; };
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
-		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
 		1792C13510AD75C800ABE758 /* SPServerVariablesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPServerVariablesController.h; sourceTree = "<group>"; };
 		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
-		1798AB0C12676CD9000D946A /* localize.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = localize.sh; sourceTree = "<group>"; };
 		1798F17E1550171B004B0AB8 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		1798F1811550175B004B0AB8 /* SPFavoritesExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesExporter.h; sourceTree = "<group>"; };
 		1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesExporter.m; sourceTree = "<group>"; };
@@ -994,8 +988,6 @@
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		5870868210FA3E9C00D58E1C /* SPDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataStorage.h; sourceTree = "<group>"; };
 		5870868310FA3E9C00D58E1C /* SPDataStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataStorage.m; sourceTree = "<group>"; };
-		588593F30F7AEC9500ED0E67 /* package-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "package-application.sh"; sourceTree = "<group>"; };
-		5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "sparkle-public-key.pem"; sourceTree = "<group>"; };
 		5885CF48116A63B200A85ACB /* SPFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFileHandle.h; sourceTree = "<group>"; };
 		5885CF49116A63B200A85ACB /* SPFileHandle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFileHandle.m; sourceTree = "<group>"; };
 		588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-connected.png"; sourceTree = "<group>"; };
@@ -1643,12 +1635,6 @@
 		1761FD9C0EF0486A00331368 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				1713122F109C7DF600FB465F /* build.sh */,
-				1798AB0C12676CD9000D946A /* localize.sh */,
-				1761FD9D0EF0488900331368 /* build-version.pl */,
-				178934980F30CDA10097539A /* trim-application.sh */,
-				174A345112DA4ED000DB0ADE /* create-test-stubs.pl */,
-				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
 			sourceTree = "<group>";
@@ -1907,7 +1893,6 @@
 				17F90E2B1210B34900274C98 /* Credits.rtf */,
 				17CC993A10B4C9C80034CD7A /* License.rtf */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
-				5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -2711,7 +2696,6 @@
 				8D15AC2B0486D014006FF6A4 /* Resources */,
 				4DECC4940EC2B447008D359E /* Copy Frameworks */,
 				58475762120A1DC40057631F /* Copy QuickLook Plugins */,
-				1761FDAF0EF0496500331368 /* Run Scripts */,
 			);
 			buildRules = (
 			);
@@ -2734,6 +2718,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1150;
+				ORGANIZATIONNAME = "Sequel-Ace";
 				TargetAttributes = {
 					8D15AC270486D014006FF6A4 = {
 						DevelopmentTeam = NKQ4HJ66PX;
@@ -2742,7 +2727,7 @@
 				};
 			};
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-ace" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 11.4";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -2868,7 +2853,6 @@
 				17B548711E82B02100175D5A /* button_bar_handle@2x.png in Resources */,
 				B5E2C5FA0F2353B5007446E0 /* table-property.png in Resources */,
 				58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */,
-				5885940F0F7AEE6000ED0E67 /* sparkle-public-key.pem in Resources */,
 				B5E92F190F75B2D100012500 /* ExportDialog.xib in Resources */,
 				B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */,
 				B57748420F7A8B57003B34F9 /* database.png in Resources */,
@@ -3023,20 +3007,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1761FDAF0EF0496500331368 /* Run Scripts */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Scripts";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run build tasks\n\"${SRCROOT}/Scripts/build.sh\"\n";
-		};
 		1798AB1B12676EA0000D946A /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3768,6 +3738,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3796,6 +3767,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -3824,6 +3796,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
+				SKIP_INSTALL = YES;
 			};
 			name = Distribution;
 		};
@@ -3841,6 +3814,7 @@
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Debug;
@@ -3859,6 +3833,7 @@
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = qlgenerator;
 				ZERO_LINK = NO;
 			};
@@ -3876,6 +3851,7 @@
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Distribution;
@@ -3941,6 +3917,7 @@
 				IBC_WARNINGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Distribution;
@@ -3965,7 +3942,10 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 2.0;
@@ -3974,7 +3954,8 @@
 				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
-				VALID_ARCHS = "x86_64 i386";
+				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Distribution;
 		};
@@ -3996,6 +3977,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -4017,6 +3999,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4037,6 +4020,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
+				SKIP_INSTALL = YES;
 			};
 			name = Distribution;
 		};
@@ -4058,6 +4042,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -4078,6 +4063,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4098,6 +4084,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SKIP_INSTALL = YES;
 			};
 			name = Distribution;
 		};
@@ -4121,6 +4108,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelAceTunnelAssistant;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -4144,6 +4132,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelAceTunnelAssistant;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4166,6 +4155,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelAceTunnelAssistant;
+				SKIP_INSTALL = YES;
 			};
 			name = Distribution;
 		};
@@ -4189,7 +4179,10 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 2.0;
@@ -4198,7 +4191,8 @@
 				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
-				VALID_ARCHS = "x86_64 i386";
+				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
@@ -4223,7 +4217,10 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 2.0;
@@ -4232,7 +4229,8 @@
 				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
-				VALID_ARCHS = "x86_64 i386";
+				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
 		};
@@ -4305,6 +4303,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Debug;
@@ -4370,6 +4369,7 @@
 				IBC_WARNINGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Release;

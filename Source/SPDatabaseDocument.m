@@ -4991,7 +4991,7 @@ static BOOL isOSAtLeast10_14;
 			                                   otherButton:nil
 			                     informativeTextWithFormat:NSLocalizedString(@"Wrong data format or password.", @"wrong data format or password")];
 
-			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert setAlertStyle:NSAlertStyleCritical];
 			[alert runModal];
 			[self closeAndDisconnect];
 			[spf release];
@@ -5013,7 +5013,7 @@ static BOOL isOSAtLeast10_14;
 		                                   otherButton:nil
 		                     informativeTextWithFormat:@"%@", informativeText];
 
-		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert setAlertStyle:NSAlertStyleCritical];
 		[alert runModal];
 		[self closeAndDisconnect];
 		[spf release];
