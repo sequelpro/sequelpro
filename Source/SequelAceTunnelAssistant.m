@@ -1,5 +1,5 @@
 //
-//  SequelProTunnelAssistant.m
+//  SequelAceTunnelAssistant.m
 //  sequel-pro
 //
 //  Created by Rowan Beentje on May 4, 2009.
@@ -58,7 +58,7 @@ int main(int argc, const char *argv[])
 			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 
 			if (!sequelProTunnel) {
-				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Ace to show SSH question");
 				return 1;
 
 			}
@@ -118,7 +118,7 @@ int main(int argc, const char *argv[])
 				sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 
 				if (!sequelProTunnel) {
-					NSLog(@"SSH Tunnel: unable to connect to Sequel Pro for internal authentication");
+					NSLog(@"SSH Tunnel: unable to connect to Sequel Ace for internal authentication");
 					return 1;
 				}
 
@@ -130,7 +130,7 @@ int main(int argc, const char *argv[])
 				}
 
 				// If retrieving the password failed, log an error and fall back to requesting from the GUI
-				NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
+				NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Ace for internal authentication");
 
 				argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded; please enter the SSH password for %@:", @"Prompt for SSH password when direct fetch failed"), connectionName];
 			}
@@ -165,7 +165,7 @@ int main(int argc, const char *argv[])
 			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 
 			if (!sequelProTunnel) {
-				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Ace to show SSH question");
 				return 1;
 			}
 			passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
@@ -191,7 +191,7 @@ int main(int argc, const char *argv[])
 			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
 
 			if (!sequelProTunnel) {
-				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+				NSLog(@"SSH Tunnel: unable to connect to Sequel Ace to show SSH question");
 				return 1;
 			}
 

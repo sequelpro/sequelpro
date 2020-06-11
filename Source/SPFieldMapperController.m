@@ -125,7 +125,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	// Set source path
 	// Note: [fileSourcePath setURL:[NSURL fileWithPath:sourcePath]] does NOT work
-	// if Sequel Pro runs localized. Reason unknown, it seems to be a NSPathControl bug.
+	// if Sequel Ace runs localized. Reason unknown, it seems to be a NSPathControl bug.
 	// Ask HansJB for more info.
 	NSPathControl *pc = [[[NSPathControl alloc] initWithFrame:NSZeroRect] autorelease];
 	[pc setURL:[NSURL fileURLWithPath:sourcePath]];

@@ -30,7 +30,7 @@
 #
 #  More info at <https://github.com/sequelpro/sequelpro>
 
-#  A very basic script to build and sign a disk image for Sequel Pro;
+#  A very basic script to build and sign a disk image for Sequel Ace;
 #  based on better work by Stuart Connolly.
 #
 #  Ensure the path to the application has been supplied - should have occurred when the
@@ -46,7 +46,7 @@ fi
 VERSION_NUMBER=`cat "${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}/Contents/Info.plist" | tr -d "\n\t" | sed -e 's/.*<key>CFBundleShortVersionString<\/key><string>\([^<]*\)<\/string>.*/\1/'`
 
 # Define target disk image name and temporary names
-DMG_VOLUME_NAME="Sequel Pro ${VERSION_NUMBER}"
+DMG_VOLUME_NAME="Sequel Ace ${VERSION_NUMBER}"
 DMG_NAME="sequel-pro-${VERSION_NUMBER}"
 DMG_BUILD_PATH="${BUILT_PRODUCTS_DIR}"
 DISTTEMP="${DMG_BUILD_PATH}/disttemp"

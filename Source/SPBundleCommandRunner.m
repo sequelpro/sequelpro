@@ -276,7 +276,7 @@
 	if([theEnv objectForKey:SPBundleShellVariableInputTableMetaData])
 		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableInputTableMetaData] error:nil];
 	
-	// If return from bash re-activate Sequel Pro
+	// If return from bash re-activate Sequel Ace
 	[NSApp activateIgnoringOtherApps:YES];
 	
 	NSInteger status = [bashTask terminationStatus];

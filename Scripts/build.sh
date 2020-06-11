@@ -30,7 +30,7 @@
 #
 #  More info at <https://github.com/sequelpro/sequelpro>
 
-#  Generic Sequel Pro build script. This script is intended to replace entering lots of code
+#  Generic Sequel Ace build script. This script is intended to replace entering lots of code
 #  into Xcode's 'Run Scripts' build phase to make it easier to work with. As such this script
 #  can only be run by Xcode.
 
@@ -50,7 +50,7 @@ dev_sign_resource()
 {
 	log "Signing resource: $1"
 
-	codesign -f -s 'Sequel Pro Development' "$1" 2>&1
+	codesign -f -s 'Sequel Ace Development' "$1" 2>&1
 }
 
 dist_sign_framework()
@@ -171,8 +171,8 @@ fi
 
 ls -d -1 "$FRAMEWORKS_PATH"/** > "$FRAMEWORKS_LIST"
 
-echo "${BUILD_PRODUCT}/Contents/Library/QuickLook/Sequel Pro.qlgenerator" >> "$FILES_TO_SIGN_LIST"
-echo "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant" >> "$FILES_TO_SIGN_LIST"
+echo "${BUILD_PRODUCT}/Contents/Library/QuickLook/Sequel Ace.qlgenerator" >> "$FILES_TO_SIGN_LIST"
+echo "${BUILD_PRODUCT}/Contents/Resources/SequelAceTunnelAssistant" >> "$FILES_TO_SIGN_LIST"
 echo "${BUILD_PRODUCT}" >> "$FILES_TO_SIGN_LIST"
 
 # Perform distribution specific tasks if this is a 'Distribution' build

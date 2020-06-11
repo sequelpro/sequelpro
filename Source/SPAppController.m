@@ -317,7 +317,7 @@
 }
 
 /**
- * Called if user drag and drops files on Sequel Pro's dock item or double-clicked
+ * Called if user drag and drops files on Sequel Ace's dock item or double-clicked
  * at files *.spf or *.sql
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
@@ -681,7 +681,7 @@
 		return;
 	}
 	
-	// Reload Bundles if Sequel Pro didn't run
+	// Reload Bundles if Sequel Ace didn't run
 	if (![installedBundleUUIDs count]) {
 		[self reloadBundles:self];
 	}
@@ -1520,7 +1520,7 @@
 }
 
 #pragma mark -
-#pragma mark Sequel Pro menu methods
+#pragma mark Sequel Ace menu methods
 
 /**
  * Opens donate link in default browser
@@ -1630,7 +1630,7 @@
 		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
 		nil];
 
-	// If ~/Library/Application Path/Sequel Pro/Bundles couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Bundles couldn't be created bail
 	if(appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Bundles Installation Error", @"bundles installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -2217,7 +2217,7 @@
 }
 
 /**
- * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
+ * Sparkle updater delegate method. Called just before the updater relaunches Sequel Ace and we need to make
  * sure that no sheets are currently open, which will prevent the app from being quit. 
  */
 - (void)updaterWillRelaunchApplication:(SUUpdater *)updater
@@ -2240,7 +2240,7 @@
 }
 
 /**
- * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller.
+ * If Sequel Ace is terminating kill all running BASH scripts and release all HTML output controller.
  *
  * TODO: Remove a lot of this duplicate code.
  */
@@ -2317,7 +2317,7 @@
     NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
     NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
 	
-	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Themes couldn't be created bail
 	if (appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button")
@@ -2414,7 +2414,7 @@
 }
 
 /**
- * AppleScript handler to quit Sequel Pro
+ * AppleScript handler to quit Sequel Ace
  *
  * This handler is required to allow termination via the Dock or AppleScript event after activating it using AppleScript
  */

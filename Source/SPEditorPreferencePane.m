@@ -774,7 +774,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
 - (NSArray *)_getAvailableThemes
 {
-	// Read ~/Library/Application Support/Sequel Pro/Themes
+	// Read ~/Library/Application Support/Sequel Ace/Themes
 	NSFileManager *fm = [NSFileManager defaultManager];
 	
 	if ([fm fileExistsAtPath:themePath isDirectory:nil]) {

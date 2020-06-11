@@ -238,7 +238,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 #pragma mark Private API
 
 /**
- * Attempts to load the users connection favorites from ~/Library/Application Support/Sequel Pro/Data/Favorites.plist
+ * Attempts to load the users connection favorites from ~/Library/Application Support/Sequel Ace/Data/Favorites.plist
  * If the 'Data' directory doesn't already exist it will be created, as well as an empty favorites plist.
  */
 - (void)_loadFavorites

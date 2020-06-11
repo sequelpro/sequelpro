@@ -26,7 +26,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-// This version of the NoodleLineNumberView for Sequel Pro removes marker
+// This version of the NoodleLineNumberView for Sequel Ace removes marker
 // functionality and adds selection by clicking on the ruler. Furthermore
 // the code was optimized.
 

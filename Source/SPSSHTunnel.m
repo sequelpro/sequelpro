@@ -335,7 +335,7 @@ static unsigned short getRandomPort();
 			// Enable automatic connection muxing/sharing, for faster connections
 			TA(@"-o",@"ControlMaster=auto");
 
-			// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+			// Set a custom control path to isolate connection sharing to Sequel Ace, to prevent picking up
 			// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
 			// hashed path to aid length limit issues.
 			unsigned char hashedPathResult[16];
@@ -392,7 +392,7 @@ static unsigned short getRandomPort();
 		[task setArguments:taskArguments];
 
 		// Set up the environment for the task
-		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
+		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelAceTunnelAssistant"];
 		taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 		[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 		[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
@@ -431,7 +431,7 @@ static unsigned short getRandomPort();
 					close(fd);
 					fprintf(stderr, (
 						"!!!\n"
-						"!!! You are running Sequel Pro from a TTY.\n"
+						"!!! You are running Sequel Ace from a TTY.\n"
 						"!!! Any SSH connections that require user input (e.g. a password/passphrase) will fail\n"
 						"!!!  and appear stalled indefinitely.\n"
 						"!!! Sorry!\n"
@@ -615,7 +615,7 @@ static unsigned short getRandomPort();
 }
 
 /*
- * Method to request the password for the current connection, as used by SequelProTunnelAssistant;
+ * Method to request the password for the current connection, as used by SequelAceTunnelAssistant;
  * called with a verification hash to check against the stored hash, to provide basic security.  Note
  * that this is easily bypassed, but if bypassed the password can already easily be retrieved in the same way.
  */

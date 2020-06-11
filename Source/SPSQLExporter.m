@@ -153,7 +153,7 @@
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# ************************************************************\n"];
-	[metaString appendString:@"# Sequel Pro SQL dump\n"];
+	[metaString appendString:@"# Sequel Ace SQL dump\n"];
 	[metaString appendFormat:@"# %@ %@\n#\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[metaString appendFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
 	[metaString appendFormat:@"# %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [self sqlDatabaseHost], [self sqlDatabaseVersion]];

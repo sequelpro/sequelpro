@@ -2129,7 +2129,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 					else
 						 [messageText appendFormat:NSLocalizedString(@"%ld additional rows were removed!",@"Table Content : Remove Row : Result : Too Many : Part 1 : n+y (y!=1) rows instead of n selected were deleted."),numErrors];
 					
-					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Pro team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
+					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Ace team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
 					
 				}
 				else {

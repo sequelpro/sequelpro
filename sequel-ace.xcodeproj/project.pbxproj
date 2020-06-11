@@ -232,7 +232,7 @@
 		580E8DBB11EA774B000D8427 /* SequelProTabDirty_Rollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAF11EA772C000D8427 /* SequelProTabDirty_Rollover.png */; };
 		580E8DBC11EA774B000D8427 /* SequelProTabDirty.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DB011EA772C000D8427 /* SequelProTabDirty.png */; };
 		581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 581068B51015411B0068C6E2 /* link-arrow-highlighted.png */; };
-		581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */ = {isa = PBXBuildFile; fileRef = 58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */; };
+		581069B410167EC10068C6E2 /* SequelAceTunnelAssistant in Resources */ = {isa = PBXBuildFile; fileRef = 58CDB3360FCE13C900F8ACA3 /* SequelAceTunnelAssistant */; };
 		58186D210F4CB38900851FE9 /* ConnectionErrorDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58186D1F0F4CB38900851FE9 /* ConnectionErrorDialog.xib */; };
 		5822C9B51000DB2400DCC3D6 /* SPConnectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */; };
 		5822CAE110011C8000DCC3D6 /* ConnectionView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5822CADF10011C8000DCC3D6 /* ConnectionView.xib */; };
@@ -295,7 +295,7 @@
 		58475703120A1B290057631F /* SPQLPluginContentFiltersTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 584756FC120A1B290057631F /* SPQLPluginContentFiltersTemplate.html */; };
 		58475704120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 584756FE120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html */; };
 		58475705120A1B290057631F /* SPQLPluginSQLTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 58475700120A1B290057631F /* SPQLPluginSQLTemplate.html */; };
-		5847577D120A1E8A0057631F /* Sequel Pro.qlgenerator in Copy QuickLook Plugins */ = {isa = PBXBuildFile; fileRef = 584754C2120A04560057631F /* Sequel Pro.qlgenerator */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		5847577D120A1E8A0057631F /* Sequel Ace.qlgenerator in Copy QuickLook Plugins */ = {isa = PBXBuildFile; fileRef = 584754C2120A04560057631F /* Sequel Ace.qlgenerator */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		584D878B15140FEB00F24774 /* SPObjectAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D878A15140FEB00F24774 /* SPObjectAdditions.m */; };
 		584D87921514101E00F24774 /* SPDatabaseStructure.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D87911514101E00F24774 /* SPDatabaseStructure.m */; };
 		584D87C415141A5D00F24774 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 584D87BE15141A4A00F24774 /* libz.dylib */; };
@@ -367,7 +367,7 @@
 		58C6C71F11FBB18000A3F5E9 /* UniversalDetector.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
-		58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */; };
+		58CDB3410FCE141900F8ACA3 /* SequelAceTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelAceTunnelAssistant.m */; };
 		58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		58D2A6A716FBDEFF002EB401 /* SPComboPopupButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */; };
 		58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2E227101222670063EF1D /* SPTextAndLinkCell.m */; };
@@ -619,7 +619,7 @@
 			dstPath = Contents/Library/QuickLook;
 			dstSubfolderSpec = 1;
 			files = (
-				5847577D120A1E8A0057631F /* Sequel Pro.qlgenerator in Copy QuickLook Plugins */,
+				5847577D120A1E8A0057631F /* Sequel Ace.qlgenerator in Copy QuickLook Plugins */,
 			);
 			name = "Copy QuickLook Plugins";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -972,7 +972,7 @@
 		5843DA6B161FA35600EAA6D1 /* key-icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "key-icon@2x.png"; sourceTree = "<group>"; };
 		5843E245162B555B00EAA6D1 /* SPThreadAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPThreadAdditions.h; sourceTree = "<group>"; };
 		5843E246162B555B00EAA6D1 /* SPThreadAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPThreadAdditions.m; sourceTree = "<group>"; };
-		584754C2120A04560057631F /* Sequel Pro.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Sequel Pro.qlgenerator"; sourceTree = BUILT_PRODUCTS_DIR; };
+		584754C2120A04560057631F /* Sequel Ace.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Sequel Ace.qlgenerator"; sourceTree = BUILT_PRODUCTS_DIR; };
 		584754D0120A05910057631F /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratePreviewForURL.m; sourceTree = "<group>"; };
 		584754D1120A05910057631F /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GenerateThumbnailForURL.m; sourceTree = "<group>"; };
 		584754D2120A05910057631F /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
@@ -980,7 +980,7 @@
 		584756B4120A06740057631F /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		584756B6120A067B0057631F /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		584756B8120A06830057631F /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = /System/Library/Frameworks/QuickLook.framework; sourceTree = "<absolute>"; };
-		584756DC120A162E0057631F /* Sequel Pro QLGenerator-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Sequel Pro QLGenerator-Info.plist"; path = "Plists/Sequel Pro QLGenerator-Info.plist"; sourceTree = "<group>"; };
+		584756DC120A162E0057631F /* Sequel Ace QLGenerator-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Sequel Ace QLGenerator-Info.plist"; path = "Plists/Sequel Ace QLGenerator-Info.plist"; sourceTree = "<group>"; };
 		584D876015140D3500F24774 /* SPMySQLFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPMySQLFramework.xcodeproj; path = Frameworks/SPMySQLFramework/SPMySQLFramework.xcodeproj; sourceTree = "<group>"; };
 		584D878915140FEB00F24774 /* SPObjectAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPObjectAdditions.h; sourceTree = "<group>"; };
 		584D878A15140FEB00F24774 /* SPObjectAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPObjectAdditions.m; sourceTree = "<group>"; };
@@ -1080,8 +1080,8 @@
 		58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniversalDetector.framework; path = Frameworks/UniversalDetector.framework; sourceTree = "<group>"; };
 		58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSSHTunnel.h; sourceTree = "<group>"; };
 		58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSSHTunnel.m; sourceTree = "<group>"; };
-		58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SequelProTunnelAssistant.m; sourceTree = "<group>"; };
-		58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SequelProTunnelAssistant; sourceTree = BUILT_PRODUCTS_DIR; };
+		58CDB3310FCE139C00F8ACA3 /* SequelAceTunnelAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SequelAceTunnelAssistant.m; sourceTree = "<group>"; };
+		58CDB3360FCE13C900F8ACA3 /* SequelAceTunnelAssistant */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SequelAceTunnelAssistant; sourceTree = BUILT_PRODUCTS_DIR; };
 		58D2A6A516FBDEFF002EB401 /* SPComboPopupButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPComboPopupButton.h; sourceTree = "<group>"; };
 		58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPComboPopupButton.m; sourceTree = "<group>"; };
 		58D2E227101222670063EF1D /* SPTextAndLinkCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextAndLinkCell.m; sourceTree = "<group>"; };
@@ -1111,7 +1111,7 @@
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
 		73F70A941E4E547500636550 /* SPJSONFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPJSONFormatter.h; sourceTree = "<group>"; };
 		73F70A951E4E547500636550 /* SPJSONFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatter.m; sourceTree = "<group>"; };
-		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D15AC370486D014006FF6A4 /* Sequel Ace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Ace.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		965125F424926B6300E65B53 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		965125F524926B6300E65B53 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		965125F624926B6300E65B53 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = ../en.lproj/ContentFilters.plist; sourceTree = "<group>"; };
@@ -1154,7 +1154,7 @@
 		9651261C24926B7F00E65B53 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		9651261D24926B7F00E65B53 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/FilterTableWindow.xib; sourceTree = "<group>"; };
 		9651261E24926B7F00E65B53 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/HelpViewer.xib; sourceTree = "<group>"; };
-		9651261F24926C7900E65B53 /* Sequel Pro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Sequel Pro.entitlements"; sourceTree = "<group>"; };
+		9651261F24926C7900E65B53 /* Sequel Ace.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Sequel Ace.entitlements"; sourceTree = "<group>"; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
 		9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerClient.m; sourceTree = "<group>"; };
@@ -1635,7 +1635,7 @@
 				BCB56196106F893F00167321 /* ContentFilters.plist */,
 				BCB5619A106F8A1B00167321 /* EditorQuickLookTypes.plist */,
 				BC962D651144EACA006170BD /* CompletionTokens.plist */,
-				584756DC120A162E0057631F /* Sequel Pro QLGenerator-Info.plist */,
+				584756DC120A162E0057631F /* Sequel Ace QLGenerator-Info.plist */,
 			);
 			name = Plists;
 			sourceTree = "<group>";
@@ -2011,7 +2011,7 @@
 			children = (
 				58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */,
 				58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */,
-				58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */,
+				58CDB3310FCE139C00F8ACA3 /* SequelAceTunnelAssistant.m */,
 			);
 			name = "SSH Tunnel";
 			sourceTree = "<group>";
@@ -2243,12 +2243,12 @@
 		19C28FB0FE9D524F11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D15AC370486D014006FF6A4 /* Sequel Pro.app */,
+				8D15AC370486D014006FF6A4 /* Sequel Ace.app */,
 				380F4ED90FC0B50500B0BFD7 /* Unit Tests.xctest */,
-				58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
+				58CDB3360FCE13C900F8ACA3 /* SequelAceTunnelAssistant */,
 				58B906E611BD989A000826E5 /* PSMTabBar.framework */,
 				58B9096111C3A42B000826E5 /* xibLocalizationPostprocessor */,
-				584754C2120A04560057631F /* Sequel Pro.qlgenerator */,
+				584754C2120A04560057631F /* Sequel Ace.qlgenerator */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2277,7 +2277,7 @@
 		2A37F4AAFDCFA73011CA2CEA /* sequel-pro */ = {
 			isa = PBXGroup;
 			children = (
-				9651261F24926C7900E65B53 /* Sequel Pro.entitlements */,
+				9651261F24926C7900E65B53 /* Sequel Ace.entitlements */,
 				1798F17E1550171B004B0AB8 /* LICENSE */,
 				38F37194182F0621008EB031 /* readme.md */,
 				17E641420EF01E8A001BC333 /* Source */,
@@ -2634,9 +2634,9 @@
 			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		584754C1120A04560057631F /* Sequel Pro QLGenerator */ = {
+		584754C1120A04560057631F /* Sequel Ace QLGenerator */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Pro QLGenerator" */;
+			buildConfigurationList = 584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Ace QLGenerator" */;
 			buildPhases = (
 				BCD06FD5120AAAD700C73602 /* Headers */,
 				584754BE120A04560057631F /* Resources */,
@@ -2647,9 +2647,9 @@
 			);
 			dependencies = (
 			);
-			name = "Sequel Pro QLGenerator";
+			name = "Sequel Ace QLGenerator";
 			productName = "Sequel Pro QLGenerator";
-			productReference = 584754C2120A04560057631F /* Sequel Pro.qlgenerator */;
+			productReference = 584754C2120A04560057631F /* Sequel Ace.qlgenerator */;
 			productType = "com.apple.product-type.bundle";
 		};
 		58B906E511BD989A000826E5 /* PSMTabBar */ = {
@@ -2685,9 +2685,9 @@
 			productReference = 58B9096111C3A42B000826E5 /* xibLocalizationPostprocessor */;
 			productType = "com.apple.product-type.tool";
 		};
-		58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {
+		58CDB3350FCE13C900F8ACA3 /* SequelAceTunnelAssistant */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelProTunnelAssistant" */;
+			buildConfigurationList = 58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelAceTunnelAssistant" */;
 			buildPhases = (
 				58CDB3330FCE13C900F8ACA3 /* Sources */,
 				58CDB3340FCE13C900F8ACA3 /* Frameworks */,
@@ -2697,9 +2697,9 @@
 			dependencies = (
 				17D41AB22171157B00B1888D /* PBXTargetDependency */,
 			);
-			name = SequelProTunnelAssistant;
+			name = SequelAceTunnelAssistant;
 			productName = TunnelPassphraseRequester;
-			productReference = 58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */;
+			productReference = 58CDB3360FCE13C900F8ACA3 /* SequelAceTunnelAssistant */;
 			productType = "com.apple.product-type.tool";
 		};
 		8D15AC270486D014006FF6A4 /* Sequel Ace */ = {
@@ -2724,7 +2724,7 @@
 			name = "Sequel Ace";
 			productInstallPath = "$(HOME)/Applications";
 			productName = "sequel-pro";
-			productReference = 8D15AC370486D014006FF6A4 /* Sequel Pro.app */;
+			productReference = 8D15AC370486D014006FF6A4 /* Sequel Ace.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2769,10 +2769,10 @@
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Ace */,
 				380F4ED80FC0B50500B0BFD7 /* Unit Tests */,
-				58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
+				58CDB3350FCE13C900F8ACA3 /* SequelAceTunnelAssistant */,
 				58B906E511BD989A000826E5 /* PSMTabBar */,
 				58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */,
-				584754C1120A04560057631F /* Sequel Pro QLGenerator */,
+				584754C1120A04560057631F /* Sequel Ace QLGenerator */,
 				1798AB1C12676EA0000D946A /* Localize */,
 			);
 		};
@@ -2897,7 +2897,7 @@
 				58D2E230101222870063EF1D /* link-arrow.png in Resources */,
 				17B548781E82B02100175D5A /* button_remove@2x.png in Resources */,
 				581068B61015411B0068C6E2 /* link-arrow-highlighted.png in Resources */,
-				581069B410167EC10068C6E2 /* SequelProTunnelAssistant in Resources */,
+				581069B410167EC10068C6E2 /* SequelAceTunnelAssistant in Resources */,
 				4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */,
 				BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */,
 				BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */,
@@ -3141,7 +3141,7 @@
 				17D41A8221700F8200B1888D /* SPFunctions.m in Sources */,
 				507FF2421BC33BBC00104523 /* SPOSInfo.m in Sources */,
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
-				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
+				58CDB3410FCE141900F8ACA3 /* SequelAceTunnelAssistant.m in Sources */,
 				58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */,
 				58C61CFA11960312003BAA5D /* SPAlertSheets.m in Sources */,
 				584D88AA1515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */,
@@ -3334,7 +3334,7 @@
 		};
 		5847571E120A1C6D0057631F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 584754C1120A04560057631F /* Sequel Pro QLGenerator */;
+			target = 584754C1120A04560057631F /* Sequel Ace QLGenerator */;
 			targetProxy = 5847571D120A1C6D0057631F /* PBXContainerItemProxy */;
 		};
 		58B907CD11BDA552000826E5 /* PBXTargetDependency */ = {
@@ -3349,7 +3349,7 @@
 		};
 		58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */;
+			target = 58CDB3350FCE13C900F8ACA3 /* SequelAceTunnelAssistant */;
 			targetProxy = 58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -3716,7 +3716,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = Localize;
-				UNLOCALIZED_RESOURCES_FOLDER_PATH = "Sequel Pro.app/Contents/Resources";
+				UNLOCALIZED_RESOURCES_FOLDER_PATH = "Sequel Ace.app/Contents/Resources";
 			};
 			name = Debug;
 		};
@@ -3743,7 +3743,7 @@
 		380F4EDB0FC0B50600B0BFD7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Ace.app/Contents/MacOS/Sequel Ace";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
@@ -3766,7 +3766,7 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Debug;
@@ -3774,7 +3774,7 @@
 		380F4EDC0FC0B50600B0BFD7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Ace.app/Contents/MacOS/Sequel Ace";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3794,7 +3794,7 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Release;
@@ -3802,7 +3802,7 @@
 		380F4EDD0FC0B50600B0BFD7 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Pro.app/Contents/MacOS/Sequel Pro";
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Ace.app/Contents/MacOS/Sequel Ace";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -3822,7 +3822,7 @@
 					"-framework",
 					OCMock,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.tests";
 				PRODUCT_NAME = "Unit Tests";
 			};
 			name = Distribution;
@@ -3837,10 +3837,10 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
+				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
+				PRODUCT_NAME = "Sequel Ace";
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Debug;
@@ -3855,10 +3855,10 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
+				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
+				PRODUCT_NAME = "Sequel Ace";
 				WRAPPER_EXTENSION = qlgenerator;
 				ZERO_LINK = NO;
 			};
@@ -3872,10 +3872,10 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
+				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.SequelPro.qlgenerator;
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
+				PRODUCT_NAME = "Sequel Ace";
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Distribution;
@@ -3949,15 +3949,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_ENTITLEMENTS = "Sequel Pro.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Sequel Ace.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 20000;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
+				ENABLE_STRICT_OBJC_MSGSEND = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
+				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
@@ -3968,7 +3970,7 @@
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "x86_64 i386";
@@ -4117,7 +4119,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = SequelProTunnelAssistant;
+				PRODUCT_NAME = SequelAceTunnelAssistant;
 			};
 			name = Debug;
 		};
@@ -4140,7 +4142,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = SequelProTunnelAssistant;
+				PRODUCT_NAME = SequelAceTunnelAssistant;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4162,7 +4164,7 @@
 					"-framework",
 					AppKit,
 				);
-				PRODUCT_NAME = SequelProTunnelAssistant;
+				PRODUCT_NAME = SequelAceTunnelAssistant;
 			};
 			name = Distribution;
 		};
@@ -4170,15 +4172,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_ENTITLEMENTS = "Sequel Pro.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Sequel Ace.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 20000;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
+				ENABLE_STRICT_OBJC_MSGSEND = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
+				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
@@ -4189,7 +4193,7 @@
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "x86_64 i386";
@@ -4200,16 +4204,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_ENTITLEMENTS = "Sequel Pro.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Sequel Ace.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 20000;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
+				ENABLE_STRICT_OBJC_MSGSEND = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
+				GCC_NO_COMMON_BLOCKS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
@@ -4220,7 +4226,7 @@
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
-				PRODUCT_NAME = "Sequel Pro";
+				PRODUCT_NAME = "Sequel Ace";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SEPARATE_STRIP = NO;
 				VALID_ARCHS = "x86_64 i386";
@@ -4388,7 +4394,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Pro QLGenerator" */ = {
+		584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Ace QLGenerator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				584754C4120A04560057631F /* Debug */,
@@ -4418,7 +4424,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelProTunnelAssistant" */ = {
+		58CDB33F0FCE13E300F8ACA3 /* Build configuration list for PBXNativeTarget "SequelAceTunnelAssistant" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				58CDB3380FCE13CB00F8ACA3 /* Debug */,

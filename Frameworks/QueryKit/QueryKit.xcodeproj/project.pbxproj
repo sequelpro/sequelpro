@@ -513,7 +513,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit";
 				PRODUCT_NAME = QueryKit;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wmost";
@@ -541,7 +541,7 @@
 					"-framework",
 					Cocoa,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit.tests";
 				PRODUCT_NAME = Tests;
 			};
 			name = Debug;
@@ -565,7 +565,7 @@
 					"-framework",
 					Cocoa,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit.tests";
 				PRODUCT_NAME = Tests;
 				ZERO_LINK = NO;
 			};
@@ -588,7 +588,7 @@
 					"-framework",
 					Cocoa,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit.tests";
 				PRODUCT_NAME = Tests;
 			};
 			name = Distribution;
@@ -634,7 +634,7 @@
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit";
 				PRODUCT_NAME = QueryKit;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wmost";
@@ -679,7 +679,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.querykit;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.querykit";
 				PRODUCT_NAME = QueryKit;
 				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wmost";

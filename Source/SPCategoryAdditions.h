@@ -30,7 +30,7 @@
 
 /**
  * This header is intended to import all of our custom category additions to classes outwith our control.
- * It is subsequently included in Sequel Pro's precompiled header making all of the additional methods/functions 
+ * It is subsequently included in Sequel Ace's precompiled header making all of the additional methods/functions 
  * included in header available to all classes within the application.
  */
 

@@ -987,7 +987,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 		SPOnewayAlertSheet(
 			[NSString stringWithFormat:NSLocalizedString(@"Failed to remove index '%@'", @"table structure : indexes : delete index : no columns error : title"),keyName],
 			[dbDocument parentWindow],
-			NSLocalizedString(@"Sequel Pro could not find any columns belonging to this index. Maybe it has been removed already?", @"table structure : indexes : delete index : no columns error : description")
+			NSLocalizedString(@"Sequel Ace could not find any columns belonging to this index. Maybe it has been removed already?", @"table structure : indexes : delete index : no columns error : description")
 		);
 		return;
 	}

@@ -41,7 +41,7 @@
 + (SPFavoriteColorSupport *)sharedInstance;
 
 /** 
- * Get the default list of colors supplied by Sequel Pro.
+ * Get the default list of colors supplied by Sequel Ace.
  * 
  * @return An array with NSColor * items.
  */

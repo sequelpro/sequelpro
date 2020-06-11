@@ -54,7 +54,7 @@ static NSString *PreviewForSQL(NSURL *myURL, NSInteger *previewHeight, QLPreview
 
 static inline NSString *PathForHTMLResource(NSString *named)
 {
-	return [[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:named ofType:@"html"];
+	return [[NSBundle bundleWithIdentifier:@"com.sequel-ace.sequel-ace.qlgenerator"] pathForResource:named ofType:@"html"];
 }
 
 #pragma mark -
@@ -88,7 +88,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		if(html) {
 			NSImage *iconImage;
 
-			// Get current Sequel Pro's set of file icons
+			// Get current Sequel Ace's set of file icons
 			NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
 
 			// just in case

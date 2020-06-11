@@ -1781,7 +1781,7 @@ set_input:
 
 	[header setString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
 	[header appendString:@"<!--\n-\n"];
-	[header appendString:@"- Sequel Pro XML dump\n"];
+	[header appendString:@"- Sequel Ace XML dump\n"];
 	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
 	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
@@ -3071,7 +3071,7 @@ set_input:
 			NSDictionary *errInfo = @{
 									  @"isVersion":                          @(version),
 									  NSLocalizedDescriptionKey:             NSLocalizedString(@"Unsupported version for export settings!", @"export : import settings : file version error title"),
-									  NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace."),version,@"1"],
+									  NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Ace.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace."),version,@"1"],
 									  };
 			*err = [NSError errorWithDomain:SPErrorDomain
 									   code:SPErrorWrongContentVersion

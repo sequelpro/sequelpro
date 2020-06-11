@@ -11,9 +11,9 @@
 			<string>QLGenerator</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.sequelpro.SequelPro.spf</string>
-				<string>com.sequelpro.SequelPro.sql</string>
-				<string>com.sequelpro.SequelPro.spfs</string>
+				<string>com.sequel-ace.sequel-ace.spf</string>
+				<string>com.sequel-ace.sequel-ace.sql</string>
+				<string>com.sequel-ace.sequel-ace.spfs</string>
 			</array>
 		</dict>
 	</array>

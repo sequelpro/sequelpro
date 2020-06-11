@@ -633,7 +633,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				OTHER_LDFLAGS = "-lc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql";
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -659,7 +659,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				OTHER_LDFLAGS = "-lc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql";
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -763,7 +763,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sequelpro.spmysql-unittests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql-unittests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -794,7 +794,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sequelpro.spmysql-unittests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql-unittests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -825,7 +825,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sequelpro.spmysql-unittests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql-unittests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Distribution;
@@ -887,7 +887,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				OTHER_LDFLAGS = "-lc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql";
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
@@ -924,7 +924,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sequelpro.spmysql-unittests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql-unittests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = "Unit Testing";
@@ -980,7 +980,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				OTHER_LDFLAGS = "-lc++";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sequelpro.spmysql;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.spmysql";
 				PRODUCT_NAME = SPMySQL;
 				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;

@@ -1050,7 +1050,7 @@ static BOOL isOSAtLeast10_14;
 		}
 	}
 	// shutdown successful.
-	// Until s.o. has a good UI idea, do nothing. Sequel Pro should figure out the connection loss soon enough
+	// Until s.o. has a good UI idea, do nothing. Sequel Ace should figure out the connection loss soon enough
 }
 
 #endif
@@ -2767,7 +2767,7 @@ static BOOL isOSAtLeast10_14;
 		return NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting");
 	}
 	
-	if ([self getConnection] == nil) return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+	if ([self getConnection] == nil) return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Ace"];
 
 	tabTitle = [NSMutableString string];
 
@@ -3855,7 +3855,7 @@ static BOOL isOSAtLeast10_14;
 		tabTitle = windowTitle;
 	}
 	else if (!_isConnected) {
-		windowTitle = [NSMutableString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+		windowTitle = [NSMutableString stringWithFormat:@"%@%@", pathName, @"Sequel Ace"];
 		tabTitle = windowTitle;
 	} 
 	else {
@@ -4058,7 +4058,7 @@ static BOOL isOSAtLeast10_14;
 
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarShowConsole]) {
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"show console")];
-		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Ace", @"tooltip for toolbar item for show console")];
 
 		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
@@ -4072,7 +4072,7 @@ static BOOL isOSAtLeast10_14;
 		[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Ace", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
 		[toolbarItem setTarget:self];
@@ -4546,7 +4546,7 @@ static BOOL isOSAtLeast10_14;
 - (NSString *)displayName
 {
 	if (!_isConnected) {
-		return [NSString stringWithFormat:@"%@%@", ([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Pro"];
+		return [NSString stringWithFormat:@"%@%@", ([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Ace"];
 	} 
 	return [[[self fileURL] path] lastPathComponent];
 }
