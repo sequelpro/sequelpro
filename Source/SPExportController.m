@@ -32,7 +32,6 @@
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPTableContent.h"
-#import "SPGrowlController.h"
 #import "SPExportFile.h"
 #import "SPAlertSheets.h"
 #import "SPExportFileNameTokenObject.h"
@@ -360,13 +359,16 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 /**
  * Displays the export finished Growl notification.
  */
-- (void)displayExportFinishedGrowlNotification
+- (void)displayExportFinishedNotification
 {
-	// Export finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
-													  document:tableDocumentInstance
-											  notificationName:@"Export Finished"];
+	// Export finished notification
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Export Finished";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting notification"), exportFilename];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 }
 
 #pragma mark -
@@ -1219,8 +1221,8 @@ set_input:
 	// Restore query mode
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
-	// Display Growl notification
-	[self displayExportFinishedGrowlNotification];
+	// Display export finished notification
+	[self displayExportFinishedNotification];
 
 	// Restore the connection encoding to it's pre-export value
 	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
@@ -1339,9 +1341,6 @@ set_input:
 
 	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
-
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 
 	// Setup the progress sheet
 	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];

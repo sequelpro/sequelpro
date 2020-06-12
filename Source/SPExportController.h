@@ -257,7 +257,7 @@
 
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
-- (void)displayExportFinishedGrowlNotification;
+- (void)displayExportFinishedNotification;
 
 /**
  * Tries to set the export input to a given value or falls back to a default if not valid

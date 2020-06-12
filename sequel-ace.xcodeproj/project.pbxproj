@@ -96,7 +96,6 @@
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* SPCustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* SPCustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
-		17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414D0EF01EF6001BC333 /* SPGrowlController.m */; };
 		17E641590EF01EF6001BC333 /* SPTableContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414F0EF01EF6001BC333 /* SPTableContent.m */; };
 		17E6415A0EF01EF6001BC333 /* SPDatabaseDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */; };
 		17E6415B0EF01EF6001BC333 /* SPDataImport.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641530EF01EF6001BC333 /* SPDataImport.m */; };
@@ -146,8 +145,6 @@
 		4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */; };
 		4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79D101E0CF200D116A1 /* SPUserMO.m */; };
 		4D90B7A2101E0D1500D116A1 /* UserManagerView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */; };
-		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
-		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		50082B3D1BF7CD2100746ECC /* ICUTemplateMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */; };
 		50082B3E1BF7CD2100746ECC /* NSArray_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */; };
 		50082B3F1BF7CD2100746ECC /* NSDictionary_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B10F909194002A3258 /* NSDictionary_DeepMutableCopy.m */; };
@@ -576,7 +573,6 @@
 				9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */,
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
 				96965385249314600003321E /* UniversalDetector.framework in Copy Frameworks */,
-				4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */,
 				586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in Copy Frameworks */,
 				9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */,
 				58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */,
@@ -725,8 +721,6 @@
 		17E641490EF01EF6001BC333 /* SPCustomQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCustomQuery.m; sourceTree = "<group>"; };
 		17E6414A0EF01EF6001BC333 /* SPAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAppController.h; sourceTree = "<group>"; };
 		17E6414B0EF01EF6001BC333 /* SPAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAppController.m; sourceTree = "<group>"; };
-		17E6414C0EF01EF6001BC333 /* SPGrowlController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGrowlController.h; sourceTree = "<group>"; };
-		17E6414D0EF01EF6001BC333 /* SPGrowlController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGrowlController.m; sourceTree = "<group>"; };
 		17E6414E0EF01EF6001BC333 /* SPTableContent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContent.h; sourceTree = "<group>"; };
 		17E6414F0EF01EF6001BC333 /* SPTableContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContent.m; sourceTree = "<group>"; };
 		17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseDocument.h; sourceTree = "<group>"; };
@@ -1045,6 +1039,26 @@
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
 		73F70A941E4E547500636550 /* SPJSONFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPJSONFormatter.h; sourceTree = "<group>"; };
 		73F70A951E4E547500636550 /* SPJSONFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatter.m; sourceTree = "<group>"; };
+		8831EFA5224011B700D10172 /* button_addTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_addTemplate.pdf; sourceTree = "<group>"; };
+		8831EFA92240128600D10172 /* button_removeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_removeTemplate.pdf; sourceTree = "<group>"; };
+		8831EFAB2240131400D10172 /* button_editTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_editTemplate.pdf; sourceTree = "<group>"; };
+		8831EFAD2240135300D10172 /* button_duplicateTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_duplicateTemplate.pdf; sourceTree = "<group>"; };
+		8831EFAF224013AF00D10172 /* button_refreshTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_refreshTemplate.pdf; sourceTree = "<group>"; };
+		8831EFB12240143600D10172 /* button_bar_handleTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_bar_handleTemplate.pdf; sourceTree = "<group>"; };
+		8831EFB3224014C700D10172 /* button_clearTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_clearTemplate.pdf; sourceTree = "<group>"; };
+		8831EFB52240150A00D10172 /* button_add_folderTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_add_folderTemplate.pdf; sourceTree = "<group>"; };
+		8831EFB72240154A00D10172 /* button_leftTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_leftTemplate.pdf; sourceTree = "<group>"; };
+		8831EFB82240154A00D10172 /* button_rightTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_rightTemplate.pdf; sourceTree = "<group>"; };
+		8831EFBB2240159D00D10172 /* button_pane_hideTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_pane_hideTemplate.pdf; sourceTree = "<group>"; };
+		8831EFBC2240159E00D10172 /* button_pane_showTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_pane_showTemplate.pdf; sourceTree = "<group>"; };
+		8831EFBF2240166D00D10172 /* button_select_allTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_allTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC02240166D00D10172 /* button_select_noneTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_noneTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC3224016DF00D10172 /* button_filterTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filterTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC4224016DF00D10172 /* button_filter_activeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filter_activeTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC5224016E000D10172 /* button_edit_mode_selectedTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_mode_selectedTemplate.pdf; sourceTree = "<group>"; };
+		8831EFC6224016E000D10172 /* button_edit_modeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_modeTemplate.pdf; sourceTree = "<group>"; };
+		8831EFCB2240175300D10172 /* button_actionTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_actionTemplate.pdf; sourceTree = "<group>"; };
+		8831EFCC2240175300D10172 /* button_paginationTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_paginationTemplate.pdf; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Ace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Ace.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		965125F424926B6300E65B53 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		965125F524926B6300E65B53 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1091,26 +1105,6 @@
 		9651261F24926C7900E65B53 /* Sequel Ace.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Sequel Ace.entitlements"; sourceTree = "<group>"; };
 		9696538624931AD10003321E /* SequelAceTunnelAssistant.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SequelAceTunnelAssistant.entitlements; sourceTree = "<group>"; };
 		9696538724931AE10003321E /* xibLocalizationPostprocessor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = xibLocalizationPostprocessor.entitlements; sourceTree = "<group>"; };
-		8831EFA5224011B700D10172 /* button_addTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_addTemplate.pdf; sourceTree = "<group>"; };
-		8831EFA92240128600D10172 /* button_removeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_removeTemplate.pdf; sourceTree = "<group>"; };
-		8831EFAB2240131400D10172 /* button_editTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_editTemplate.pdf; sourceTree = "<group>"; };
-		8831EFAD2240135300D10172 /* button_duplicateTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_duplicateTemplate.pdf; sourceTree = "<group>"; };
-		8831EFAF224013AF00D10172 /* button_refreshTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_refreshTemplate.pdf; sourceTree = "<group>"; };
-		8831EFB12240143600D10172 /* button_bar_handleTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_bar_handleTemplate.pdf; sourceTree = "<group>"; };
-		8831EFB3224014C700D10172 /* button_clearTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_clearTemplate.pdf; sourceTree = "<group>"; };
-		8831EFB52240150A00D10172 /* button_add_folderTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_add_folderTemplate.pdf; sourceTree = "<group>"; };
-		8831EFB72240154A00D10172 /* button_leftTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_leftTemplate.pdf; sourceTree = "<group>"; };
-		8831EFB82240154A00D10172 /* button_rightTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_rightTemplate.pdf; sourceTree = "<group>"; };
-		8831EFBB2240159D00D10172 /* button_pane_hideTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_pane_hideTemplate.pdf; sourceTree = "<group>"; };
-		8831EFBC2240159E00D10172 /* button_pane_showTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_pane_showTemplate.pdf; sourceTree = "<group>"; };
-		8831EFBF2240166D00D10172 /* button_select_allTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_allTemplate.pdf; sourceTree = "<group>"; };
-		8831EFC02240166D00D10172 /* button_select_noneTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_select_noneTemplate.pdf; sourceTree = "<group>"; };
-		8831EFC3224016DF00D10172 /* button_filterTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filterTemplate.pdf; sourceTree = "<group>"; };
-		8831EFC4224016DF00D10172 /* button_filter_activeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_filter_activeTemplate.pdf; sourceTree = "<group>"; };
-		8831EFC5224016E000D10172 /* button_edit_mode_selectedTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_mode_selectedTemplate.pdf; sourceTree = "<group>"; };
-		8831EFC6224016E000D10172 /* button_edit_modeTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_edit_modeTemplate.pdf; sourceTree = "<group>"; };
-		8831EFCB2240175300D10172 /* button_actionTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_actionTemplate.pdf; sourceTree = "<group>"; };
-		8831EFCC2240175300D10172 /* button_paginationTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = button_paginationTemplate.pdf; sourceTree = "<group>"; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
 		9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerClient.m; sourceTree = "<group>"; };
@@ -1264,7 +1258,6 @@
 				17AED4161888BD67008E380F /* Security.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
-				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				9651262224926F1200E65B53 /* QueryKit.framework in Frameworks */,
 				58B907CA11BDA541000826E5 /* PSMTabBar.framework in Frameworks */,
@@ -1534,8 +1527,6 @@
 		173E70D5107FF7AF008733C9 /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				17E6414C0EF01EF6001BC333 /* SPGrowlController.h */,
-				17E6414D0EF01EF6001BC333 /* SPGrowlController.m */,
 				589235311020C1230011DE00 /* SPHistoryController.h */,
 				589235301020C1230011DE00 /* SPHistoryController.m */,
 				5806B76211A991EC00813A88 /* SPDocumentController.h */,
@@ -3026,7 +3017,6 @@
 				17E641560EF01EF6001BC333 /* SPCustomQuery.m in Sources */,
 				17E641570EF01EF6001BC333 /* SPAppController.m in Sources */,
 				507FF1121BBCC57600104523 /* SPFunctions.m in Sources */,
-				17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */,
 				17E641590EF01EF6001BC333 /* SPTableContent.m in Sources */,
 				17E6415A0EF01EF6001BC333 /* SPDatabaseDocument.m in Sources */,
 				17E6415B0EF01EF6001BC333 /* SPDataImport.m in Sources */,
