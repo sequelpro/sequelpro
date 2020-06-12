@@ -1405,7 +1405,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			return;
 		}
 
-		NSEventModifierFlags modifierFlags = [[NSApp currentEvent] modifierFlags];
+		NSEventModifierFlags modifierFlags = [[[NSApp onMainThread] currentEvent] modifierFlags];
 
 		// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 		// header is clicked several times
@@ -1431,7 +1431,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 				isDesc = NO;
 			}
 
-			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
+			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[[tableContentView onMainThread] tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
 
 			if (sortCol) [sortCol release];
 
@@ -3276,7 +3276,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// Only proceed with key-based selection if there were no problem columns
 		if (!problemColumns) {
-			NSIndexSet *selectedRowIndexes = [tableContentView selectedRowIndexes];
+			NSIndexSet *selectedRowIndexes = [[tableContentView onMainThread] selectedRowIndexes];
 			NSUInteger *indexBuffer = calloc([selectedRowIndexes count], sizeof(NSUInteger));
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 
