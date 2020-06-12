@@ -1023,19 +1023,6 @@ CQ
                                     <action selector="showMySQLHelpForCurrentWord:" target="-1" id="BUY-hF-nKy"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="1029"/>
-                            <menuItem title="Provide Feedback" id="1028">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="provideFeedback:" target="213" id="1030"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Provide Translation Feedback" id="1093">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="provideTranslationFeedback:" target="213" id="1094"/>
-                                </connections>
-                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

@@ -33,8 +33,6 @@
 #import "SPOSInfo.h"
 #include <stdlib.h>
 
-static BOOL isOSAtLeast10_7;
-
 @interface SPSplitView ()
 
 - (void)_initCustomProperties;
@@ -77,7 +75,7 @@ static BOOL isOSAtLeast10_7;
 @implementation SPSplitView
 
 + (void)initialize {
-	isOSAtLeast10_7 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
+	
 }
 
 #pragma mark -
@@ -397,20 +395,7 @@ static BOOL isOSAtLeast10_7;
 		}
 
 		// let the OS adjust the sizes to be valid (but possibly still not matching totalAvailableSize in sum)
-		if(isOSAtLeast10_7) {
-			viewFrame = [self backingAlignedRect:viewFrame options:opts];
-		}
-		else {
-			// This code is taken from Apple's "BlurryView" example code.
-			viewFrame = [self convertRectToBase:viewFrame];
-			if(isVertical) {
-				viewFrame.size.width = round(viewFrame.size.width);
-			}
-			else {
-				viewFrame.size.height = round(viewFrame.size.height);
-			}
-			viewFrame = [self convertRectFromBase:viewFrame];
-		}
+		viewFrame = [self backingAlignedRect:viewFrame options:opts];
 
 		CGFloat viewSize = (isVertical ? viewFrame.size.width : viewFrame.size.height);
 
@@ -1216,9 +1201,7 @@ static BOOL isOSAtLeast10_7;
 	// this is required on 10.14 in order to have the dividers move properly, because that OS version forces a layer-backed
 	// view and at the same time calls -layout much less often than previous OS X versions, resulting in outdated dividers.
 	// That is not an issue on older OS X versions where -drawRect: was used.
-	if(isOSAtLeast10_7) {
-		[parentSplitView setNeedsLayout:YES]; // 10.7+
-	}
+	[parentSplitView setNeedsLayout:YES];
 }
 
 @end

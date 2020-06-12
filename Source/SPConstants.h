@@ -241,7 +241,6 @@ typedef enum
 #define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"https://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"https://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"https://www.sequelpro.com/docs/category/getting-connected/", @"Localized connection help page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"https://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"https://www.sequelpro.com/bundles/reference/", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONTENTFILTERHELP   NSLocalizedString(@"https://www.sequelpro.com/docs/Content_Filters", @"Localized help page for content filter - do not localize if no translated webpage is available")
 

@@ -86,8 +86,6 @@ static NSString *SPConnectionViewNibName   = @"ConnectionView";
  */
 static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len);
 
-static BOOL isOSAtLeast10_7;
-
 @interface SPConnectionController ()
 
 // Privately redeclare as read/write to get the synthesized setter
@@ -181,7 +179,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize isEditingConnection;
 
 + (void)initialize {
-	isOSAtLeast10_7 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
+	
 }
 
 - (NSString *)keychainPassword
@@ -2987,15 +2985,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// the division may lead to values that are not valid for the current screen size (e.g. non-integer values on a
 		// @1x non-retina screen). The OS works something out when not using layer-backed views, but in the latter
 		// case the result will look like garbage if we don't fix this.
-		if(isOSAtLeast10_7) {
-			connectionDetailsFrame = [connectionDetailsScrollView backingAlignedRect:connectionDetailsFrame options:NSAlignAllEdgesNearest];
-		}
-		else {
-			// This code is taken from Apple's "BlurryView" example code.
-			connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectToBase:connectionDetailsFrame];
-			connectionDetailsFrame.origin.y = round(connectionDetailsFrame.origin.y);
-			connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectFromBase:connectionDetailsFrame];
-		}
+		connectionDetailsFrame = [connectionDetailsScrollView backingAlignedRect:connectionDetailsFrame options:NSAlignAllEdgesNearest];
 		[connectionResizeContainer setFrame:connectionDetailsFrame];
 		scrollDocumentFrame.size.height = scrollViewFrame.size.height;
 		[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];

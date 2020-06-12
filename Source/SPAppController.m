@@ -161,12 +161,6 @@
 	}
 	
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(externalApplicationWantsToOpenADatabaseConnection:) name:@"ExternalApplicationWantsToOpenADatabaseConnection" object:nil];
-	
-	// Set ourselves as the crash reporter delegate
-	[[FRFeedbackReporter sharedReporter] setDelegate:self];
-
-	// Report any crashes
-	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
     [self _copyDefaultThemes];
@@ -1542,22 +1536,6 @@
 }
 
 /**
- * Opens the 'Contact the developers' page in the default browser
- */
-- (IBAction)provideFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTACT]];
-}
-
-/**
- * Opens the 'Translation Feedback' page in the default browser.
- */
-- (IBAction)provideTranslationFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_TRANSLATIONFEEDBACK]];
-}
-
-/**
  * Opens the 'Keyboard Shortcuts' page in the default browser.
  */
 - (IBAction)viewKeyboardShortcuts:(id)sender
@@ -2139,31 +2117,6 @@
 		NSBeep();
 	}
 }
-
-#pragma mark -
-#pragma mark Feedback reporter delegate methods
-
-/**
- * Anonymises the preferences dictionary before feedback submission
- */
-- (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
-{
-	[preferences removeObjectsForKeys:@[
-			@"ContentFilters",
-			@"favorites",
-			@"lastSqlFileName",
-			@"NSNavLastRootDirectory",
-			@"openPath",
-			@"queryFavorites",
-			@"queryHistory",
-			@"tableColumnWidths",
-			@"savePath",
-			@"NSRecentDocumentRecords"
-	]];
-	
-	return preferences;
-}
-
 #pragma mark -
 #pragma mark Other methods
 
