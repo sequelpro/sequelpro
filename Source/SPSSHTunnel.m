@@ -93,7 +93,11 @@ static unsigned short getRandomPort();
 		[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
 		[tunnelConnection setRootObject:self];
 		
-		if (![tunnelConnection registerName:tunnelConnectionName]) return nil;
+		
+		if (![tunnelConnection registerName:tunnelConnectionName]) {
+			NSLog(@"Could not start ssh connection. %@", tunnelConnectionName);
+			return nil;
+		}
 		
 		parentWindow = nil;
 		identityFilePath = nil;

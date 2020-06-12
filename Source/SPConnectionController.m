@@ -2216,6 +2216,19 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:[[self sshPort] integerValue] login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] integerValue]:3306) onHost:[self host]];
+	
+	if(sshTunnel == nil) {
+		#ifndef SP_CODA
+				[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
+		#endif
+
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title")
+												errorMessage:@"Failed to Initialize SSH Handle"
+													  detail:@"Could not initiate ssh connection worker."
+												rawErrorText:@"Could not initiate ssh connection worker."];
+		return;
+	}
+	
 	[sshTunnel setParentWindow:[dbDocument parentWindow]];
 
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
