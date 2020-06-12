@@ -1,0 +1,3175 @@
+﻿/* Table Content : Remove Row : Result : Too Few : Part 3 : Row not deleted when using primary key for DELETE statement. */
+" Check the Console for possible errors inside the primary key(s) of this table!" = " Check the Console for possible errors inside the primary key(s) of this table!";
+
+/* Table Content : Remove Row : Result : Too Many : Part 2 : Generic text */
+" Please check the Console and inform the Sequel Pro team!" = " Please check the Console and inform the Sequel Pro team!";
+
+/* Table Content : Remove Row : Result : Too Few : Part 2 : Generic help message */
+" Reload the table to be sure that the contents have not changed in the meantime." = " Reload the table to be sure that the contents have not changed in the meantime.";
+
+/* Table Content : Remove Row : Result : Too Few : Part 3 : no primary key in table generic message */
+" You should also add a primary key to this table!" = " You should also add a primary key to this table!";
+
+/* Query snippet shell command syntax and placeholder */
+"$(shell_command)" = "$(shell_command)";
+
+/* description for query finished growl notification */
+"%@" = "%@";
+
+/* text showing how many rows are selected */
+"%@ %@ selected" = "%1$@ %2$@ selected";
+
+/* History item filtered by values label */
+"%@ (Filtered by %@)" = "%1$@ (Filtered by %2$@)";
+
+/* History item with page number label */
+"%@ (Page %lu)" = "%1$@ (Page %2$lu)";
+
+/* Content Filter Manager : Initial name of copied filter
+   Initial favourite name after duplicating a previous favourite */
+"%@ Copy" = "%@ Copy";
+
+/* text showing a single row a partially loaded result */
+"%@ row in partial load" = "%@ row in partial load";
+
+/* text showing a single row in the result */
+"%@ row in table" = "%@ row in table";
+
+/* text showing how a single rows matched filter */
+"%@ row of %@%@ matches filter" = "%1$@ row of %2$@%3$@ matches filter";
+
+/* text showing how many rows are in a partially loaded result */
+"%@ rows in partial load" = "%@ rows in partial load";
+
+/* text showing how many rows are in the result */
+"%@ rows in table" = "%@ rows in table";
+
+/* text showing how many rows matched filter */
+"%@ rows of %@%@ match filter" = "%1$@ rows of %2$@%3$@ match filter";
+
+/* text showing how many rows have been affected by a single query */
+"%@; %ld rows affected" = "%1$@; %2$ld rows affected";
+
+/* text showing how many rows have been affected by multiple queries */
+"%@; %ld rows affected in total, by %ld queries taking %@" = "%1$@; %2$ld rows affected in total, by %3$ld queries taking %4$@";
+
+/* text showing one row has been affected by a single query */
+"%@; 1 row affected" = "%@; 1 row affected";
+
+/* text showing one row has been affected by multiple queries */
+"%@; 1 row affected in total, by %ld queries taking %@" = "%1$@; 1 row affected in total, by %2$ld queries taking %3$@";
+
+/* text showing a query was cancelled */
+"%@; Cancelled after %@" = "%1$@; Cancelled after %2$@";
+
+/* text showing multiple queries were cancelled */
+"%@; Cancelled in query %ld, after %@" = "%1$@; Cancelled in query %2$ld, after %3$@";
+
+/* Error display text, showing original MySQL error */
+"%@\n\nMySQL said: %@" = "%1$@\n\nMySQL said: %2$@";
+
+/* favorite singular label (%d == 1) */
+"%d favorite" = "%d favorite";
+
+/* favorites plural label (%d != 1) */
+"%d favorites" = "%d favorites";
+
+/* favorite group singular label (%d == 1) */
+"%d group" = "%d group";
+
+/* favorite groups plural label (%d != 1) */
+"%d groups" = "%d groups";
+
+/* Table Content : Remove Row : Result : Too Many : Part 1 : n+y (y!=1) rows instead of n selected were deleted. */
+"%ld additional rows were removed!" = "%ld additional rows were removed!";
+
+/* Label showing the index of the selected CSV row */
+"%ld of %lu record(s)" = "%1$ld of %2$lu record(s)";
+
+/* Label showing the index of the selected CSV row (csv partially loaded) */
+"%ld of first %lu record(s)" = "%1$ld of first %2$lu record(s)";
+
+/* Table Content : Remove Row : Result : Too Few : Part 1 : n-x (x!=1) of n selected rows were deleted. */
+"%ld rows were not removed." = "%ld rows were not removed.";
+
+/* Export file already exists message */
+"%lu files already exist. Do you want to replace them?" = "%lu files already exist. Do you want to replace them?";
+
+/* Export files creation error title */
+"%lu files could not be created" = "%lu files could not be created";
+
+/* Some export files already exist explanatory text */
+"%lu files with the same names already exist in the target folder. Replacing them will overwrite their current contents." = "%lu files with the same names already exist in the target folder. Replacing them will overwrite their current contents.";
+
+/* filtered item count */
+"%lu of %lu" = "%1$lu of %2$lu";
+
+/* Export folder not writable for some files explanatory text */
+"%lu of the export files could not be created because their target export folder is not writable; please select a new export location and try again." = "%lu of the export files could not be created because their target export folder is not writable; please select a new export location and try again.";
+
+/* Export folder missing for some files explanatory text */
+"%lu of the export files could not be created because their target export folder no longer exists; please select a new export location and try again." = "%lu of the export files could not be created because their target export folder no longer exists; please select a new export location and try again.";
+
+/* History item title with nothing selected */
+"(no selection)" = "(no selection)";
+
+/* value shown for hidden blob and text fields */
+"(not loaded)" = "(not loaded)";
+
+/* Explanation for MySQL server has gone away error */
+"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)" = "(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)";
+
+/* Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval */
+", first row available after %1$@" = ", first row available after %1$@";
+
+/* Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval */
+", taking %1$@" = ", taking %1$@";
+
+/* warning shown in the console when no rows have been affected after writing to the db */
+"/* WARNING: No rows have been affected */\n" = "/* WARNING: No rows have been affected */\n";
+
+/* error text when multiple custom query failed */
+"[ERROR in query %ld] %@\n" = "[ERROR in query %1$ld] %2$@\n";
+
+/* error text when reading of csv file gave errors */
+"[ERROR in row %ld] %@\n" = "[ERROR in row %1$ld] %2$@\n";
+
+/* [multiple selection] */
+"[multiple selection]" = "[multiple selection]";
+
+/* displayed when new content filter has empty Name field (ContentFilterManager) */
+"[name required]" = "[name required]";
+
+/* [no selection] */
+"[no selection]" = "[no selection]";
+
+/* Additional export file errors */
+"\n\n(In addition, one or more errors occurred while attempting to create the export files: %lu could not be created. These files will be ignored.)" = "\n\n(In addition, one or more errors occurred while attempting to create the export files: %lu could not be created. These files will be ignored.)";
+
+/* \n\npress shift for binary search tooltip message */
+"\n\nPress ⇧ for binary search (case-sensitive)." = "\n\nPress ⇧ for binary search (case-sensitive).";
+
+/* description of bit */
+"A bit-field type. M specifies the number of bits. If shorter values are inserted, they will be aligned on the least significant bit. See the SET type if you want to explicitly name each bit." = "A bit-field type. M specifies the number of bits. If shorter values are inserted, they will be aligned on the least significant bit. See the SET type if you want to explicitly name each bit.";
+
+/* Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog message */
+"A Bundle ‘%@’ is already installed. Do you want to update it?" = "A Bundle ‘%@’ is already installed. Do you want to update it?";
+
+/* description of binary */
+"A byte array with fixed length. Shorter values will always be padded to the right with 0x00 until they fit M." = "A byte array with fixed length. Shorter values will always be padded to the right with 0x00 until they fit M.";
+
+/* description of varbinary */
+"A byte array with variable length. The actual number of bytes is further limited by the values of other fields in the row." = "A byte array with variable length. The actual number of bytes is further limited by the values of other fields in the row.";
+
+/* description of blob
+   description of longblob
+   description of mediumblob
+   description of tinyblob */
+"A byte array with variable length. Unlike VARBINARY this type does not count towards the maximum row length." = "A byte array with variable length. Unlike VARBINARY this type does not count towards the maximum row length.";
+
+/* description of tinytext */
+"A character string that can store up to 255 bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length." = "A character string that can store up to 255 bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length.";
+
+/* description of varchar */
+"A character string that can store up to M bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding and the values of other fields in the row." = "A character string that can store up to M bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding and the values of other fields in the row.";
+
+/* description of text */
+"A character string that can store up to M bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length." = "A character string that can store up to M bytes, but requires less space for shorter values. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length.";
+
+/* description of char */
+"A character string that will require M×w bytes per row, independent of the actual content length. w is the maximum number of bytes a single character can occupy in the given encoding." = "A character string that will require M×w bytes per row, independent of the actual content length. w is the maximum number of bytes a single character can occupy in the given encoding.";
+
+/* description of longtext
+   description of mediumtext */
+"A character string with variable length. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length." = "A character string with variable length. The actual number of characters is further limited by the used encoding. Unlike VARCHAR this type does not count towards the maximum row length.";
+
+/* description of json */
+"A data type that validates JSON data on INSERT and internally stores it in a binary format that is both, more compact and faster to access than textual JSON.\nAvailable from MySQL 5.7.8." = "A data type that validates JSON data on INSERT and internally stores it in a binary format that is both, more compact and faster to access than textual JSON.\nAvailable from MySQL 5.7.8.";
+
+/* Export file already exists explanatory text */
+"A file with the same name already exists in the target folder. Replacing it will overwrite its current contents." = "A file with the same name already exists in the target folder. Replacing it will overwrite its current contents.";
+
+/* description of decimal */
+"A fixed-point, exact decimal value. M is the maxium number of digits, of which D may be after the decimal point. When rounding, 0-4 is always rounded down, 5-9 up (“round towards nearest”)." = "A fixed-point, exact decimal value. M is the maxium number of digits, of which D may be after the decimal point. When rounding, 0-4 is always rounded down, 5-9 up (“round towards nearest”).";
+
+/* table structure : indexes : delete index : error 1553 : title
+   table structure : indexes : delete index : error 1553, no FK found : title */
+"A foreign key needs this index" = "A foreign key needs this index";
+
+/* description of set */
+"A SET can define up to 64 members (as strings) of which a field can use one or more using a comma-separated list. Upon insertion the order of members is automatically normalized and duplicate members will be eliminated. Assignment of numbers is supported using the same semantics as for BIT types." = "A SET can define up to 64 members (as strings) of which a field can use one or more using a comma-separated list. Upon insertion the order of members is automatically normalized and duplicate members will be eliminated. Assignment of numbers is supported using the same semantics as for BIT types.";
+
+/* SSH key not found message */
+"A SSH key location was specified, but no file was found in the specified location.  Please re-select the key and try again." = "A SSH key location was specified, but no file was found in the specified location.  Please re-select the key and try again.";
+
+/* SSL CA certificate file not found message */
+"A SSL Certificate Authority certificate location was specified, but no file was found in the specified location.  Please re-select the Certificate Authority certificate and try again." = "A SSL Certificate Authority certificate location was specified, but no file was found in the specified location.  Please re-select the Certificate Authority certificate and try again.";
+
+/* SSL certificate file not found message */
+"A SSL certificate location was specified, but no file was found in the specified location.  Please re-select the certificate and try again." = "A SSL certificate location was specified, but no file was found in the specified location.  Please re-select the certificate and try again.";
+
+/* SSL key file not found message */
+"A SSL key file location was specified, but no file was found in the specified location.  Please re-select the key file and try again." = "A SSL key file location was specified, but no file was found in the specified location.  Please re-select the key file and try again.";
+
+/* duplicate host informative message */
+"A user with the host '%@' already exists" = "A user with the host '%@' already exists";
+
+/* duplicate user informative message */
+"A user with the name '%@' already exists" = "A user with the name '%@' already exists";
+
+/* table content : editing : error message description when parsing as hex string failed */
+"A valid hex string may only contain the numbers 0-9 and letters A-F (a-f). It can optionally begin with „0x“ and spaces will be ignored.\nAlternatively the syntax X'val' is supported, too." = "A valid hex string may only contain the numbers 0-9 and letters A-F (a-f). It can optionally begin with „0x“ and spaces will be ignored.\nAlternatively the syntax X'val' is supported, too.";
+
+/* connection failed due to access denied title */
+"Access denied!" = "Access denied!";
+
+/* range of double */
+"Accurate to approx. 15 decimal places" = "Accurate to approx. 15 decimal places";
+
+/* range of float */
+"Accurate to approx. 7 decimal places" = "Accurate to approx. 7 decimal places";
+
+/* active connection window is busy. please wait and try again. tooltip */
+"Active connection window is busy. Please wait and try again." = "Active connection window is busy. Please wait and try again.";
+
+/* header for activities pane */
+"ACTIVITIES" = "ACTIVITIES";
+
+/* Add trigger button label */
+"Add" = "Add";
+
+/* menu item to add db */
+"Add Database..." = "Add Database...";
+
+/* Add Host */
+"Add Host" = "Add Host";
+
+/* add global value or expression menu item */
+"Add Value or Expression…" = "Add Value or Expression…";
+
+/* adding index task status message */
+"Adding index..." = "Adding index...";
+
+/* Advanced options short title */
+"Advanced" = "Advanced";
+
+/* notifications preference pane name */
+"Alerts & Logs" = "Alerts & Logs";
+
+/* notifications preference pane tooltip */
+"Alerts & Logs Preferences" = "Alerts & Logs Preferences";
+
+/* All databases placeholder */
+"All Databases" = "All Databases";
+
+/* All databases (%) placeholder */
+"All Databases (%)" = "All Databases (%)";
+
+/* All export files already exist message */
+"All the export files already exist. Do you want to replace them?" = "All the export files already exist. Do you want to replace them?";
+
+/* An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found. */
+"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found." = "An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.";
+
+/* no connection available informatie message */
+"An error has occured and there doesn't seem to be a connection available." = "An error has occured and there doesn't seem to be a connection available.";
+
+/* an error occur while executing a scheme command. if the scheme command was invoked by a bundle command, it could be that the command still runs. you can try to terminate it by pressing ⌘+. or via the activities pane. */
+"An error occur while executing a scheme command. If the scheme command was invoked by a Bundle command, it could be that the command still runs. You can try to terminate it by pressing ⌘+. or via the Activities pane." = "An error occur while executing a scheme command. If the scheme command was invoked by a Bundle command, it could be that the command still runs. You can try to terminate it by pressing ⌘+. or via the Activities pane.";
+
+/* error killing query informative message */
+"An error occured while attempting to kill connection %lld.\n\nMySQL said: %@" = "An error occured while attempting to kill connection %1$lld.\n\nMySQL said: %2$@";
+
+/* error killing query informative message */
+"An error occured while attempting to kill the query associated with connection %lld.\n\nMySQL said: %@" = "An error occured while attempting to kill the query associated with connection %1$lld.\n\nMySQL said: %2$@";
+
+/* Error shown when unable to show create table syntax */
+"An error occured while creating table syntax.\n\n: %@" = "An error occured while creating table syntax.\n\n: %@";
+
+/* rename table error - no temporary name found */
+"An error occured while renaming '%@'. No temporary name could be found. Please try renaming to something else first." = "An error occured while renaming '%@'. No temporary name could be found. Please try renaming to something else first.";
+
+/* rename table error informative message */
+"An error occured while renaming '%@'.\n\nMySQL said: %@" = "An error occured while renaming '%1$@'.\n\nMySQL said: %2$@";
+
+/* rename error - don't know what type the renamed thing is */
+"An error occured while renaming. '%@' is of an unknown type." = "An error occured while renaming. '%@' is of an unknown type.";
+
+/* rename precedure/function error - can't delete old procedure */
+"An error occured while renaming. I couldn't delete '%@'.\n\nMySQL said: %@" = "An error occured while renaming. I couldn't delete '%1$@'.\n\nMySQL said: %2$@";
+
+/* rename precedure/function error - can't recreate procedure */
+"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@" = "An error occured while renaming. I couldn't recreate '%1$@'.\n\nMySQL said: %2$@";
+
+/* rename precedure/function error - can't retrieve syntax */
+"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@" = "An error occured while renaming. I couldn't retrieve the syntax for '%1$@'.\n\nMySQL said: %2$@";
+
+/* rename error - invalid create syntax */
+"An error occured while renaming. The CREATE syntax of '%@' could not be parsed." = "An error occured while renaming. The CREATE syntax of '%@' could not be parsed.";
+
+/* message of panel when retrieving view information failed */
+"An error occured while retrieving status data.\n\nMySQL said: %@" = "An error occured while retrieving status data.\n\nMySQL said: %@";
+
+/* message of panel when create syntax cannot be retrieved */
+"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@" = "An error occured while retrieving the create syntax for '%1$@'.\nMySQL said: %2$@";
+
+/* add index error informative message */
+"An error occured while trying to add the index.\n\nMySQL said: %@" = "An error occured while trying to add the index.\n\nMySQL said: %@";
+
+/* error adding password to keychain informative message */
+"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i." = "An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.";
+
+/* unable to copy database message informative message */
+"An error occured while trying to copy the database '%@' to '%@'." = "An error occured while trying to copy the database '%1$@' to '%2$@'.";
+
+/* error deleting index informative message */
+"An error occured while trying to delete the index.\n\nMySQL said: %@" = "An error occured while trying to delete the index.\n\nMySQL said: %@";
+
+/* table status : row count query failed : error message */
+"An error occured while trying to determine the number of rows for “%@”.\nMySQL said: %@ (%lu)" = "An error occured while trying to determine the number of rows for “%1$@”.\nMySQL said: %2$@ (%3$lu)";
+
+/* unable to rename database message informative message */
+"An error occured while trying to rename the database '%@' to '%@'." = "An error occured while trying to rename the database '%1$@' to '%2$@'.";
+
+/* error finding keychain item to edit informative message */
+"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i." = "An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.";
+
+/* error updating keychain item informative message */
+"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i." = "An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.";
+
+/* mysql error occurred message */
+"An error occurred" = "An error occurred";
+
+/* MySQL table info retrieval error message */
+"An error occurred retrieving table information.  MySQL said: %@" = "An error occurred retrieving table information.  MySQL said: %@";
+
+/* SQL encoding read error */
+"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed." = "An error occurred when reading the file, as it could not be read in the encoding you selected (%1$@).\n\nOnly %2$ld queries were executed.";
+
+/* CSV encoding read error */
+"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported." = "An error occurred when reading the file, as it could not be read using the encoding you selected (%1$@).\n\nOnly %2$ld rows were imported.";
+
+/* SQL read error, including detail from system */
+"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)" = "An error occurred when reading the file.\n\nOnly %1$ld queries were executed.\n\n(%2$@)";
+
+/* CSV read error, including detail string from system */
+"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)" = "An error occurred when reading the file.\n\nOnly %1$ld rows were imported.\n\n(%2$@)";
+
+/* error adding field informative message */
+"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@" = "An error occurred when trying to add the field '%1$@' via\n\n%2$@\n\nMySQL said: %3$@";
+
+/* error changing field informative message */
+"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@" = "An error occurred when trying to change the field '%1$@' via\n\n%2$@\n\nMySQL said: %3$@";
+
+/* error changing table collation informative message */
+"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@" = "An error occurred when trying to change the table collation to '%1$@'.\n\nMySQL said: %2$@";
+
+/* error changing table encoding informative message */
+"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@" = "An error occurred when trying to change the table encoding to '%1$@'.\n\nMySQL said: %2$@";
+
+/* error changing table type informative message */
+"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@" = "An error occurred when trying to change the table type to '%1$@'.\n\nMySQL said: %2$@";
+
+/* error changing table comment informative message */
+"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@" = "An error occurred when trying to change the table's comment to '%1$@'.\n\nMySQL said: %2$@";
+
+/* an error occurred while analyzing the %@.\n\nMySQL said:%@ */
+"An error occurred while analyzing the %@.\n\nMySQL said:%@" = "An error occurred while analyzing the %1$@.\n\nMySQL said:%2$@";
+
+/* an error occurred while fetching the optimized field type.\n\nMySQL said:%@ */
+"An error occurred while fetching the optimized field type.\n\nMySQL said:%@" = "An error occurred while fetching the optimized field type.\n\nMySQL said:%@";
+
+/* an error occurred while trying to flush the %@.\n\nMySQL said:%@ */
+"An error occurred while flushing the %@.\n\nMySQL said:%@" = "An error occurred while flushing the %1$@.\n\nMySQL said:%2$@";
+
+/* sql import error message */
+"An error occurred while importing SQL" = "An error occurred while importing SQL";
+
+/* an error occurred while trying to optimze the %@.\n\nMySQL said:%@ */
+"An error occurred while optimzing the %@.\n\nMySQL said:%@" = "An error occurred while optimzing the %1$@.\n\nMySQL said:%2$@";
+
+/* an error occurred while performing the checksum on the %@.\n\nMySQL said:%@ */
+"An error occurred while performing the checksum on %@.\n\nMySQL said:%@" = "An error occurred while performing the checksum on %1$@.\n\nMySQL said:%2$@";
+
+/* an error occurred while trying to repair the %@.\n\nMySQL said:%@ */
+"An error occurred while repairing the %@.\n\nMySQL said:%@" = "An error occurred while repairing the %1$@.\n\nMySQL said:%2$@";
+
+/* message of panel when retrieving information failed */
+"An error occurred while retrieving information.\nMySQL said: %@" = "An error occurred while retrieving information.\nMySQL said: %@";
+
+/* error retrieving table information informative message */
+"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@" = "An error occurred while retrieving the information for table '%1$@'. Please try again.\n\nMySQL said: %2$@";
+
+/* error retrieving table information informative message */
+"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@" = "An error occurred while retrieving the trigger information for table '%1$@'. Please try again.\n\nMySQL said: %2$@";
+
+/* error adding new column informative message */
+"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@" = "An error occurred while trying to add the new column '%1$@' by\n\n%2$@.\n\nMySQL said: %3$@";
+
+/* error adding new table informative message */
+"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@" = "An error occurred while trying to add the new table '%1$@' by\n\n%2$@.\n\nMySQL said: %3$@";
+
+/* error adding new table informative message */
+"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@" = "An error occurred while trying to add the new table '%1$@'.\n\nMySQL said: %2$@";
+
+/* error while trying to alter table message */
+"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@" = "An error occurred while trying to alter table '%1$@'.\n\nMySQL said: %2$@";
+
+/* an error occurred while trying to check the %@.\n\nMySQL said:%@ */
+"An error occurred while trying to check the %@.\n\nMySQL said:%@" = "An error occurred while trying to check the %1$@.\n\nMySQL said:%2$@";
+
+/* error deleting relation informative message */
+"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@" = "An error occurred while trying to delete the relation '%1$@'.\n\nMySQL said: %2$@";
+
+/* unable to get list of users informative message */
+"An error occurred while trying to get the list of users. Please make sure you have the necessary privileges to perform user management, including access to the mysql.user table." = "An error occurred while trying to get the list of users. Please make sure you have the necessary privileges to perform user management, including access to the mysql.user table.";
+
+/* error importing table informative message */
+"An error occurred while trying to import a table via: \n%@\n\n\nMySQL said: %@" = "An error occurred while trying to import a table via: \n%1$@\n\n\nMySQL said: %2$@";
+
+/* error moving field informative message */
+"An error occurred while trying to move the field.\n\nMySQL said: %@" = "An error occurred while trying to move the field.\n\nMySQL said: %@";
+
+/* error resetting auto_increment informative message */
+"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@" = "An error occurred while trying to reset AUTO_INCREMENT of table '%1$@'.\n\nMySQL said: %2$@";
+
+/* error truncating table informative message */
+"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@" = "An error occurred while trying to truncate the table '%1$@'.\n\nMySQL said: %2$@";
+
+/* mysql error occurred informative message */
+"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@" = "An error occurred whilst trying to perform the operation.\n\nMySQL said: %@";
+
+/* Export files creation error explanatory text */
+"An unhandled error occurred when attempting to create %lu of the export files.  Please check the details and try again." = "An unhandled error occurred when attempting to create %lu of the export files.  Please check the details and try again.";
+
+/* All export files creation error explanatory text */
+"An unhandled error occurred when attempting to create each of the export files.  Please check the details and try again." = "An unhandled error occurred when attempting to create each of the export files.  Please check the details and try again.";
+
+/* Export file creation error explanatory text */
+"An unhandled error occurred when attempting to create the export file.  Please check the details and try again." = "An unhandled error occurred when attempting to create the export file.  Please check the details and try again.";
+
+/* ANALYZE one or more tables - result title */
+"Analyze %@" = "Analyze %@";
+
+/* analyze selected items menu item */
+"Analyze Selected Items" = "Analyze Selected Items";
+
+/* analyze table menu item */
+"Analyze Table" = "Analyze Table";
+
+/* analyze table failed message */
+"Analyze table failed." = "Analyze table failed.";
+
+/* change table type informative message */
+"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of its data. This action cannot be undone." = "Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of its data. This action cannot be undone.";
+
+/* clear global history list informative message */
+"Are you sure you want to clear the global history list? This action cannot be undone." = "Are you sure you want to clear the global history list? This action cannot be undone.";
+
+/* clear history list for “%@” informative message */
+"Are you sure you want to clear the history list for “%@”? This action cannot be undone." = "Are you sure you want to clear the history list for “%@”? This action cannot be undone.";
+
+/* truncate tables informative message */
+"Are you sure you want to delete ALL records in the selected tables? This operation cannot be undone." = "Are you sure you want to delete ALL records in the selected tables? This operation cannot be undone.";
+
+/* truncate table informative message */
+"Are you sure you want to delete ALL records in the table '%@'? This operation cannot be undone." = "Are you sure you want to delete ALL records in the table '%@'? This operation cannot be undone.";
+
+/* delete all rows informative message */
+"Are you sure you want to delete all the rows from this table? This action cannot be undone." = "Are you sure you want to delete all the rows from this table? This action cannot be undone.";
+
+/* delete table/view informative message */
+"Are you sure you want to delete the %@ '%@'? This operation cannot be undone." = "Are you sure you want to delete the %1$@ '%2$@'? This operation cannot be undone.";
+
+/* delete database informative message */
+"Are you sure you want to delete the database '%@'? This operation cannot be undone." = "Are you sure you want to delete the database '%@'? This operation cannot be undone.";
+
+/* delete database informative message */
+"Are you sure you want to delete the favorite '%@'? This operation cannot be undone." = "Are you sure you want to delete the favorite '%@'? This operation cannot be undone.";
+
+/* delete field informative message */
+"Are you sure you want to delete the field '%@'? This action cannot be undone." = "Are you sure you want to delete the field '%@'? This action cannot be undone.";
+
+/* delete database informative message */
+"Are you sure you want to delete the group '%@'? All groups and favorites within this group will also be deleted. This operation cannot be undone." = "Are you sure you want to delete the group '%@'? All groups and favorites within this group will also be deleted. This operation cannot be undone.";
+
+/* delete index informative message */
+"Are you sure you want to delete the index '%@'? This action cannot be undone." = "Are you sure you want to delete the index '%@'? This action cannot be undone.";
+
+/* delete tables/views informative message */
+"Are you sure you want to delete the selected %@? This operation cannot be undone." = "Are you sure you want to delete the selected %@? This operation cannot be undone.";
+
+/* delete rows informative message */
+"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone." = "Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.";
+
+/* delete selected relation informative message */
+"Are you sure you want to delete the selected relations? This action cannot be undone." = "Are you sure you want to delete the selected relations? This action cannot be undone.";
+
+/* delete selected row informative message */
+"Are you sure you want to delete the selected row from this table? This action cannot be undone." = "Are you sure you want to delete the selected row from this table? This action cannot be undone.";
+
+/* delete selected trigger informative message */
+"Are you sure you want to delete the selected triggers? This action cannot be undone." = "Are you sure you want to delete the selected triggers? This action cannot be undone.";
+
+/* kill connection informative message */
+"Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution." = "Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.";
+
+/* kill query informative message */
+"Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution." = "Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.";
+
+/* Bundle Editor : Remove-Bundle: remove dialog message */
+"Are you sure you want to move the selected Bundle to the Trash and remove them respectively?" = "Are you sure you want to move the selected Bundle to the Trash and remove them respectively?";
+
+/* continue to print informative message */
+"Are you sure you want to print the current content view of the table '%@'?\n\nIt currently contains %@ rows, which may take a significant amount of time to print." = "Are you sure you want to print the current content view of the table '%1$@'?\n\nIt currently contains %2$@ rows, which may take a significant amount of time to print.";
+
+/* remove all query favorites informative message */
+"Are you sure you want to remove all of your saved query favorites? This action cannot be undone." = "Are you sure you want to remove all of your saved query favorites? This action cannot be undone.";
+
+/* remove all selected content filters informative message */
+"Are you sure you want to remove all selected content filters? This action cannot be undone." = "Are you sure you want to remove all selected content filters? This action cannot be undone.";
+
+/* remove all selected query favorites informative message */
+"Are you sure you want to remove all selected query favorites? This action cannot be undone." = "Are you sure you want to remove all selected query favorites? This action cannot be undone.";
+
+/* auto update preference pane name */
+"Auto Update" = "Auto Update";
+
+/* auto update preference pane tooltip */
+"Auto Update Preferences" = "Auto Update Preferences";
+
+/* Table Info Section : current value of auto_increment */
+"auto_increment: %@" = "auto_increment: %@";
+
+/* Encoding autodetect menu item */
+"Autodetect" = "Autodetect";
+
+/* background label for color table (Prefs > Editor) */
+"Background" = "Background";
+
+/* backtick quote label for color table (Prefs > Editor) */
+"Backtick Quote" = "Backtick Quote";
+
+/* bash error */
+"BASH Error" = "BASH Error";
+
+/* toolbar item label for switching to the Table Content tab */
+"Browse & Edit Table Content" = "Browse & Edit Table Content";
+
+/* build label */
+"build" = "build";
+
+/* build label */
+"Build" = "Build";
+
+/* bundle editor menu item label */
+"Bundle Editor" = "Bundle Editor";
+
+/* bundle error */
+"Bundle Error" = "Bundle Error";
+
+/* bundles menu item label */
+"Bundles" = "Bundles";
+
+/* Bundle Editor : Outline View : 'BUNDLES' item */
+"BUNDLES" = "BUNDLES";
+
+/* Bundle Editor : Outline View : Menu Category item : tooltip */
+"Bundles in category “%@”" = "Bundles in category “%@”";
+
+/* bundles installation error */
+"Bundles Installation Error" = "Bundles Installation Error";
+
+/* bzip2 compression export summary - within a sentence */
+"bzip2 compression" = "bzip2 compression";
+
+/* description of geometry */
+"Can store a single spatial value of types POINT, LINESTRING or POLYGON. Spatial support in MySQL is based on the OpenGIS Geometry Model." = "Can store a single spatial value of types POINT, LINESTRING or POLYGON. Spatial support in MySQL is based on the OpenGIS Geometry Model.";
+
+/* Bundle Editor : Remove-Bundle: cancel button
+   cancel
+   cancel button
+   Open Files : Bundle : Already-Installed : Cancel button
+   Preferences : Network : Custom SSH client : warning dialog : cancel button
+   shutdown server : confirmation dialog : cancel button */
+"Cancel" = "Cancel";
+
+/* sql import : charset error alert : cancel button */
+"Cancel Import" = "Cancel Import";
+
+/* cancelling task status message */
+"Cancelling..." = "Cancelling...";
+
+/* empty query informative message */
+"Cannot save an empty query." = "Cannot save an empty query.";
+
+/* caret label for color table (Prefs > Editor) */
+"Caret" = "Caret";
+
+/* change button */
+"Change" = "Change";
+
+/* change focus to table list menu item */
+"Change Focus to Table List" = "Change Focus to Table List";
+
+/* change table type message */
+"Change table type" = "Change table type";
+
+/* unsaved changes informative message */
+"Changes have been made, which will be lost if this window is closed. Are you sure you want to continue" = "Changes have been made, which will be lost if this window is closed. Are you sure you want to continue";
+
+/* character set client: %@ */
+"character set client: %@" = "character set client: %@";
+
+/* CHECK one or more tables - result title */
+"Check %@" = "Check %@";
+
+/* check of all selected items successfully passed message */
+"Check of all selected items successfully passed." = "Check of all selected items successfully passed.";
+
+/* check option: %@ */
+"check option: %@" = "check option: %@";
+
+/* check selected items menu item */
+"Check Selected Items" = "Check Selected Items";
+
+/* check table menu item */
+"Check Table" = "Check Table";
+
+/* check table failed message */
+"Check table failed." = "Check table failed.";
+
+/* check table successfully passed message */
+"Check table successfully passed." = "Check table successfully passed.";
+
+/* check view menu item */
+"Check View" = "Check View";
+
+/* checking field data for editing task description */
+"Checking field data for editing..." = "Checking field data for editing...";
+
+/* checksum %@ message */
+"Checksum %@" = "Checksum %@";
+
+/* checksum selected items menu item */
+"Checksum Selected Items" = "Checksum Selected Items";
+
+/* checksum table menu item */
+"Checksum Table" = "Checksum Table";
+
+/* Checksums of %@ message */
+"Checksums of %@" = "Checksums of %@";
+
+/* menu item for choose db */
+"Choose Database..." = "Choose Database...";
+
+/* cancelling export cleaning up message */
+"Cleaning up..." = "Cleaning up...";
+
+/* clear button */
+"Clear" = "Clear";
+
+/* toolbar item for clear console */
+"Clear Console" = "Clear Console";
+
+/* clear global history menu item title */
+"Clear Global History" = "Clear Global History";
+
+/* clear history for “%@” menu title */
+"Clear History for “%@”" = "Clear History for “%@”";
+
+/* clear history message */
+"Clear History?" = "Clear History?";
+
+/* tooltip for toolbar item for clear console */
+"Clear the console which shows all MySQL commands performed by Sequel Pro" = "Clear the console which shows all MySQL commands performed by Sequel Pro";
+
+/* clear the document-based history list tooltip message */
+"Clear the document-based history list" = "Clear the document-based history list";
+
+/* clear the global history list tooltip message */
+"Clear the global history list" = "Clear the global history list";
+
+/* Close menu item */
+"Close" = "Close";
+
+/* close tab context menu item */
+"Close Tab" = "Close Tab";
+
+/* Close Window menu item */
+"Close Window" = "Close Window";
+
+/* collation label (Navigator) */
+"Collation" = "Collation";
+
+/* collation connection: %@ */
+"collation connection: %@" = "collation connection: %@";
+
+/* comment label */
+"Comment" = "Comment";
+
+/* Title of action menu item to comment line */
+"Comment Line" = "Comment Line";
+
+/* Title of action menu item to comment selection */
+"Comment Selection" = "Comment Selection";
+
+/* connect button */
+"Connect" = "Connect";
+
+/* Connect via socket button */
+"Connect via socket" = "Connect via socket";
+
+/* connection established message */
+"Connected" = "Connected";
+
+/* description for connected growl notification */
+"Connected to %@" = "Connected to %@";
+
+/* message of panel when connection to db failed */
+"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@" = "Connected to host, but unable to connect to database %1$@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %2$@";
+
+/* Generic connecting very short status message */
+"Connecting..." = "Connecting...";
+
+/* window title string indicating that sp is connecting */
+"Connecting…" = "Connecting…";
+
+/* error while reading connection data file */
+"Connection data file couldn't be read." = "Connection data file couldn't be read.";
+
+/* message error while reading connection data file and suggesting to save it under a differnet name */
+"Connection data file “%@” couldn't be read. Please try to save the document under a different name." = "Connection data file “%@” couldn't be read. Please try to save the document under a different name.";
+
+/* connection failed title */
+"Connection failed!" = "Connection failed!";
+
+/* Connection file is encrypted */
+"Connection file is encrypted" = "Connection file is encrypted";
+
+/* Connection success very short status message */
+"Connection succeeded" = "Connection succeeded";
+
+/* Console */
+"Console" = "Console";
+
+/* Console : Save as : Initial filename */
+"ConsoleLog" = "ConsoleLog";
+
+/* toolbar item label for switching to the Table Content tab */
+"Content" = "Content";
+
+/* content filter clause is empty tooltip. */
+"Content Filter clause is empty." = "Content Filter clause is empty.";
+
+/* continue button
+   Continue button title */
+"Continue" = "Continue";
+
+/* continue to print message */
+"Continue to print?" = "Continue to print?";
+
+/* Copy as RTF */
+"Copy as RTF" = "Copy as RTF";
+
+/* copy create func syntax menu item
+   Table List : Context Menu : copy CREATE FUNCTION syntax */
+"Copy Create Function Syntax" = "Copy Create Function Syntax";
+
+/* copy create proc syntax menu item
+   Table List : Context Menu : Copy CREATE PROCEDURE syntax
+   Table List : Gear Menu : Copy CREATE PROCEDURE syntax */
+"Copy Create Procedure Syntax" = "Copy Create Procedure Syntax";
+
+/* copy create syntaxes menu item
+   Table List : Context Menu : Copy CREATE syntax (multiple selection)
+   Table List : Gear Menu : Copy CREATE syntax (multiple selection) */
+"Copy Create Syntaxes" = "Copy Create Syntaxes";
+
+/* copy create table syntax menu item
+   Table List : Context Menu : Copy CREATE syntax (single table)
+   Table List : Gear Menu : Copy CREATE syntax (single table) */
+"Copy Create Table Syntax" = "Copy Create Table Syntax";
+
+/* copy create view syntax menu item
+   Table List : Context Menu : Copy CREATE view statement
+   Table List : Gear Menu : Copy CREATE view statement */
+"Copy Create View Syntax" = "Copy Create View Syntax";
+
+/* copy server variable name menu item */
+"Copy Variable Name" = "Copy Variable Name";
+
+/* copy server variable names menu item */
+"Copy Variable Names" = "Copy Variable Names";
+
+/* copy server variable value menu item */
+"Copy Variable Value" = "Copy Variable Value";
+
+/* copy server variable values menu item */
+"Copy Variable Values" = "Copy Variable Values";
+
+/* Procedure/function export permission error */
+"Could not export the %@ '%@' because of a permissions error.\n" = "Could not export the %1$@ '%2$@' because of a permissions error.\n";
+
+/* Error when we can't parse/split file as CSV */
+"Could not parse file as CSV" = "Could not parse file as CSV";
+
+/* message when database selection failed */
+"Could not select database" = "Could not select database";
+
+/* Alter Database : Query Failed ($1 = mysql error message) */
+"Couldn't alter database.\nMySQL said: %@" = "Couldn't alter database.\nMySQL said: %@";
+
+/* Couldn't copy default themes to Application Support Theme folder!\nError: %@ */
+"Couldn't copy default themes to Application Support Theme folder!\nError: %@" = "Couldn't copy default themes to Application Support Theme folder!\nError: %@";
+
+/* message of panel when table cannot be created */
+"Couldn't create '%@'.\nMySQL said: %@" = "Couldn't create '%1$@'.\nMySQL said: %2$@";
+
+/* Couldn't create Application Support Bundle folder!\nError: %@ */
+"Couldn't create Application Support Bundle folder!\nError: %@" = "Couldn't create Application Support Bundle folder!\nError: %@";
+
+/* Couldn't create Application Support Theme folder!\nError: %@ */
+"Couldn't create Application Support Theme folder!\nError: %@" = "Couldn't create Application Support Theme folder!\nError: %@";
+
+/* message of panel when creation of db failed */
+"Couldn't create database.\nMySQL said: %@" = "Couldn't create database.\nMySQL said: %@";
+
+/* message of panel when an item cannot be deleted */
+"Couldn't delete '%@'.\n\nMySQL said: %@" = "Couldn't delete '%1$@'.\n\nMySQL said: %2$@";
+
+/* message of panel when an item cannot be deleted including informative message about using force deletion */
+"Couldn't delete '%@'.\n\nSelecting the 'Force delete' option may prevent this issue, but may leave the database in an inconsistent state.\n\nMySQL said: %@" = "Couldn't delete '%1$@'.\n\nSelecting the 'Force delete' option may prevent this issue, but may leave the database in an inconsistent state.\n\nMySQL said: %2$@";
+
+/* message of panel when field cannot be deleted */
+"Couldn't delete field %@.\nMySQL said: %@" = "Couldn't delete field %1$@.\nMySQL said: %2$@";
+
+/* message when deleteing all rows failed */
+"Couldn't delete rows.\n\nMySQL said: %@" = "Couldn't delete rows.\n\nMySQL said: %@";
+
+/* message of panel when deleting db failed */
+"Couldn't delete the database.\nMySQL said: %@" = "Couldn't delete the database.\nMySQL said: %@";
+
+/* message of panel when an item cannot be renamed */
+"Couldn't duplicate '%@'.\nMySQL said: %@" = "Couldn't duplicate '%1$@'.\nMySQL said: %2$@";
+
+/* message of panel when flushing privs failed */
+"Couldn't flush privileges.\nMySQL said: %@" = "Couldn't flush privileges.\nMySQL said: %@";
+
+/* message of panel when table information cannot be retrieved */
+"Couldn't get create syntax.\nMySQL said: %@" = "Couldn't get create syntax.\nMySQL said: %@";
+
+/* Custom Query result editing error - could not identify a corresponding column */
+"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table." = "Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.";
+
+/* message of panel when loading of row failed */
+"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table." = "Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.";
+
+/* Couldn't read the file content of */
+"Couldn't read the file content of" = "Couldn't read the file content of";
+
+/* text shown if an error occured while sorting the result table */
+"Couldn't sort column." = "Couldn't sort column.";
+
+/* message of panel when sorting of table failed */
+"Couldn't sort table. MySQL said: %@" = "Couldn't sort table. MySQL said: %@";
+
+/* message of panel when error while updating field to db */
+"Couldn't write field.\nMySQL said: %@" = "Couldn't write field.\nMySQL said: %@";
+
+/* create syntax for table comment */
+"Create syntax for" = "Create syntax for";
+
+/* Create syntax label */
+"Create syntax for %@ '%@'" = "Create syntax for %1$@ '%2$@'";
+
+/* Create syntaxes for selected items label */
+"Create syntaxes for selected items" = "Create syntaxes for selected items";
+
+/* created: %@
+   Table Info Section : time+date table was created at */
+"created: %@" = "created: %@";
+
+/* description of polygon */
+"Creates a surface by combining one LinearRing (ie. a LineString that is closed and simple) as the outside boundary with zero or more inner LinearRings acting as \"holes\"." = "Creates a surface by combining one LinearRing (ie. a LineString that is closed and simple) as the outside boundary with zero or more inner LinearRings acting as \"holes\".";
+
+/* Creating table task string */
+"Creating %@..." = "Creating %@...";
+
+/* Bundle Editor : Fallback Input source dropdown : 'current line' item */
+"Current Line" = "Current Line";
+
+/* Bundle Editor : Fallback Input source dropdown : 'current query' item */
+"Current Query" = "Current Query";
+
+/* header for current selection in filtered list */
+"CURRENT SELECTION" = "CURRENT SELECTION";
+
+/* Bundle Editor : Fallback Input source dropdown : 'current word' item */
+"Current Word" = "Current Word";
+
+/* SSH connection : debug header with user-defined ssh binary */
+"Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!" = "Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!";
+
+/* customize file name label */
+"Customize Filename (%@)" = "Customize Filename (%@)";
+
+/* data access: %@ (%@) */
+"data access: %@ (%@)" = "data access: %1$@ (%2$@)";
+
+/* Bundle Editor : Scope dropdown : 'data table' item
+   data table menu item label */
+"Data Table" = "Data Table";
+
+/* Bundle Editor : Outline View : 'Data Table' item : tooltip */
+"Data Table Scope\ncommands will run on the Content and Query data tables" = "Data Table Scope\ncommands will run on the Content and Query data tables";
+
+/* export filename database token
+   export header database label
+   export source
+   Table Structure : Collation dropdown : 'item is the same as the collation of database' marker
+   Table Structure : Encoding dropdown : 'item is database default' marker */
+"Database" = "Database";
+
+/* Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item
+   Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item */
+"Database changed" = "Database changed";
+
+/* message of panel when no db name is given */
+"Database must have a name." = "Database must have a name.";
+
+/* databsse rename unsupported message */
+"Database Rename Unsupported" = "Database Rename Unsupported";
+
+/* export filename date token */
+"Date" = "Date";
+
+/* export filename date token */
+"Day" = "Day";
+
+/* Add Table Sheet : Collation : Default (unknown)
+   Collation Dropdown : Default (unknown)
+   default label
+   Table Structure : Collation dropdown : 'item is the same as the default collation of the row's charset' marker */
+"Default" = "Default";
+
+/* Add Table : Collation : Default ($1 = collation name)
+   Charset Dropdown : Default item ($1 = charset name)
+   Collation Dropdown : Default ($1 = collation name)
+   Collation Dropdown : Default collation for given charset ($1 = collation name)
+   New Table Sheet : Table Engine Dropdown : Default */
+"Default (%@)" = "Default (%@)";
+
+/* default bundles update */
+"Default Bundles Update" = "Default Bundles Update";
+
+/* import : csv field mapping : field default value */
+"Default: %@" = "Default: %@";
+
+/* Query snippet default value placeholder */
+"default_value" = "default_value";
+
+/* definer label (Navigator) */
+"Definer" = "Definer";
+
+/* definer: %@ */
+"definer: %@" = "definer: %@";
+
+/* description of enum */
+"Defines a list of members, of which every field can use at most one. Values are sorted by their index number (starting at 0 for the first member)." = "Defines a list of members, of which every field can use at most one. Values are sorted by their index number (starting at 0 for the first member).";
+
+/* delete button */
+"Delete" = "Delete";
+
+/* delete table/view message */
+"Delete %@ '%@'?" = "Delete %1$@ '%2$@'?";
+
+/* delete all rows message */
+"Delete all rows?" = "Delete all rows?";
+
+/* table structure : indexes : delete index : error 1553 : delete index and FK button */
+"Delete Both" = "Delete Both";
+
+/* delete database message */
+"Delete database '%@'?" = "Delete database '%@'?";
+
+/* delete database message */
+"Delete favorite '%@'?" = "Delete favorite '%@'?";
+
+/* delete field message */
+"Delete field '%@'?" = "Delete field '%@'?";
+
+/* delete func menu title */
+"Delete Function" = "Delete Function";
+
+/* delete functions menu title */
+"Delete Functions" = "Delete Functions";
+
+/* delete database message */
+"Delete group '%@'?" = "Delete group '%@'?";
+
+/* delete index message */
+"Delete index '%@'?" = "Delete index '%@'?";
+
+/* delete items menu title */
+"Delete Items" = "Delete Items";
+
+/* delete proc menu title */
+"Delete Procedure" = "Delete Procedure";
+
+/* delete procedures menu title */
+"Delete Procedures" = "Delete Procedures";
+
+/* delete relation menu item */
+"Delete Relation" = "Delete Relation";
+
+/* delete relation message */
+"Delete relation" = "Delete relation";
+
+/* delete relations menu item */
+"Delete Relations" = "Delete Relations";
+
+/* delete row menu item singular */
+"Delete Row" = "Delete Row";
+
+/* delete rows menu item plural */
+"Delete Rows" = "Delete Rows";
+
+/* delete rows message */
+"Delete rows?" = "Delete rows?";
+
+/* delete tables/views message */
+"Delete selected %@?" = "Delete selected %@?";
+
+/* delete selected row message */
+"Delete selected row?" = "Delete selected row?";
+
+/* delete table menu title */
+"Delete Table" = "Delete Table";
+
+/* delete tables menu title */
+"Delete Tables" = "Delete Tables";
+
+/* delete trigger menu item */
+"Delete Trigger" = "Delete Trigger";
+
+/* delete trigger message */
+"Delete trigger" = "Delete trigger";
+
+/* delete triggers menu item */
+"Delete Triggers" = "Delete Triggers";
+
+/* delete view menu title */
+"Delete View" = "Delete View";
+
+/* delete views menu title */
+"Delete Views" = "Delete Views";
+
+/* Preferences : Network : SSL Chiper suites : List seperator */
+"Disabled Cipher Suites" = "Disabled Cipher Suites";
+
+/* force table deltion button text tooltip */
+"Disables foreign key checks (FOREIGN_KEY_CHECKS) before deletion and re-enables them afterwards." = "Disables foreign key checks (FOREIGN_KEY_CHECKS) before deletion and re-enables them afterwards.";
+
+/* discard changes button */
+"Discard changes" = "Discard changes";
+
+/* description for disconnected growl notification */
+"Disconnected from %@" = "Disconnected from %@";
+
+/* do update operator tooltip */
+"Do UPDATE where field contents match" = "Do UPDATE where field contents match";
+
+/* message of panel asking for confirmation for loading large text into the query editor */
+"Do you really want to load a SQL file with %@ of data into the Query Editor?" = "Do you really want to load a SQL file with %@ of data into the Query Editor?";
+
+/* message of panel asking for confirmation for inserting large text from dragging action */
+"Do you really want to proceed with %@ of data?" = "Do you really want to proceed with %@ of data?";
+
+/* shutdown server : confirmation dialog : title */
+"Do you really want to shutdown the server?" = "Do you really want to shutdown the server?";
+
+/* dtd identifier label (Navigator) */
+"DTD Identifier" = "DTD Identifier";
+
+/* sql export dump of table label */
+"Dump of table" = "Dump of table";
+
+/* text showing that app is writing dump */
+"Dumping..." = "Dumping...";
+
+/* duplicate object message */
+"Duplicate %@ '%@' to:" = "Duplicate %1$@ '%2$@' to:";
+
+/* duplicate func menu title */
+"Duplicate Function..." = "Duplicate Function...";
+
+/* duplicate host message */
+"Duplicate Host" = "Duplicate Host";
+
+/* duplicate proc menu title */
+"Duplicate Procedure..." = "Duplicate Procedure...";
+
+/* duplicate table menu title */
+"Duplicate Table..." = "Duplicate Table...";
+
+/* duplicate user message */
+"Duplicate User" = "Duplicate User";
+
+/* duplicate view menu title */
+"Duplicate View..." = "Duplicate View...";
+
+/* partial copy database support informative message */
+"Duplicating the database '%@' is only partially supported as it contains objects other tables (i.e. views, procedures, functions, etc.), which will not be copied.\n\nWould you like to continue?" = "Duplicating the database '%@' is only partially supported as it contains objects other tables (i.e. views, procedures, functions, etc.), which will not be copied.\n\nWould you like to continue?";
+
+/* edit filter */
+"Edit Filters…" = "Edit Filters…";
+
+/* Edit row button */
+"Edit row" = "Edit row";
+
+/* toolbar item label for switching to the Table Structure tab */
+"Edit Table Structure" = "Edit Table Structure";
+
+/* edit theme list label */
+"Edit Theme List…" = "Edit Theme List…";
+
+/* edit user-defined filter */
+"Edit user-defined Filters…" = "Edit user-defined Filters…";
+
+/* empty query message */
+"Empty query" = "Empty query";
+
+/* MySQL search language code - eg in http://search.mysql.com/search?q=select&site=refman-50&lr=lang_en */
+"en" = "en";
+
+/* encoding label (Navigator) */
+"Encoding" = "Encoding";
+
+/* Table Info Section : $1 = table charset */
+"encoding: %1$@" = "encoding: %1$@";
+
+/* Table Info Section : $1 = table charset, $2 = table collation */
+"encoding: %1$@ (%2$@)" = "encoding: %1$@ (%2$@)";
+
+/* Table Info Section : Table Engine */
+"engine: %@" = "engine: %@";
+
+/* enter connection details label */
+"Enter connection details below, or choose a favorite" = "Enter connection details below, or choose a favorite";
+
+/* SSH key password prompt */
+"Enter your password for the SSH key\n\"%@\"" = "Enter your password for the SSH key\n\"%@\"";
+
+/* Bundle Editor : Fallback Input source dropdown : 'entire content' item
+   Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item */
+"Entire Content" = "Entire Content";
+
+/* Bundle Editor : Copy-Command-Error : error dialog title
+   error */
+"Error" = "Error";
+
+/* error adding field message */
+"Error adding field" = "Error adding field";
+
+/* error adding new column message */
+"Error adding new column" = "Error adding new column";
+
+/* error adding new table message */
+"Error adding new table" = "Error adding new table";
+
+/* error adding password to keychain message */
+"Error adding password to Keychain" = "Error adding password to Keychain";
+
+/* error changing field message */
+"Error changing field" = "Error changing field";
+
+/* error changing table collation message */
+"Error changing table collation" = "Error changing table collation";
+
+/* error changing table comment message */
+"Error changing table comment" = "Error changing table comment";
+
+/* error changing table encoding message */
+"Error changing table encoding" = "Error changing table encoding";
+
+/* error changing table type message */
+"Error changing table type" = "Error changing table type";
+
+/* error creating relation message */
+"Error creating relation" = "Error creating relation";
+
+/* error creating trigger message */
+"Error creating trigger" = "Error creating trigger";
+
+/* error for message */
+"Error for" = "Error for";
+
+/* error for bash command ($1), $2=message */
+"Error for “%1$@”:\n%2$@" = "Error for “%1$@”:\n%2$@";
+
+/* error moving field message */
+"Error moving field" = "Error moving field";
+
+/* error occurred */
+"error occurred" = "error occurred";
+
+/* error reading import file */
+"Error reading import file." = "Error reading import file.";
+
+/* error finding keychain item to edit message */
+"Error retrieving Keychain item to edit" = "Error retrieving Keychain item to edit";
+
+/* error retrieving table information message */
+"Error retrieving table information" = "Error retrieving table information";
+
+/* error retrieving trigger information message */
+"Error retrieving trigger information" = "Error retrieving trigger information";
+
+/* error truncating table message */
+"Error truncating table" = "Error truncating table";
+
+/* error updating keychain item message */
+"Error updating Keychain item" = "Error updating Keychain item";
+
+/* error while analyzing selected items message */
+"Error while analyzing selected items" = "Error while analyzing selected items";
+
+/* error while checking selected items message */
+"Error while checking selected items" = "Error while checking selected items";
+
+/* error while converting color scheme data */
+"Error while converting color scheme data" = "Error while converting color scheme data";
+
+/* error while converting connection data */
+"Error while converting connection data" = "Error while converting connection data";
+
+/* Content filters could not be converted to plist upon export - message title (ContentFilterManager) */
+"Error while converting content filter data" = "Error while converting content filter data";
+
+/* error while converting query favorite data */
+"Error while converting query favorite data" = "Error while converting query favorite data";
+
+/* error while converting session data */
+"Error while converting session data" = "Error while converting session data";
+
+/* Error while deleting field */
+"Error while deleting field" = "Error while deleting field";
+
+/* Bundle Editor : Copy-Command-Error : Copying failed error message */
+"Error while duplicating Bundle content." = "Error while duplicating Bundle content.";
+
+/* error while executing javascript bash command */
+"Error while executing JavaScript BASH command" = "Error while executing JavaScript BASH command";
+
+/* error while fetching the optimized field type message */
+"Error while fetching the optimized field type" = "Error while fetching the optimized field type";
+
+/* error while flushing selected items message */
+"Error while flushing selected items" = "Error while flushing selected items";
+
+/* error while importing table message */
+"Error while importing table" = "Error while importing table";
+
+/* Open Files : Bundle : Install-Error : error dialog title
+   Open Files : Bundle : UUID : Error dialog title */
+"Error while installing Bundle" = "Error while installing Bundle";
+
+/* error while installing color theme file */
+"Error while installing color theme file" = "Error while installing color theme file";
+
+/* Bundle Editor : Trash-Bundle(s)-Error : error dialog title
+   error while moving “%@” to trash
+   Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version. */
+"Error while moving “%@” to Trash." = "Error while moving “%@” to Trash.";
+
+/* error while optimizing selected items message */
+"Error while optimizing selected items" = "Error while optimizing selected items";
+
+/* error while parsing CREATE TABLE syntax */
+"Error while parsing CREATE TABLE syntax" = "Error while parsing CREATE TABLE syntax";
+
+/* error while reading connection data file */
+"Error while reading connection data file" = "Error while reading connection data file";
+
+/* error while reading data file */
+"Error while reading data file" = "Error while reading data file";
+
+/* error while repairing selected items message */
+"Error while repairing selected items" = "Error while repairing selected items";
+
+/* Bundle Editor : Save-Bundle-Error : error dialog title */
+"Error while saving the Bundle." = "Error while saving the Bundle.";
+
+/* Bundle Editor : Save-and-Close-Error : error dialog title */
+"Error while saving “%@”." = "Error while saving “%@”.";
+
+/* Errors title */
+"Errors" = "Errors";
+
+/* Mysql Help Viewer : Help Topic: Example section title */
+"Example:" = "Example:";
+
+/* Bundle Editor : BLOB dropdown : 'exclude BLOB' item */
+"exclude BLOB" = "exclude BLOB";
+
+/* execution privilege label (Navigator) */
+"Execution Privilege" = "Execution Privilege";
+
+/* execution privilege: %@ */
+"execution privilege: %@" = "execution privilege: %@";
+
+/* execution stopped message */
+"Execution stopped!\n" = "Execution stopped!\n";
+
+/* export selected favorites menu item */
+"Export Selected..." = "Export Selected...";
+
+/* text showing that the application is importing a supplied format */
+"Exporting %@" = "Exporting %@";
+
+/* text showing that the application is exporting a Dot file */
+"Exporting Dot File" = "Exporting Dot File";
+
+/* text showing that the application is exporting SQL */
+"Exporting SQL" = "Exporting SQL";
+
+/* extra label (Navigator) */
+"Extra" = "Extra";
+
+/* table structure : indexes : delete index : no columns error : title */
+"Failed to remove index '%@'" = "Failed to remove index '%@'";
+
+/* fatal error */
+"Fatal Error" = "Fatal Error";
+
+/* export filename favorite name token */
+"Favorite" = "Favorite";
+
+/* favorites label */
+"Favorites" = "Favorites";
+
+/* favorites export error message */
+"Favorites export error" = "Favorites export error";
+
+/* favorites import error message */
+"Favorites import error" = "Favorites import error";
+
+/* export label showing that the app is fetching data */
+"Fetching data..." = "Fetching data...";
+
+/* fetching database structure data in progress */
+"fetching database structure data in progress" = "fetching database structure data in progress";
+
+/* fetching database structure in progress */
+"fetching database structure in progress" = "fetching database structure in progress";
+
+/* fetching table data for completion in progress message */
+"fetching table data…" = "fetching table data…";
+
+/* popup menuitem for field (showing only if disabled) */
+"field" = "field";
+
+/* Field */
+"Field" = "Field";
+
+/* Query result editing error - could not match row being edited uniquely */
+"Field is not editable. Couldn't identify field origin unambiguously (%ld matches)." = "Field is not editable. Couldn't identify field origin unambiguously (%ld matches).";
+
+/* field is not editable due to no table/database */
+"Field is not editable. Field has no or multiple table or database origin(s)." = "Field is not editable. Field has no or multiple table or database origin(s).";
+
+/* Custom Query result editing error - could not identify original row */
+"Field is not editable. No matching record found.\nReload data, check encoding, or try to add\na primary key field or more fields\nin your SELECT statement for table '%@'\nto identify field origin unambiguously." = "Field is not editable. No matching record found.\nReload data, check encoding, or try to add\na primary key field or more fields\nin your SELECT statement for table '%@'\nto identify field origin unambiguously.";
+
+/* Table Content result editing error - could not identify original row */
+"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously." = "Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.";
+
+/* error while reading data file */
+"File couldn't be read." = "File couldn't be read.";
+
+/* File read error title (Import Dialog) */
+"File read error" = "File read error";
+
+/* All export files already exist explanatory text */
+"Files with the same names already exist in the target folder. Replacing them will overwrite their current contents." = "Files with the same names already exist in the target folder. Replacing them will overwrite their current contents.";
+
+/* filter label */
+"Filter" = "Filter";
+
+/* filter tables menu item */
+"Filter Tables" = "Filter Tables";
+
+/* export source */
+"Filtered table content" = "Filtered table content";
+
+/* filtering failed. please try again. tooltip */
+"Filtering failed. Please try again." = "Filtering failed. Please try again.";
+
+/* Filtering table task description */
+"Filtering table..." = "Filtering table...";
+
+/* description for finished exporting growl notification */
+"Finished exporting to %@" = "Finished exporting to %@";
+
+/* description for finished importing growl notification */
+"Finished importing %@" = "Finished importing %@";
+
+/* FLUSH one or more tables - result title */
+"Flush %@" = "Flush %@";
+
+/* flush selected items menu item */
+"Flush Selected Items" = "Flush Selected Items";
+
+/* flush table menu item */
+"Flush Table" = "Flush Table";
+
+/* flush table failed message */
+"Flush table failed." = "Flush table failed.";
+
+/* flush view menu item */
+"Flush View" = "Flush View";
+
+/* title of panel when successfully flushed privs */
+"Flushed Privileges" = "Flushed Privileges";
+
+/* For BIT fields only “1” or “0” are allowed. */
+"For BIT fields only “1” or “0” are allowed." = "For BIT fields only “1” or “0” are allowed.";
+
+/* force table deletion button text */
+"Force delete (disables integrity checks)" = "Force delete (disables integrity checks)";
+
+/* full text index menu item title */
+"FULLTEXT" = "FULLTEXT";
+
+/* function */
+"function" = "function";
+
+/* header for function info pane */
+"FUNCTION INFORMATION" = "FUNCTION INFORMATION";
+
+/* functions */
+"functions" = "functions";
+
+/* Bundle Editor : Scope dropdown : 'general' item
+   general menu item label
+   general preference pane name */
+"General" = "General";
+
+/* general preference pane tooltip */
+"General Preferences" = "General Preferences";
+
+/* Bundle Editor : Outline View : 'General' item : tooltip */
+"General Scope\ncommands will run application-wide" = "General Scope\ncommands will run application-wide";
+
+/* generating print document status message */
+"Generating print document..." = "Generating print document...";
+
+/* export header generation time label */
+"Generation Time" = "Generation Time";
+
+/* Content Filter Manager : Filter Entry List: 'Global' Header
+   Query Favorites : List : Section Heading : global query favorites */
+"Global" = "Global";
+
+/* Query Favorites : List : Section Heading : global : tooltip */
+"Globally stored favorites" = "Globally stored favorites";
+
+/* Preferences : Notifications : growl status text : growl installed and running */
+"Growl will be used for sending notifications.\nAdvanced settings can be configured via Growl." = "Growl will be used for sending notifications.\nAdvanced settings can be configured via Growl.";
+
+/* Gzip compression export summary - within a sentence */
+"Gzip compression" = "Gzip compression";
+
+/* MySQL Help Viewer : Results list : Page title */
+"Help topics for “%@”" = "Help topics for “%@”";
+
+/* hide console */
+"Hide Console" = "Hide Console";
+
+/* hide navigator */
+"Hide Navigator" = "Hide Navigator";
+
+/* hide tab bar */
+"Hide Tab Bar" = "Hide Tab Bar";
+
+/* Hide Toolbar menu item */
+"Hide Toolbar" = "Hide Toolbar";
+
+/* export filename host token
+   export header host label */
+"Host" = "Host";
+
+/* Localized help page for query favourites - do not localize if no translated webpage is available */
+"http://www.sequelpro.com/docs/Working_with_Query_Favorites" = "http://www.sequelpro.com/docs/Working_with_Query_Favorites";
+
+/* description of double */
+"IEEE 754 double-precision floating-point value. M is the maxium number of digits, of which D may be after the decimal point. Note: Many decimal numbers can only be approximated by floating-point values. See DECIMAL if you require exact results." = "IEEE 754 double-precision floating-point value. M is the maxium number of digits, of which D may be after the decimal point. Note: Many decimal numbers can only be approximated by floating-point values. See DECIMAL if you require exact results.";
+
+/* description of float */
+"IEEE 754 single-precision floating-point value. M is the maxium number of digits, of which D may be after the decimal point. Note: Many decimal numbers can only be approximated by floating-point values. See DECIMAL if you require exact results." = "IEEE 754 single-precision floating-point value. M is the maxium number of digits, of which D may be after the decimal point. Note: Many decimal numbers can only be approximated by floating-point values. See DECIMAL if you require exact results.";
+
+/* ignore button */
+"Ignore" = "Ignore";
+
+/* ignore errors button */
+"Ignore All Errors" = "Ignore All Errors";
+
+/* ignore all fields menu item */
+"Ignore all Fields" = "Ignore all Fields";
+
+/* ignore field label */
+"Ignore field" = "Ignore field";
+
+/* ignore field label */
+"Ignore Field" = "Ignore Field";
+
+/* import button */
+"Import" = "Import";
+
+/* import all fields menu item */
+"Import all Fields" = "Import all Fields";
+
+/* sql import : charset error alert : continue button */
+"Import Anyway" = "Import Anyway";
+
+/* import cancelled message */
+"Import cancelled!\n" = "Import cancelled!\n";
+
+/* Import Error title */
+"Import Error" = "Import Error";
+
+/* import field operator tooltip */
+"Import field" = "Import field";
+
+/* import file does not exist message */
+"Import file does not exist." = "Import file does not exist.";
+
+/* Export file format cannot be imported warning */
+"Import of the selected data is currently not supported." = "Import of the selected data is currently not supported.";
+
+/* SQL import progress text */
+"Imported %@ of %@" = "Imported %1$@ of %2$@";
+
+/* CSV import progress text where total size is unknown */
+"Imported %@ of CSV data" = "Imported %@ of CSV data";
+
+/* SQL import progress text where total size is unknown */
+"Imported %@ of SQL" = "Imported %@ of SQL";
+
+/* text showing that the application is importing CSV */
+"Importing CSV" = "Importing CSV";
+
+/* text showing that the application is importing SQL */
+"Importing SQL" = "Importing SQL";
+
+/* Bundle Editor : BLOB dropdown : 'include BLOB' item */
+"include BLOB" = "include BLOB";
+
+/* include content table column tooltip */
+"Include content" = "Include content";
+
+/* sql import error message */
+"Incompatible encoding in SQL file" = "Incompatible encoding in SQL file";
+
+/* header for blank info pane */
+"INFORMATION" = "INFORMATION";
+
+/* New Table Sheet : Table Collation Dropdown : Default inherited from database
+   New Table Sheet : Table Encoding Dropdown : Default inherited from database */
+"Inherit from database (%@)" = "Inherit from database (%@)";
+
+/* initializing export label */
+"Initializing..." = "Initializing...";
+
+/* Bundle Editor : Scope dropdown : 'input field' item
+   input field menu item label */
+"Input Field" = "Input Field";
+
+/* input field  doesn't support insertion of snippets. */
+"Input Field doesn't support insertion of snippets." = "Input Field doesn't support insertion of snippets.";
+
+/* input field is not editable. */
+"Input Field is not editable." = "Input Field is not editable.";
+
+/* Bundle Editor : Outline View : 'Input Field' item : tooltip */
+"Input Field Scope\ncommands will run on each text input field" = "Input Field Scope\ncommands will run on each text input field";
+
+/* Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item */
+"Insert as Snippet" = "Insert as Snippet";
+
+/* Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item */
+"Insert as Text" = "Insert as Text";
+
+/* Preferences : Notifications : growl status text : additional hint when embedded Growl ('Mist') or Notification Center is used. */
+"Install Growl for advanced control over notifications." = "Install Growl for advanced control over notifications.";
+
+/* Bundle Editor : Outline View : 'BUNDLES' item : tooltip */
+"Installed Bundles" = "Installed Bundles";
+
+/* Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog title */
+"Installing Bundle" = "Installing Bundle";
+
+/* insufficient details message */
+"Insufficient connection details" = "Insufficient connection details";
+
+/* insufficient details informative message */
+"Insufficient details provided to establish a connection. Please enter at least the hostname." = "Insufficient details provided to establish a connection. Please enter at least the hostname.";
+
+/* insufficient SSH tunnel details informative message */
+"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel." = "Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.";
+
+/* insufficient details informative message */
+"Insufficient details provided to establish a connection. Please provide at least a host." = "Insufficient details provided to establish a connection. Please provide at least a host.";
+
+/* Interpret data as: */
+"Interpret data as:" = "Interpret data as:";
+
+/* Invalid database very short status message */
+"Invalid database" = "Invalid database";
+
+/* export : import settings : file error title */
+"Invalid file supplied!" = "Invalid file supplied!";
+
+/* table content : editing : error message title when parsing as hex string failed */
+"Invalid hexadecimal value" = "Invalid hexadecimal value";
+
+/* is deterministic label (Navigator) */
+"Is Deterministic" = "Is Deterministic";
+
+/* is nullable label (Navigator) */
+"Is Nullable" = "Is Nullable";
+
+/* is updatable: %@ */
+"is updatable: %@" = "is updatable: %@";
+
+/* items */
+"items" = "items";
+
+/* javascript exception */
+"JavaScript Exception" = "JavaScript Exception";
+
+/* javascript parsing error */
+"JavaScript Parsing Error" = "JavaScript Parsing Error";
+
+/* key label (Navigator) */
+"Key" = "Key";
+
+/* keyword label for color table (Prefs > Editor) */
+"Keyword" = "Keyword";
+
+/* kill button */
+"Kill" = "Kill";
+
+/* kill connection message */
+"Kill connection?" = "Kill connection?";
+
+/* kill query message */
+"Kill query?" = "Kill query?";
+
+/* Last Error Message */
+"Last Error Message" = "Last Error Message";
+
+/* Last Used entry in favorites menu */
+"Last Used" = "Last Used";
+
+/* range for json type */
+"Limited to @@max_allowed_packet" = "Limited to @@max_allowed_packet";
+
+/* Loading table task string */
+"Loading %@..." = "Loading %@...";
+
+/* Loading database task string */
+"Loading database '%@'..." = "Loading database '%@'...";
+
+/* Loading history entry task desc */
+"Loading history entry..." = "Loading history entry...";
+
+/* Loading table page task string */
+"Loading page %lu..." = "Loading page %lu...";
+
+/* Loading referece task string */
+"Loading reference..." = "Loading reference...";
+
+/* Loading table data string */
+"Loading table data..." = "Loading table data...";
+
+/* Low memory export summary */
+"Low memory" = "Low memory";
+
+/* range of decimal */
+"M (precision): Up to 65 digits\nD (scale): 0 to 30 digits" = "M (precision): Up to 65 digits\nD (scale): 0 to 30 digits";
+
+/* range for blob type
+   range for varbinary type */
+"M: %@ to %@ bytes" = "M: %1$@ to %2$@ bytes";
+
+/* range for text type
+   range for varchar type */
+"M: %@ to %@ characters" = "M: %1$@ to %2$@ characters";
+
+/* range for longtext type */
+"M: %@ to %@ characters (4 GiB)" = "M: %1$@ to %2$@ characters (4 GiB)";
+
+/* range for binary type */
+"M: 0 to 255 bytes" = "M: 0 to 255 bytes";
+
+/* range for char type */
+"M: 0 to 255 characters" = "M: 0 to 255 characters";
+
+/* range for bit type */
+"M: 1 (default) to 64" = "M: 1 (default) to 64";
+
+/* connection view : ssl : key file picker : wrong format error description */
+"Make sure the file contains a RSA private key and is using PEM encoding." = "Make sure the file contains a RSA private key and is using PEM encoding.";
+
+/* connection view : ssl : client cert picker : wrong format error description */
+"Make sure the file contains a X.509 client certificate and is using PEM encoding." = "Make sure the file contains a X.509 client certificate and is using PEM encoding.";
+
+/* match field menu item */
+"Match Field" = "Match Field";
+
+/* Shown when user inserts too many arguments (ContentFilterManager) */
+"Maximum number of arguments is 2!" = "Maximum number of arguments is 2!";
+
+/* Maximum text length is set to %ld. */
+"Maximum text length is set to %ld." = "Maximum text length is set to %ld.";
+
+/* Maximum text length is set to %ld. Inserted text was truncated. */
+"Maximum text length is set to %ld. Inserted text was truncated." = "Maximum text length is set to %ld. Inserted text was truncated.";
+
+/* Maximum text length is set to %llu. */
+"Maximum text length is set to %llu." = "Maximum text length is set to %llu.";
+
+/* Maximum text length is set to %llu. Inserted text was truncated. */
+"Maximum text length is set to %llu. Inserted text was truncated." = "Maximum text length is set to %llu. Inserted text was truncated.";
+
+/* message column title */
+"Message" = "Message";
+
+/* mgtemplateengine error */
+"MGTemplateEngine Error" = "MGTemplateEngine Error";
+
+/* export filename date token */
+"Month" = "Month";
+
+/* multiple selection */
+"multiple selection" = "multiple selection";
+
+/* MySQL connecting very short status message */
+"MySQL connecting..." = "MySQL connecting...";
+
+/* mysql error message */
+"MySQL Error" = "MySQL Error";
+
+/* mysql help */
+"MySQL Help" = "MySQL Help";
+
+/* MySQL Help for Selection */
+"MySQL Help for Selection" = "MySQL Help for Selection";
+
+/* MySQL Help for Word */
+"MySQL Help for Word" = "MySQL Help for Word";
+
+/* mysql help categories */
+"MySQL Help – Categories" = "MySQL Help – Categories";
+
+/* mysql said message */
+"MySQL said:" = "MySQL said:";
+
+/* shutdown server : error dialog : message */
+"MySQL said:\n%@" = "MySQL said:\n%@";
+
+/* message of panel when error while adding row to db */
+"MySQL said:\n\n%@" = "MySQL said:\n\n%@";
+
+/* Preferences : Themes : Initial filename for 'Export' */
+"MyTheme" = "MyTheme";
+
+/* network preference pane name */
+"Network" = "Network";
+
+/* network preference pane tooltip */
+"Network Preferences" = "Network Preferences";
+
+/* Bundle Editor : Default name for new bundle in the list on the left */
+"New Bundle" = "New Bundle";
+
+/* new column name placeholder string */
+"New Column Name" = "New Column Name";
+
+/* new favorite name */
+"New Favorite" = "New Favorite";
+
+/* Content Filter Manager : Initial name for new filter */
+"New Filter" = "New Filter";
+
+/* new folder placeholder name */
+"New Folder" = "New Folder";
+
+/* Bundle Editor : Default name for a new bundle in the menu */
+"New Name" = "New Name";
+
+/* new table menu item */
+"New Table" = "New Table";
+
+/* error that no color theme found */
+"No color theme data found." = "No color theme data found.";
+
+/* No compression export summary - within a sentence */
+"no compression" = "no compression";
+
+/* no connection available message */
+"No connection available" = "No connection available";
+
+/* no connection data found */
+"No connection data found." = "No connection data found.";
+
+/* No content filters were found in file to import (ContentFilterManager) */
+"No content filters found." = "No content filters found.";
+
+/* no data found */
+"No data found." = "No data found.";
+
+/* No errors title */
+"No errors" = "No errors";
+
+/* No favorites entry in favorites menu */
+"No Favorties" = "No Favorties";
+
+/* All export files creation error title */
+"No files could be created" = "No files could be created";
+
+/* no item found message */
+"No item found" = "No item found";
+
+/* SSH tunnel could not be created because no local port could be allocated */
+"No local port could be allocated for the SSH Tunnel." = "No local port could be allocated for the SSH Tunnel.";
+
+/* header for no matches in filtered list */
+"NO MATCHES" = "NO MATCHES";
+
+/* no optimized field type found. message */
+"No optimized field type found." = "No optimized field type found.";
+
+/* error that no query favorites found */
+"No query favorites found." = "No query favorites found.";
+
+/* Mysql Help Viewer : Search : No results */
+"No results found." = "No results found.";
+
+/* Bundle Editor : Fallback Input source dropdown : 'none' item
+   Bundle Editor : Scope=? : ? dropdown: 'None' item
+   Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item
+   Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item
+   Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item
+   Bundle Editor : Scope=Field : Input source dropdown: 'None' item
+   Bundle Editor : Scope=Field : Output dropdown : 'none' item
+   Bundle Editor : Scope=Field : Trigger dropdown : 'none' item
+   Bundle Editor : Scope=General : Input source dropdown: 'None' item
+   Bundle Editor : Scope=General : Output dropdown : 'none' item
+   Bundle Editor : Scope=General : Trigger dropdown : 'none' item
+   compression: none */
+"None" = "None";
+
+/* not available label */
+"Not available" = "Not available";
+
+/* Preferences : Notifications : growl status text : growl not installed, Apple's Notificiation Center is used instead. (KEEP the SPACE at the end) */
+"Notification Center will be used for sending notifications. " = "Notification Center will be used for sending notifications. ";
+
+/* Argument count (ContentFilterManager) */
+"Number of arguments: %lu" = "Number of arguments: %lu";
+
+/* numeric label for color table (Prefs > Editor) */
+"Numeric" = "Numeric";
+
+/* Bundle Editor : Copy-Command-Error : OK button
+   Bundle Editor : Save-and-Close-Error : OK button
+   Bundle Editor : Save-Bundle-Error : OK button
+   Bundle Editor : Trash-Bundle(s)-Error : OK button
+   OK
+   OK button
+   Open Files : Bundle : Already-Installed : Delete-Old-Error : OK button
+   Open Files : Bundle : Install-Error : OK button
+   Open Files : Bundle : UUID : OK button
+   Preferences : Network : Custom SSH client : warning dialog : accept button */
+"OK" = "OK";
+
+/* Table Content : Remove Row : Result : Too Many : Part 1 : n+1 rows instead of n selected were deleted. */
+"One additional row was removed!" = "One additional row was removed!";
+
+/* Table Content : Remove Row : Result : Too Few : Part 1 : Only n-1 of n selected rows were deleted. */
+"One row was not removed." = "One row was not removed.";
+
+/* Only one dragged item allowed. */
+"Only one dragged item allowed." = "Only one dragged item allowed.";
+
+/* partial copy database support message */
+"Only Partially Supported" = "Only Partially Supported";
+
+/* open function in new table title */
+"Open Function in New Tab" = "Open Function in New Tab";
+
+/* Table List : Context Menu : duplicate connection to new window
+   Table List : Gear Menu : duplicate connection to new window */
+"Open Function in New Window" = "Open Function in New Window";
+
+/* open connection in new tab context menu item */
+"Open in New Tab" = "Open in New Tab";
+
+/* menu item open in new window */
+"Open in New Window" = "Open in New Window";
+
+/* open procedure in new table title */
+"Open Procedure in New Tab" = "Open Procedure in New Tab";
+
+/* Table List : Context Menu : duplicate connection to new window
+   Table List : Gear Menu : duplicate connection to new window */
+"Open Procedure in New Window" = "Open Procedure in New Window";
+
+/* open table in new tab title
+   open table in new table title */
+"Open Table in New Tab" = "Open Table in New Tab";
+
+/* Table List : Context Menu : Duplicate connection to new window
+   Table List : Gear Menu : Duplicate connection to new window */
+"Open Table in New Window" = "Open Table in New Window";
+
+/* open view in new tab title
+   open view in new table title */
+"Open View in New Tab" = "Open View in New Tab";
+
+/* Tables List : Context Menu : Duplicate connection to new window
+   Tables List : Gear Menu : Duplicate connection to new window */
+"Open View in New Window" = "Open View in New Window";
+
+/* menu item open “%@” in new window */
+"Open “%@” in New Window" = "Open “%@” in New Window";
+
+/* OPTIMIZE one or more tables - result title */
+"Optimize %@" = "Optimize %@";
+
+/* optimize selected items menu item */
+"Optimize Selected Items" = "Optimize Selected Items";
+
+/* optimize table menu item */
+"Optimize Table" = "Optimize Table";
+
+/* optimize table failed message */
+"Optimize table failed." = "Optimize table failed.";
+
+/* Optimized type for field %@ */
+"Optimized type for field '%@'" = "Optimized type for field '%@'";
+
+/* optional placeholder string */
+"optional" = "optional";
+
+/* Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed. */
+"Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed." = "Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed.";
+
+/* Permission Denied */
+"Permission Denied" = "Permission Denied";
+
+/* please choose a favorite connection view label */
+"Please choose a favorite" = "Please choose a favorite";
+
+/* message of panel when ssh details are incomplete */
+"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel." = "Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.";
+
+/* Please enter the password */
+"Please enter the password for ‘%@’:" = "Please enter the password for ‘%@’:";
+
+/* print button */
+"Print" = "Print";
+
+/* print page menu item title */
+"Print Page…" = "Print Page…";
+
+/* privileges label (Navigator) */
+"Privileges" = "Privileges";
+
+/* procedure */
+"procedure" = "procedure";
+
+/* header for procedure info pane */
+"PROCEDURE INFORMATION" = "PROCEDURE INFORMATION";
+
+/* procedures */
+"procedures" = "procedures";
+
+/* proceed button */
+"Proceed" = "Proceed";
+
+/* header for procs & funcs list */
+"PROCS & FUNCS" = "PROCS & FUNCS";
+
+/* toolbar item label for switching to the Run Query tab */
+"Query" = "Query";
+
+/* query background label for color table (Prefs > Editor) */
+"Query Background" = "Query Background";
+
+/* Query cancelled error */
+"Query cancelled." = "Query cancelled.";
+
+/* Query cancel by resetting connection error */
+"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset." = "Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.";
+
+/* query editor preference pane name */
+"Query Editor" = "Query Editor";
+
+/* query editor preference pane tooltip */
+"Query Editor Preferences" = "Query Editor Preferences";
+
+/* query logging currently disabled label
+   query logging disabled label */
+"Query logging is currently disabled" = "Query logging is currently disabled";
+
+/* query result print heading */
+"Query Result" = "Query Result";
+
+/* export source */
+"Query results" = "Query results";
+
+/* Query Status */
+"Query Status" = "Query Status";
+
+/* table status : row count query failed : error title */
+"Querying row count failed" = "Querying row count failed";
+
+/* Quick connect item label */
+"Quick Connect" = "Quick Connect";
+
+/* quote label for color table (Prefs > Editor) */
+"Quote" = "Quote";
+
+/* databsse rename unsupported informative message */
+"Renaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database." = "Renaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.";
+
+/* range for serial type */
+"Range: %@ to %@" = "Range: %1$@ to %2$@";
+
+/* range for time type */
+"Range: -838:59:59.0 to 838:59:59.0\nF (precision): 0 (1s) to 6 (1µs)" = "Range: -838:59:59.0 to 838:59:59.0\nF (precision): 0 (1s) to 6 (1µs)";
+
+/* range for year type */
+"Range: 0000, 1901 to 2155" = "Range: 0000, 1901 to 2155";
+
+/* range for set type */
+"Range: 1 to 64 members\n1, 2, 3, 4 or 8 bytes storage" = "Range: 1 to 64 members\n1, 2, 3, 4 or 8 bytes storage";
+
+/* range for datetime type */
+"Range: 1000-01-01 00:00:00.0 to 9999-12-31 23:59:59.999999\nF (precision): 0 (1s) to 6 (1µs)" = "Range: 1000-01-01 00:00:00.0 to 9999-12-31 23:59:59.999999\nF (precision): 0 (1s) to 6 (1µs)";
+
+/* range for date type */
+"Range: 1000-01-01 to 9999-12-31" = "Range: 1000-01-01 to 9999-12-31";
+
+/* range for timestamp type */
+"Range: 1970-01-01 00:00:01.0 to 2038-01-19 03:14:07.999999\nF (precision): 0 (1s) to 6 (1µs)" = "Range: 1970-01-01 00:00:01.0 to 2038-01-19 03:14:07.999999\nF (precision): 0 (1s) to 6 (1µs)";
+
+/* text showing that app is reading dump */
+"Reading..." = "Reading...";
+
+/* menu item to refresh databases */
+"Refresh Databases" = "Refresh Databases";
+
+/* refresh list menu item */
+"Refresh List" = "Refresh List";
+
+/* toolbar item label for switching to the Table Relations tab */
+"Relations" = "Relations";
+
+/* Relations tab subtitle showing table name */
+"Relations for table: %@" = "Relations for table: %@";
+
+/* reload bundles menu item label */
+"Reload Bundles" = "Reload Bundles";
+
+/* Reloading data task description */
+"Reloading data..." = "Reloading data...";
+
+/* Reloading table task string */
+"Reloading..." = "Reloading...";
+
+/* remote error */
+"Remote Error" = "Remote Error";
+
+/* Bundle Editor : Remove-Bundle: remove button
+   remove button */
+"Remove" = "Remove";
+
+/* remove all button */
+"Remove All" = "Remove All";
+
+/* remove all query favorites message */
+"Remove all query favorites?" = "Remove all query favorites?";
+
+/* Bundle Editor : Remove-Bundle: remove dialog title */
+"Remove selected Bundle?" = "Remove selected Bundle?";
+
+/* remove selected content filters message */
+"Remove selected content filters?" = "Remove selected content filters?";
+
+/* remove selected query favorites message */
+"Remove selected query favorites?" = "Remove selected query favorites?";
+
+/* removing field task status message */
+"Removing field..." = "Removing field...";
+
+/* removing index task status message */
+"Removing index..." = "Removing index...";
+
+/* rename database message */
+"Rename database '%@' to:" = "Rename database '%@' to:";
+
+/* rename func menu title */
+"Rename Function..." = "Rename Function...";
+
+/* rename proc menu title */
+"Rename Procedure..." = "Rename Procedure...";
+
+/* rename table menu title */
+"Rename Table..." = "Rename Table...";
+
+/* rename view menu title */
+"Rename View..." = "Rename View...";
+
+/* REPAIR one or more tables - result title */
+"Repair %@" = "Repair %@";
+
+/* repair selected items menu item */
+"Repair Selected Items" = "Repair Selected Items";
+
+/* repair table menu item */
+"Repair Table" = "Repair Table";
+
+/* repair table failed message */
+"Repair table failed." = "Repair table failed.";
+
+/* Replace button */
+"Replace" = "Replace";
+
+/* Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item */
+"Replace Entire Content" = "Replace Entire Content";
+
+/* Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item */
+"Replace Selection" = "Replace Selection";
+
+/* description of year */
+"Represents a 4 digit year value, stored as 1 byte. Invalid values are converted to 0000 and two digit values 0 to 69 will be converted to years 2000 to 2069, resp. values 70 to 99 to years 1970 to 1999.\nThe YEAR(2) type was removed in MySQL 5.7.5." = "Represents a 4 digit year value, stored as 1 byte. Invalid values are converted to 0000 and two digit values 0 to 69 will be converted to years 2000 to 2069, resp. values 70 to 99 to years 1970 to 1999.\nThe YEAR(2) type was removed in MySQL 5.7.5.";
+
+/* description of multilinestring */
+"Represents a collection of LineStrings." = "Represents a collection of LineStrings.";
+
+/* description of geometrycollection */
+"Represents a collection of objects of any other single- or multi-valued spatial type. The only restriction being, that all objects must share a common coordinate system." = "Represents a collection of objects of any other single- or multi-valued spatial type. The only restriction being, that all objects must share a common coordinate system.";
+
+/* description of multipolygon */
+"Represents a collection of Polygons. The Polygons making up the MultiPolygon must not intersect." = "Represents a collection of Polygons. The Polygons making up the MultiPolygon must not intersect.";
+
+/* description of multipoint */
+"Represents a set of Points without specifying any kind of relation and/or order between them." = "Represents a set of Points without specifying any kind of relation and/or order between them.";
+
+/* description of point */
+"Represents a single location in coordinate space using X and Y coordinates. The point is zero-dimensional." = "Represents a single location in coordinate space using X and Y coordinates. The point is zero-dimensional.";
+
+/* description of linestring */
+"Represents an ordered set of coordinates where each consecutive pair of two points is connected by a straight line." = "Represents an ordered set of coordinates where each consecutive pair of two points is connected by a straight line.";
+
+/* required placeholder string */
+"required" = "required";
+
+/* description of smallint */
+"Requires 2 bytes storage space. M is the optional display width and does not affect the possible value range." = "Requires 2 bytes storage space. M is the optional display width and does not affect the possible value range.";
+
+/* description of mediumint */
+"Requires 3 bytes storage space. M is the optional display width and does not affect the possible value range." = "Requires 3 bytes storage space. M is the optional display width and does not affect the possible value range.";
+
+/* description of int */
+"Requires 4 bytes storage space. M is the optional display width and does not affect the possible value range. INTEGER is an alias to this type." = "Requires 4 bytes storage space. M is the optional display width and does not affect the possible value range. INTEGER is an alias to this type.";
+
+/* description of bigint */
+"Requires 8 bytes storage space. M is the optional display width and does not affect the possible value range. Note: Arithmetic operations might fail for large numbers." = "Requires 8 bytes storage space. M is the optional display width and does not affect the possible value range. Note: Arithmetic operations might fail for large numbers.";
+
+/* reset auto_increment after deletion of all rows message */
+"Reset AUTO_INCREMENT after deletion?" = "Reset AUTO_INCREMENT after deletion?";
+
+/* Restoring session task description */
+"Restoring session..." = "Restoring session...";
+
+/* return type label (Navigator) */
+"Return Type" = "Return Type";
+
+/* return type: %@ */
+"return type: %@" = "return type: %@";
+
+/* singular word for row */
+"row" = "row";
+
+/* plural word for rows */
+"rows" = "rows";
+
+/* text showing how many rows are in the limited filter match */
+"Rows %@ - %@ from filtered matches" = "Rows %1$@ - %2$@ from filtered matches";
+
+/* text showing how many rows are in the limited result */
+"Rows %@ - %@ of %@%@ from table" = "Rows %1$@ - %2$@ of %3$@%4$@ from table";
+
+/* Table Info Section : number of rows (exact value) */
+"rows: %@" = "rows: %@";
+
+/* Table Info Section : number of rows (estimated value) */
+"rows: ~%@" = "rows: ~%@";
+
+/* run all button */
+"Run All" = "Run All";
+
+/* Run All menu item title */
+"Run All Queries" = "Run All Queries";
+
+/* Title of button to run current query in custom query view */
+"Run Current" = "Run Current";
+
+/* Title of action menu item to run current query in custom query view */
+"Run Current Query" = "Run Current Query";
+
+/* toolbar item label for switching to the Run Query tab */
+"Run Custom Query" = "Run Custom Query";
+
+/* Title of button to run query just before text caret in custom query view */
+"Run Previous" = "Run Previous";
+
+/* Title of action menu item to run query just before text caret in custom query view */
+"Run Previous Query" = "Run Previous Query";
+
+/* Title of action menu item to run selected text in custom query view */
+"Run Selected Text" = "Run Selected Text";
+
+/* Title of button to run selected text in custom query view */
+"Run Selection" = "Run Selection";
+
+/* Running multiple queries string */
+"Running query %i of %lu..." = "Running query %1$i of %2$lu...";
+
+/* Running multiple queries string */
+"Running query %ld of %lu..." = "Running query %1$ld of %2$lu...";
+
+/* Running single query string */
+"Running query..." = "Running query...";
+
+/* Save trigger button label */
+"Save" = "Save";
+
+/* Save All to Favorites */
+"Save All to Favorites" = "Save All to Favorites";
+
+/* save as button title */
+"Save As..." = "Save As...";
+
+/* Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item */
+"save BLOB as dat file" = "save BLOB as dat file";
+
+/* Bundle Editor : BLOB dropdown : 'save BLOB as image file' item */
+"save BLOB as image file" = "save BLOB as image file";
+
+/* Save Current Query to Favorites */
+"Save Current Query to Favorites" = "Save Current Query to Favorites";
+
+/* save page as menu item title */
+"Save Page As…" = "Save Page As…";
+
+/* Save Queries… */
+"Save Queries…" = "Save Queries…";
+
+/* Save Query… */
+"Save Query…" = "Save Query…";
+
+/* Save Selection to Favorites */
+"Save Selection to Favorites" = "Save Selection to Favorites";
+
+/* save view as button title */
+"Save View As..." = "Save View As...";
+
+/* schema path header for completion tooltip */
+"Schema path:" = "Schema path:";
+
+/* Search in MySQL Documentation */
+"Search in MySQL Documentation" = "Search in MySQL Documentation";
+
+/* Search in MySQL Help */
+"Search in MySQL Help" = "Search in MySQL Help";
+
+/* Select Active Query */
+"Select Active Query" = "Select Active Query";
+
+/* toolbar item for selecting a db */
+"Select Database" = "Select Database";
+
+/* selected items */
+"selected items" = "selected items";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item */
+"Selected Rows (CSV)" = "Selected Rows (CSV)";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item */
+"Selected Rows (SQL)" = "Selected Rows (SQL)";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item */
+"Selected Rows (TSV)" = "Selected Rows (TSV)";
+
+/* Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item */
+"Selected Text" = "Selected Text";
+
+/* selection label for color table (Prefs > Editor) */
+"Selection" = "Selection";
+
+/* table structure : indexes : delete index : no columns error : description */
+"Sequel Pro could not find any columns belonging to this index. Maybe it has been removed already?" = "Sequel Pro could not find any columns belonging to this index. Maybe it has been removed already?";
+
+/* Preferences : Network : Custom SSH client : warning dialog message */
+"Sequel Pro only supports and is tested with the default OpenSSH client versions included with Mac OS X. Using different clients might cause connection issues, security risks or not work at all.\n\nPlease be aware, that we cannot provide support for such configurations." = "Sequel Pro only supports and is tested with the default OpenSSH client versions included with Mac OS X. Using different clients might cause connection issues, security risks or not work at all.\n\nPlease be aware, that we cannot provide support for such configurations.";
+
+/* sequelpro URL scheme command not supported. */
+"sequelpro URL scheme command not supported." = "sequelpro URL scheme command not supported.";
+
+/* sequelpro url Scheme Error */
+"sequelpro URL Scheme Error" = "sequelpro URL Scheme Error";
+
+/* Table Structure : Collation dropdown : 'item is the same as the collation of server' marker
+   Table Structure : Encoding dropdown : 'item is server default' marker */
+"Server" = "Server";
+
+/* Add Database : Charset dropdown : default item ($1 = charset name)
+   Add Database : Collation dropdown : default item ($1 = collation name) */
+"Server Default (%@)" = "Server Default (%@)";
+
+/* server processes window title (var = hostname) */
+"Server Processes on %@" = "Server Processes on %@";
+
+/* Initial filename for 'Save session' file */
+"Session" = "Session";
+
+/* Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item
+   Bundle Editor : Scope=Field : Output dropdown : 'show as html' item
+   Bundle Editor : Scope=General : Output dropdown : 'show as html' item */
+"Show as HTML" = "Show as HTML";
+
+/* Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item
+   Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item
+   Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item */
+"Show as HTML Tooltip" = "Show as HTML Tooltip";
+
+/* Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item
+   Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item
+   Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item */
+"Show as Text Tooltip" = "Show as Text Tooltip";
+
+/* show console */
+"Show Console" = "Show Console";
+
+/* show create func syntax menu item */
+"Show Create Function Syntax..." = "Show Create Function Syntax...";
+
+/* show create proc syntax menu item */
+"Show Create Procedure Syntax..." = "Show Create Procedure Syntax...";
+
+/* show create syntaxes menu item */
+"Show Create Syntaxes..." = "Show Create Syntaxes...";
+
+/* show create table syntax menu item */
+"Show Create Table Syntax..." = "Show Create Table Syntax...";
+
+/* show create view syntax menu item */
+"Show Create View Syntax..." = "Show Create View Syntax...";
+
+/* Show detail button */
+"Show Detail" = "Show Detail";
+
+/* MySQL Help Viewer : Results list : Link tooltip */
+"Show MySQL help for “%@”" = "Show MySQL help for “%@”";
+
+/* show navigator */
+"Show Navigator" = "Show Navigator";
+
+/* show tab bar */
+"Show Tab Bar" = "Show Tab Bar";
+
+/* tooltip for toolbar item for show console */
+"Show the console which shows all MySQL commands performed by Sequel Pro" = "Show the console which shows all MySQL commands performed by Sequel Pro";
+
+/* Show Toolbar menu item */
+"Show Toolbar" = "Show Toolbar";
+
+/* filtered item count */
+"Showing %lu of %lu processes" = "Showing %1$lu of %2$lu processes";
+
+/* shutdown server : confirmation dialog : shutdown button */
+"Shutdown" = "Shutdown";
+
+/* shutdown server : error dialog : title */
+"Shutdown failed!" = "Shutdown failed!";
+
+/* range of integer types */
+"Signed: %@ to %@\nUnsigned: %@ to %@" = "Signed: %1$@ to %2$@\nUnsigned: %3$@ to %4$@";
+
+/* Table Info Section : table size on disk */
+"size: %@" = "size: %@";
+
+/* skip existing button */
+"Skip existing" = "Skip existing";
+
+/* skip problems button */
+"Skip problems" = "Skip problems";
+
+/* snapshot build label */
+"Snapshot Build" = "Snapshot Build";
+
+/* socket connection failed title */
+"Socket connection failed!" = "Socket connection failed!";
+
+/* socket not found title */
+"Socket not found!" = "Socket not found!";
+
+/* Some export folders not writable explanatory text */
+"Some of the target export folders are not writable.  Please select a new export location and try again." = "Some of the target export folders are not writable.  Please select a new export location and try again.";
+
+/* Some export folders missing explanatory text */
+"Some of the target export folders no longer exist.  Please select a new export location and try again." = "Some of the target export folders no longer exist.  Please select a new export location and try again.";
+
+/* Sorting table task description */
+"Sorting table..." = "Sorting table...";
+
+/* spatial index menu item title */
+"SPATIAL" = "SPATIAL";
+
+/* sql data access label (Navigator) */
+"SQL Data Access" = "SQL Data Access";
+
+/* SSH connected titlebar marker */
+"SSH Connected" = "SSH Connected";
+
+/* SSH connecting very short status message */
+"SSH connecting..." = "SSH connecting...";
+
+/* SSH connecting titlebar marker */
+"SSH Connecting…" = "SSH Connecting…";
+
+/* SSH connection failed title */
+"SSH connection failed!" = "SSH connection failed!";
+
+/* SSH disconnected titlebar marker */
+"SSH Disconnected" = "SSH Disconnected";
+
+/* SSH key check error */
+"SSH Key not found" = "SSH Key not found";
+
+/* title when ssh tunnel port forwarding failed */
+"SSH port forwarding failed" = "SSH port forwarding failed";
+
+/* SSL certificate authority file check error */
+"SSL Certificate Authority File not found" = "SSL Certificate Authority File not found";
+
+/* SSL certificate file check error */
+"SSL Certificate File not found" = "SSL Certificate File not found";
+
+/* SSL requested but not used title */
+"SSL connection not established" = "SSL connection not established";
+
+/* SSL key file check error */
+"SSL Key File not found" = "SSL Key File not found";
+
+/* Standard memory export summary */
+"Standard memory" = "Standard memory";
+
+/* started */
+"started" = "started";
+
+/* status file for sequelpro url scheme command couldn't be written error message */
+"Status file for sequelpro url scheme command couldn't be written!" = "Status file for sequelpro url scheme command couldn't be written!";
+
+/* stop button */
+"Stop" = "Stop";
+
+/* Stop queries string */
+"Stop queries" = "Stop queries";
+
+/* Stop query string */
+"Stop query" = "Stop query";
+
+/* description of timestamp */
+"Stores a date and time of day as seconds since the beginning of the UNIX epoch (1970-01-01 00:00:00). The values displayed/stored are affected by the connection's @@time_zone setting.\nThe representation is the same as for DATETIME. Invalid values, as well as \"second zero\", are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F. Some additional rules may apply." = "Stores a date and time of day as seconds since the beginning of the UNIX epoch (1970-01-01 00:00:00). The values displayed/stored are affected by the connection's @@time_zone setting.\nThe representation is the same as for DATETIME. Invalid values, as well as \"second zero\", are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F. Some additional rules may apply.";
+
+/* description of datetime */
+"Stores a date and time of day. The representation is YYYY-MM-DD HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F." = "Stores a date and time of day. The representation is YYYY-MM-DD HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.";
+
+/* description of date */
+"Stores a date without time information. The representation is YYYY-MM-DD. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00." = "Stores a date without time information. The representation is YYYY-MM-DD. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00.";
+
+/* description of time */
+"Stores a time of day, duration or time interval. The representation is HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 00:00:00. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F." = "Stores a time of day, duration or time interval. The representation is HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 00:00:00. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.";
+
+/* toolbar item label for switching to the Table Structure tab */
+"Structure" = "Structure";
+
+/* successfully analyzed all selected items message */
+"Successfully analyzed all selected items." = "Successfully analyzed all selected items.";
+
+/* analyze table successfully passed message */
+"Successfully analyzed table." = "Successfully analyzed table.";
+
+/* successfully flushed all selected items message */
+"Successfully flushed all selected items." = "Successfully flushed all selected items.";
+
+/* message of panel when successfully flushed privs */
+"Successfully flushed privileges." = "Successfully flushed privileges.";
+
+/* flush table successfully passed message */
+"Successfully flushed table." = "Successfully flushed table.";
+
+/* successfully optimized all selected items message */
+"Successfully optimized all selected items." = "Successfully optimized all selected items.";
+
+/* optimize table successfully passed message */
+"Successfully optimized table." = "Successfully optimized table.";
+
+/* successfully repaired all selected items message */
+"Successfully repaired all selected items." = "Successfully repaired all selected items.";
+
+/* repair table successfully passed message */
+"Successfully repaired table." = "Successfully repaired table.";
+
+/* tooltip for toolbar item for switching to the Run Query tab */
+"Switch to the Run Query tab" = "Switch to the Run Query tab";
+
+/* tooltip for toolbar item for switching to the Table Content tab */
+"Switch to the Table Content tab" = "Switch to the Table Content tab";
+
+/* tooltip for toolbar item for switching to the Table Info tab */
+"Switch to the Table Info tab" = "Switch to the Table Info tab";
+
+/* tooltip for toolbar item for switching to the Table Relations tab */
+"Switch to the Table Relations tab" = "Switch to the Table Relations tab";
+
+/* tooltip for toolbar item for switching to the Table Structure tab */
+"Switch to the Table Structure tab" = "Switch to the Table Structure tab";
+
+/* tooltip for toolbar item for switching to the Table Triggers tab */
+"Switch to the Table Triggers tab" = "Switch to the Table Triggers tab";
+
+/* tooltip for toolbar item for switching to the User Manager tab */
+"Switch to the User Manager tab" = "Switch to the User Manager tab";
+
+/* description for table syntax copied growl notification */
+"Syntax for %@ table copied" = "Syntax for %@ table copied";
+
+/* table */
+"table" = "table";
+
+/* csv export table heading
+   table
+   Table Structure : Collation dropdown : 'item is the same as the collation of table' marker
+   Table Structure : Encoding dropdown : 'item is table default' marker */
+"Table" = "Table";
+
+/* export label showing that the app is fetching data for a specific table */
+"Table %lu of %lu (%@): Fetching data..." = "Table %1$lu of %2$lu (%3$@): Fetching data...";
+
+/* export label showing app is fetching relations data for a specific table */
+"Table %lu of %lu (%@): Fetching relations data..." = "Table %1$lu of %2$lu (%3$@): Fetching relations data...";
+
+/* export label showing app if writing data for a specific table */
+"Table %lu of %lu (%@): Writing data..." = "Table %1$lu of %2$lu (%3$@): Writing data...";
+
+/* Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item
+   Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item */
+"Table changed" = "Table changed";
+
+/* table checksum message */
+"Table checksum" = "Table checksum";
+
+/* table checksum: %@ */
+"Table checksum: %@" = "Table checksum: %@";
+
+/* table content print heading */
+"Table Content" = "Table Content";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item */
+"Table Content (CSV)" = "Table Content (CSV)";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item */
+"Table Content (SQL)" = "Table Content (SQL)";
+
+/* Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item */
+"Table Content (TSV)" = "Table Content (TSV)";
+
+/* toolbar item for navigation history */
+"Table History" = "Table History";
+
+/* toolbar item label for switching to the Table Info tab */
+"Table Info" = "Table Info";
+
+/* header for table info pane */
+"TABLE INFORMATION" = "TABLE INFORMATION";
+
+/* table information print heading */
+"Table Information" = "Table Information";
+
+/* message of panel when no name is given for table */
+"Table must have a name." = "Table must have a name.";
+
+/* general preference pane tooltip */
+"Table Preferences" = "Table Preferences";
+
+/* toolbar item label for switching to the Table Relations tab */
+"Table Relations" = "Table Relations";
+
+/* Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item */
+"Table Row changed" = "Table Row changed";
+
+/* table structure print heading */
+"Table Structure" = "Table Structure";
+
+/* toolbar item label for switching to the Table Triggers tab */
+"Table Triggers" = "Table Triggers";
+
+/* Add Relation sheet title, showing table name */
+"Table: %@" = "Table: %@";
+
+/* tables preference pane name */
+"Tables" = "Tables";
+
+/* tables */
+"tables" = "tables";
+
+/* header for table list */
+"TABLES" = "TABLES";
+
+/* header for table & views list */
+"TABLES & VIEWS" = "TABLES & VIEWS";
+
+/* Connection test very short status message */
+"Testing connection..." = "Testing connection...";
+
+/* MySQL connection test very short status message */
+"Testing MySQL..." = "Testing MySQL...";
+
+/* SSH testing very short status message */
+"Testing SSH..." = "Testing SSH...";
+
+/* text label for color table (Prefs > Editor) */
+"Text" = "Text";
+
+/* Text is too long. Maximum text length is set to %llu. */
+"Text is too long. Maximum text length is set to %llu." = "Text is too long. Maximum text length is set to %llu.";
+
+/* Release notes dialog title thanking user for upgrade */
+"Thanks for updating Sequel Pro!" = "Thanks for updating Sequel Pro!";
+
+/* Open Files : Bundle : Install-Error : Destination path already exists error dialog message */
+"The Bundle ‘%@’ already exists." = "The Bundle ‘%@’ already exists.";
+
+/* Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file */
+"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles." = "The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.";
+
+/* message while reading a spf file which matches non-supported formats. */
+"The chosen file “%@” contains ‘%@’ data." = "The chosen file “%1$@” contains ‘%2$@’ data.";
+
+/* the color theme ‘%@’ already exists. */
+"The color theme ‘%@’ already exists." = "The color theme ‘%@’ already exists.";
+
+/* the connection is busy. please wait and try again tooltip */
+"The connection is busy. Please wait and try again." = "The connection is busy. Please wait and try again.";
+
+/* the connection of the active connection window is not identical tooltip */
+"The connection of the active connection window is not identical." = "The connection of the active connection window is not identical.";
+
+/* Connection lost during import error message */
+"The connection to the server was lost during the import.  The import is only partially complete." = "The connection to the server was lost during the import.  The import is only partially complete.";
+
+/* Create syntax permission denied detail */
+"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator." = "The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.";
+
+/* CSV file open error */
+"The CSV file you selected could not be found or read." = "The CSV file you selected could not be found or read.";
+
+/* Error when CSV appears to have too many columns to import, probably due to line ending mismatch */
+"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog." = "The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.";
+
+/* unsaved theme informative message */
+"The current color theme is unsaved. Do you want to proceed without saving it?" = "The current color theme is unsaved. Do you want to proceed without saving it?";
+
+/* Short important release note for swap of custom query buttons */
+"The Custom Query \"Run\" and \"Run All\" button positions and their shortcuts have been swapped." = "The Custom Query \"Run\" and \"Run All\" button positions and their shortcuts have been swapped.";
+
+/* the following default bundles were updated:\n%@\nyour modifications were stored as “(user)”. */
+"The following default Bundles were updated:\n%@\nYour modifications were stored as “(user)”." = "The following default Bundles were updated:\n%@\nYour modifications were stored as “(user)”.";
+
+/* favorites export error informative message */
+"The following error occurred during the export process:\n\n%@" = "The following error occurred during the export process:\n\n%@";
+
+/* favorites import error informative message */
+"The following error occurred during the import process:\n\n%@" = "The following error occurred during the import process:\n\n%@";
+
+/* table structure : indexes : delete index : error 1553 : description */
+"The foreign key relationship '%@' has a dependency on index '%@'. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone." = "The foreign key relationship '%1$@' has a dependency on index '%2$@'. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.";
+
+/* table list change alert message */
+"The list of tables has changed" = "The list of tables has changed";
+
+/* message when trying to rename a table/view/proc/etc to an already used name */
+"The name '%@' is already used." = "The name '%@' is already used.";
+
+/* table list change alert informative message */
+"The number of tables in this database has changed since the export dialog was opened. There are now %d additional table(s), most likely added by an external application.\n\nHow would you like to proceed?" = "The number of tables in this database has changed since the export dialog was opened. There are now %d additional table(s), most likely added by an external application.\n\nHow would you like to proceed?";
+
+/* message of panel when no rows have been affected after writing to the db */
+"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)" = "The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)";
+
+/* export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace. */
+"The selected export settings were stored with version %1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro." = "The selected export settings were stored with version %1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.";
+
+/* export : import settings : spf content type error description */
+"The selected file contains data of type “%1$@”, but type “%2$@” is needed. Please choose a different file." = "The selected file contains data of type “%1$@”, but type “%2$@” is needed. Please choose a different file.";
+
+/* export : import settings : file error description */
+"The selected file is either not a valid SPF file or severely corrupted." = "The selected file is either not a valid SPF file or severely corrupted.";
+
+/* error deleting relation informative message */
+"The selected relation couldn't be deleted.\n\nMySQL said: %@" = "The selected relation couldn't be deleted.\n\nMySQL said: %@";
+
+/* error deleting trigger informative message */
+"The selected trigger couldn't be deleted.\n\nMySQL said: %@" = "The selected trigger couldn't be deleted.\n\nMySQL said: %@";
+
+/* description of tinyint */
+"The smallest integer type, requires 1 byte storage space. M is the optional display width and does not affect the possible value range." = "The smallest integer type, requires 1 byte storage space. M is the optional display width and does not affect the possible value range.";
+
+/* message of panel when connection to socket failed because optional socket could not be found */
+"The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@" = "The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@";
+
+/* error creating relation informative message */
+"The specified relation could not be created.\n\nMySQL said: %@" = "The specified relation could not be created.\n\nMySQL said: %@";
+
+/* error creating trigger informative message */
+"The specified trigger was unable to be created.\n\nMySQL said: %@" = "The specified trigger was unable to be created.\n\nMySQL said: %@";
+
+/* sql import : charset error alert : detail message */
+"The SQL file uses utf8mb4 encoding, but your MySQL version only supports the limited utf8 subset.\n\nYou can continue the import, but any non-BMP characters in the SQL file (eg. some typographic and scientific special characters, archaic CJK logograms, emojis) will be unrecoverably lost!" = "The SQL file uses utf8mb4 encoding, but your MySQL version only supports the limited utf8 subset.\n\nYou can continue the import, but any non-BMP characters in the SQL file (eg. some typographic and scientific special characters, archaic CJK logograms, emojis) will be unrecoverably lost!";
+
+/* SQL file open error */
+"The SQL file you selected could not be found or read." = "The SQL file you selected could not be found or read.";
+
+/* Prompt for SSH password when keychain fetch failed */
+"The SSH password could not be loaded from the keychain; please enter the SSH password for %@:" = "The SSH password could not be loaded from the keychain; please enter the SSH password for %@:";
+
+/* Prompt for SSH password when direct fetch failed */
+"The SSH password could not be loaded; please enter the SSH password for %@:" = "The SSH password could not be loaded; please enter the SSH password for %@:";
+
+/* SSH tunnel authentication failed message */
+"The SSH Tunnel could not authenticate with the remote host. Please check your password and ensure you still have access." = "The SSH Tunnel could not authenticate with the remote host. Please check your password and ensure you still have access.";
+
+/* SSH tunnel unexpectedly closed */
+"The SSH Tunnel has unexpectedly closed." = "The SSH Tunnel has unexpectedly closed.";
+
+/* SSH tunnel was closed by remote host message */
+"The SSH Tunnel was closed 'by the remote host'. This may indicate a networking issue or a network timeout." = "The SSH Tunnel was closed 'by the remote host'. This may indicate a networking issue or a network timeout.";
+
+/* SSH tunnel forwarding port connection refused message */
+"The SSH Tunnel was established successfully, but could not forward data to the remote port as the remote port refused the connection." = "The SSH Tunnel was established successfully, but could not forward data to the remote port as the remote port refused the connection.";
+
+/* SSH tunnel unable to bind to local port message */
+"The SSH Tunnel was unable to bind to the local port. This error may occur if you already have an SSH connection to the same server and are using a 'LocalForward' setting in your SSH configuration.\n\nWould you like to fall back to a standard connection to localhost in order to use the existing tunnel?" = "The SSH Tunnel was unable to bind to the local port. This error may occur if you already have an SSH connection to the same server and are using a 'LocalForward' setting in your SSH configuration.\n\nWould you like to fall back to a standard connection to localhost in order to use the existing tunnel?";
+
+/* SSH tunnel failed or timed out message */
+"The SSH Tunnel was unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds)." = "The SSH Tunnel was unable to connect to host %1$@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %2$ld seconds).";
+
+/* message of panel when loading of table failed and presumably due to used filter argument */
+"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@" = "The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@";
+
+/* message of panel when loading of table failed */
+"The table data couldn't be loaded.\n\nMySQL said: %@" = "The table data couldn't be loaded.\n\nMySQL said: %@";
+
+/* Export folder not writable explanatory text */
+"The target export folder is not writable.  Please select a new export location and try again." = "The target export folder is not writable.  Please select a new export location and try again.";
+
+/* Export folder missing explanatory text */
+"The target export folder no longer exists.  Please select a new export location and try again." = "The target export folder no longer exists.  Please select a new export location and try again.";
+
+/* theme name label */
+"Theme Name:" = "Theme Name:";
+
+/* themes installation error */
+"Themes Installation Error" = "Themes Installation Error";
+
+/* message of panel when table content cannot be copied */
+"There have been errors while copying table content. Please control the new table." = "There have been errors while copying table content. Please control the new table.";
+
+/* text shown when query was successfull */
+"There were no errors." = "There were no errors.";
+
+/* delete field and foreign key informative message */
+"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone." = "This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.";
+
+/* table structure : indexes : delete index : error 1553, no FK found : description */
+"This index cannot be deleted, because it is used by an existing foreign key relationship.\n\nPlease remove the relationship, before trying to remove this index.\n\nMySQL said: %@" = "This index cannot be deleted, because it is used by an existing foreign key relationship.\n\nPlease remove the relationship, before trying to remove this index.\n\nMySQL said: %@";
+
+/* description of serial */
+"This is an alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE." = "This is an alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE.";
+
+/* description of dec
+   description of fixed
+   description of numeric */
+"This is an alias for DECIMAL." = "This is an alias for DECIMAL.";
+
+/* description of double real */
+"This is an alias for DOUBLE, unless REAL_AS_FLOAT is configured." = "This is an alias for DOUBLE, unless REAL_AS_FLOAT is configured.";
+
+/* description of double precision */
+"This is an alias for DOUBLE." = "This is an alias for DOUBLE.";
+
+/* description of bool
+   description of boolean */
+"This is an alias for TINYINT(1)." = "This is an alias for TINYINT(1).";
+
+/* Table Structure : Collation dropdown : database marker tooltip */
+"This is the default collation of database “%@”." = "This is the default collation of database “%@”.";
+
+/* Table Structure : Collation dropdown : default marker tooltip */
+"This is the default collation of encoding “%@”." = "This is the default collation of encoding “%@”.";
+
+/* Table Structure : Collation dropdown : table marker tooltip */
+"This is the default collation of table “%@”." = "This is the default collation of table “%@”.";
+
+/* Table Structure : Collation dropdown : server marker tooltip */
+"This is the default collation of this server." = "This is the default collation of this server.";
+
+/* Table Structure : Encoding dropdown : database marker tooltip */
+"This is the default encoding of database “%@”." = "This is the default encoding of database “%@”.";
+
+/* Table Structure : Encoding dropdown : table marker tooltip */
+"This is the default encoding of table “%@”." = "This is the default encoding of table “%@”.";
+
+/* Table Structure : Encoding dropdown : server marker tooltip */
+"This is the default encoding of this server." = "This is the default encoding of this server.";
+
+/* This table currently does not support relations. Only tables that use the InnoDB storage engine support them. */
+"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." = "This table currently does not support relations. Only tables that use the InnoDB storage engine support them.";
+
+/* user has no hosts informative message */
+"This user doesn't have any hosts associated with it. It will be deleted unless one is added" = "This user doesn't have any hosts associated with it. It will be deleted unless one is added";
+
+/* error removing host informative message */
+"This user doesn't seem to have any associated hosts and will be removed unless a host is added." = "This user doesn't seem to have any associated hosts and will be removed unless a host is added.";
+
+/* triggers not supported label */
+"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2" = "This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2";
+
+/* shutdown server : confirmation dialog : message */
+"This will wait for open transactions to complete and then quit the mysql daemon. Afterwards neither you nor anyone else can connect to this database!\n\nFull management access to the server's operating system is required to restart MySQL!" = "This will wait for open transactions to complete and then quit the mysql daemon. Afterwards neither you nor anyone else can connect to this database!\n\nFull management access to the server's operating system is required to restart MySQL!";
+
+/* export filename time token */
+"Time" = "Time";
+
+/* message of error when using 'localhost' for a network connection */
+"To MySQL, 'localhost' is a special host and means that a socket connection should be used.\n\nDid you mean to use a socket connection, or to connect to the local machine via a port?  If you meant to connect via a port, '127.0.0.1' should be used instead of 'localhost'." = "To MySQL, 'localhost' is a special host and means that a socket connection should be used.\n\nDid you mean to use a socket connection, or to connect to the local machine via a port?  If you meant to connect via a port, '127.0.0.1' should be used instead of 'localhost'.";
+
+/* toolbar item label for switching to the Table Triggers tab */
+"Triggers" = "Triggers";
+
+/* triggers for table label */
+"Triggers for table: %@" = "Triggers for table: %@";
+
+/* truncate button */
+"Truncate" = "Truncate";
+
+/* truncate tables message */
+"Truncate selected tables?" = "Truncate selected tables?";
+
+/* truncate table menu title */
+"Truncate Table" = "Truncate Table";
+
+/* truncate table message */
+"Truncate table '%@'?" = "Truncate table '%@'?";
+
+/* truncate tables menu item */
+"Truncate Tables" = "Truncate Tables";
+
+/* type label (Navigator) */
+"Type" = "Type";
+
+/* type declaration header */
+"Type Declaration:" = "Type Declaration:";
+
+/* add index error message */
+"Unable to add index" = "Unable to add index";
+
+/* unable to analyze selected items message */
+"Unable to analyze selected items" = "Unable to analyze selected items";
+
+/* unable to analyze table message */
+"Unable to analyze table" = "Unable to analyze table";
+
+/* unable to check selected items message */
+"Unable to check selected items" = "Unable to check selected items";
+
+/* unable to check table message */
+"Unable to check table" = "Unable to check table";
+
+/* message of panel when connection to host failed due to access denied error */
+"Unable to connect to host %@ because access was denied.\n\nDouble-check your username and password and ensure that access from your current location is permitted.\n\nMySQL said: %@" = "Unable to connect to host %1$@ because access was denied.\n\nDouble-check your username and password and ensure that access from your current location is permitted.\n\nMySQL said: %2$@";
+
+/* message of panel when SSH port forwarding failed */
+"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@" = "Unable to connect to host %1$@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %2$@";
+
+/* message of panel when connection to host failed */
+"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).\n\nMySQL said: %@" = "Unable to connect to host %1$@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %2$ld seconds).\n\nMySQL said: %3$@";
+
+/* message of panel when connection to host failed */
+"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@" = "Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@";
+
+/* unable to copy database message */
+"Unable to copy database" = "Unable to copy database";
+
+/* error deleting index message */
+"Unable to delete index" = "Unable to delete index";
+
+/* error deleting relation message */
+"Unable to delete relation" = "Unable to delete relation";
+
+/* error deleting trigger message */
+"Unable to delete trigger" = "Unable to delete trigger";
+
+/* unable to flush selected items message */
+"Unable to flush selected items" = "Unable to flush selected items";
+
+/* unable to flush table message */
+"Unable to flush table" = "Unable to flush table";
+
+/* unable to get list of users message */
+"Unable to get list of users" = "Unable to get list of users";
+
+/* error killing connection message */
+"Unable to kill connection" = "Unable to kill connection";
+
+/* error killing query message */
+"Unable to kill query" = "Unable to kill query";
+
+/* unable to optimze selected items message */
+"Unable to optimze selected items" = "Unable to optimze selected items";
+
+/* unable to optimze table message */
+"Unable to optimze table" = "Unable to optimze table";
+
+/* unable to perform the checksum */
+"Unable to perform the checksum" = "Unable to perform the checksum";
+
+/* error removing host message */
+"Unable to remove host" = "Unable to remove host";
+
+/* unable to rename database message */
+"Unable to rename database" = "Unable to rename database";
+
+/* unable to repair selected items message */
+"Unable to repair selected items" = "Unable to repair selected items";
+
+/* unable to repair table message */
+"Unable to repair table" = "Unable to repair table";
+
+/* message of panel when connection to db failed after selecting from popupbutton */
+"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists." = "Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.";
+
+/* Unable to write row error */
+"Unable to write row" = "Unable to write row";
+
+/* Table Content : Remove Row : Result : n Error title */
+"Unexpected number of rows removed!" = "Unexpected number of rows removed!";
+
+/* warning */
+"Unknown file format" = "Unknown file format";
+
+/* unsaved changes message */
+"Unsaved changes" = "Unsaved changes";
+
+/* unsaved theme message */
+"Unsaved Theme" = "Unsaved Theme";
+
+/* Preferences : Network : Custom SSH client : warning dialog title */
+"Unsupported configuration!" = "Unsupported configuration!";
+
+/* export : import settings : file version error title */
+"Unsupported version for export settings!" = "Unsupported version for export settings!";
+
+/* Name for an untitled connection */
+"Untitled" = "Untitled";
+
+/* Title of a new Sequel Pro Document */
+"Untitled %ld" = "Untitled %ld";
+
+/* range for mediumblob type */
+"Up to %@ bytes (16 MiB)" = "Up to %@ bytes (16 MiB)";
+
+/* range for longblob type */
+"Up to %@ bytes (4 GiB)" = "Up to %@ bytes (4 GiB)";
+
+/* range for mediumtext type */
+"Up to %@ characters (16 MiB)" = "Up to %@ characters (16 MiB)";
+
+/* range for enum type */
+"Up to %@ distinct members (<%@ in practice)\n1-2 bytes storage" = "Up to %1$@ distinct members (<%2$@ in practice)\n1-2 bytes storage";
+
+/* range for tinyblob type */
+"Up to 255 bytes" = "Up to 255 bytes";
+
+/* range for tinytext type */
+"Up to 255 characters" = "Up to 255 characters";
+
+/* Open Files : Bundle : Already-Installed : Update button */
+"Update" = "Update";
+
+/* updated: %@ */
+"updated: %@" = "updated: %@";
+
+/* message of panel when error while updating field to db after enabling it */
+"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed." = "Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed.";
+
+/* message of panel when error while updating field to db after enabling it */
+"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field the table `%2$@` was changed by an other user." = "Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field the table `%2$@` was changed by an other user.";
+
+/* updating field task description */
+"Updating field data..." = "Updating field data...";
+
+/* URL scheme command couldn't authenticated */
+"URL scheme command couldn't authenticated" = "URL scheme command couldn't authenticated";
+
+/* URL scheme command was terminated by user */
+"URL scheme command was terminated by user" = "URL scheme command was terminated by user";
+
+/* URL scheme command “%@” unsupported */
+"URL scheme command “%@” unsupported" = "URL scheme command “%@” unsupported";
+
+/* Use 127.0.0.1 button */
+"Use 127.0.0.1" = "Use 127.0.0.1";
+
+/* use standard connection button */
+"Use Standard Connection" = "Use Standard Connection";
+
+/* user has no hosts message */
+"User has no hosts" = "User has no hosts";
+
+/* user-defined value */
+"User-defined value" = "User-defined value";
+
+/* toolbar item label for switching to the User Manager tab */
+"Users" = "Users";
+
+/* CSV Field Mapping : Table View : Tooltip for fields with NULL value */
+"Value will be imported as MySQL NULL" = "Value will be imported as MySQL NULL";
+
+/* variable label for color table (Prefs > Editor) */
+"Variable" = "Variable";
+
+/* version */
+"version" = "version";
+
+/* export header version label */
+"Version" = "Version";
+
+/* view */
+"view" = "view";
+
+/* Release notes button title */
+"View full release notes" = "View full release notes";
+
+/* header for view info pane */
+"VIEW INFORMATION" = "VIEW INFORMATION";
+
+/* view html source code menu item title */
+"View Source" = "View Source";
+
+/* view structure print heading */
+"View Structure" = "View Structure";
+
+/* views */
+"views" = "views";
+
+/* warning */
+"Warning" = "Warning";
+
+/* Short important release note for why password prompts may occur */
+"We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again." = "We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.";
+
+/* Important release notes informational text, single change */
+"We've made a few changes but we thought you should know about one particularly important one:" = "We've made a few changes but we thought you should know about one particularly important one:";
+
+/* Important release notes informational text, multiple changes */
+"We've made a few changes but we thought you should know about some particularly important ones:" = "We've made a few changes but we thought you should know about some particularly important ones:";
+
+/* WHERE clause not valid */
+"WHERE clause not valid" = "WHERE clause not valid";
+
+/* Title of filter preview area when the query WHERE is negated */
+"WHERE NOT query" = "WHERE NOT query";
+
+/* Title of filter preview area when the query WHERE is normal */
+"WHERE query" = "WHERE query";
+
+/* Generic working description */
+"Working..." = "Working...";
+
+/* export label showing app is writing data */
+"Writing data..." = "Writing data...";
+
+/* text showing that app is writing text file */
+"Writing..." = "Writing...";
+
+/* wrong data format or password */
+"Wrong data format or password." = "Wrong data format or password.";
+
+/* wrong data format */
+"Wrong data format." = "Wrong data format.";
+
+/* export : import settings : spf content type error title */
+"Wrong SPF content type!" = "Wrong SPF content type!";
+
+/* export filename date token */
+"Year" = "Year";
+
+/* message of panel when trying to copy multiple rows */
+"You can only copy single rows." = "You can only copy single rows.";
+
+/* message of panel when trying to edit tables without index and with hidden blob/text fields */
+"You can't hide blob and text fields when working with tables without index." = "You can't hide blob and text fields when working with tables without index.";
+
+/* You cannot delete the last field in a table. Delete the table instead. */
+"You cannot delete the last field in a table. Delete the table instead." = "You cannot delete the last field in a table. Delete the table instead.";
+
+/* title of error when using 'localhost' for a network connection */
+"You have entered 'localhost' for a non-socket connection" = "You have entered 'localhost' for a non-socket connection";
+
+/* SSL connection requested but not established error detail */
+"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted." = "You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.";
+
+/* Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file) */
+"‘%@’ based favorites" = "‘%@’ based favorites";
+
+/* table column header. Read: 'Showing all content filters for fields of type %@' (ContentFilterManager) */
+"‘%@’ Fields Content Filters" = "‘%@’ Fields Content Filters";
+
+/* Export file already exists message */
+"“%@” already exists. Do you want to replace it?" = "“%@” already exists. Do you want to replace it?";
+
+/* Bundle Editor : Outline View : Bundle item : tooltip */
+"“%@” Bundle" = "“%@” Bundle";
+
+/* Export file creation error title */
+"“%@” could not be created" = "“%@” could not be created";
+
+/* “%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item. */
+"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item." = "“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.";
+
+/* connection view : ssl : client cert file picker : wrong format error title */
+"“%@” is not a valid client certificate file." = "“%@” is not a valid client certificate file.";
+
+/* connection view : ssl : key file picker : wrong format error title */
+"“%@” is not a valid private key file." = "“%@” is not a valid private key file.";
+

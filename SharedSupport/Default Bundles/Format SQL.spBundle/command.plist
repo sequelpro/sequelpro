@@ -155,7 +155,7 @@ cat &lt;&lt;HTML
 						&lt;input type="checkbox" name="compactmode" value="yes"&gt; Compact the output of sql output
 						&lt;input type="text" name="maxlenincm" value= "80" size = 5 &gt; 
 					&lt;/div&gt;
-					&lt;input type="hidden" name="clientid" value="4149-9094-8133-2031" /&gt; 
+					&lt;input type="hidden" name="clientid" value="dpriver-9094-8133-2031" /&gt; 
 				&lt;/form&gt;
 			&lt;/div&gt;
 		&lt;/div&gt;

@@ -44,7 +44,8 @@
 typedef enum {
 	TextSegment = 0,
 	ImageSegment,
-	HexSegment
+	HexSegment,
+	JsonSegment,
 } FieldEditorSegment;
 
 @implementation SPFieldEditorController
@@ -536,6 +537,8 @@ typedef enum {
 			[editImage setHidden:YES];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
 			break;
 		case ImageSegment:
@@ -544,6 +547,8 @@ typedef enum {
 			[editImage setHidden:NO];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editImage];
 			break;
 		case HexSegment:
@@ -562,6 +567,31 @@ typedef enum {
 			[editImage setHidden:YES];
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
+			break;
+		case JsonSegment:
+			[usedSheet makeFirstResponder:jsonTextView];
+			if([[jsonTextView string] isEqualToString:@""]) {
+				NSError *error;
+				NSData *jsonData = [sheetEditData dataUsingEncoding:NSUTF8StringEncoding];
+				id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&error];
+				
+				if([NSJSONSerialization isValidJSONObject:jsonObject]){
+					NSData *prettyJsonData = [NSJSONSerialization dataWithJSONObject:jsonObject options:NSJSONWritingPrettyPrinted error:&error];
+					NSString *prettyPrintedJson = [NSString stringWithUTF8String:[prettyJsonData bytes]];
+					[jsonTextView setString:prettyPrintedJson];
+				}else{
+					[jsonTextView setString:sheetEditData];
+				}
+			}
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:NO];
+			[jsonTextScrollView setHidden:NO];
 			break;
 	}
 }

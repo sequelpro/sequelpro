@@ -39,6 +39,7 @@
 #import "SPDataImport.h"
 #import "SPTableView.h"
 #import "ImageAndTextCell.h"
+#import "SPTableTextFieldCell.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "SPAlertSheets.h"
@@ -51,6 +52,7 @@
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
 #import "SPCharsetCollationHelper.h"
+#import "SPConstants.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -95,12 +97,15 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 		tables = [[NSMutableArray alloc] init];
 		filteredTables = tables;
 		tableTypes = [[NSMutableArray alloc] init];
+		tableComments = [[NSMutableDictionary alloc] init];
 		filteredTableTypes = tableTypes;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
 		selectedTableType = SPTableTypeNone;
 		selectedTableName = nil;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
 
 		[tables addObject:NSLocalizedString(@"TABLES", @"header for table list")];
 		
@@ -199,7 +204,8 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
-		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
+//		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
+		theResult = [mySQLConnection queryString:@"SHOW TABLE STATUS"];
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 		[theResult setReturnDataAsStrings:YES]; // TODO: workaround for bug #2700 (#2699)
 		if ([theResult numberOfFields] == 1) {
@@ -217,8 +223,15 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 					tableName = @"...";
 				}
 				[tables addObject:tableName];
+				
+				// comments is usefull
+				id tableComment = [eachRow lastObject];
+				if ([tableComment isNSNull]) {
+					tableComment = @"";
+				}
+				[tableComments setValue:tableComment forKey:tableName];
 
-				if ([[eachRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
+				if ([[eachRow lastObject] isEqualToString:@"VIEW"] || [[eachRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
 					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];
 					tableListContainsViews = YES;
 				} else {
@@ -1823,7 +1836,8 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 /**
  * Table view delegate method
  */
-- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(ImageAndTextCell*)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(SPTableTextFieldCell
+ *)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (rowIndex > 0 && rowIndex < (NSInteger)[filteredTableTypes count] && [[aTableColumn identifier] isEqualToString:@"tables"]) {
 
@@ -1833,6 +1847,12 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 			[aCell setImage:nil];
 			[aCell setIndentationLevel:0];
 			return;
+		}
+		
+		id comment = [tableComments objectForKey:item];
+		
+		if([comment isKindOfClass:[NSString class]] && [prefs boolForKey:SPDisplayCommentsInTablesList]) {
+			[aCell setNote:comment];
 		}
 
 		switch([NSArrayObjectAtIndex(filteredTableTypes, rowIndex) integerValue]) {
@@ -1867,6 +1887,7 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 
 	} 
 	else {
+		[aCell setNote:@""];
 		[aCell setImage:nil];
 		[aCell setIndentationLevel:0];
 	}

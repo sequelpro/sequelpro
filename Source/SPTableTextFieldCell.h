@@ -31,5 +31,10 @@
 #import "ImageAndTextCell.h"
 
 @interface SPTableTextFieldCell : ImageAndTextCell
+{
+	NSCell *noteButton;
+}
+
+- (void) setNote:(NSString *)lableText;
 
 @end
