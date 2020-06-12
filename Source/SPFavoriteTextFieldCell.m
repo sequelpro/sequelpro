@@ -84,7 +84,7 @@ extern BOOL isOSAtLeast10_10_0(void);
 		
 		if(isOSAtLeast10_10_0()) {
 			CGFloat h,s,b,a;
-			[labelColor getHue:&h saturation:&s brightness:&b alpha:&a];
+			[[labelColor colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]] getHue:&h saturation:&s brightness:&b alpha:&a];
 			
 			[[NSColor colorWithCalibratedHue:h saturation:s*1.21 brightness:b*1.1 alpha:a] set];
 			[bg fill];

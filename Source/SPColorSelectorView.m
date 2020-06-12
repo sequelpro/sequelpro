@@ -329,7 +329,7 @@ enum trackingAreaIDs
 - (void)_drawDotFlatStyleWithColor:(NSColor *)color insideRect:(NSRect)colorSquareRect
 {
 	CGFloat h,s,b,a;
-	[color getHue:&h saturation:&s brightness:&b alpha:&a];
+	[[color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]] getHue:&h saturation:&s brightness:&b alpha:&a];
 	
 	NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
 	NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];

@@ -243,6 +243,7 @@
 		582E94C716839D83003459FD /* toolbar-preferences-tables.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E94C616839D83003459FD /* toolbar-preferences-tables.png */; };
 		582E94F816839E83003459FD /* toolbar-preferences-network.png in Resources */ = {isa = PBXBuildFile; fileRef = 582E94F716839E83003459FD /* toolbar-preferences-network.png */; };
 		582F02311370B52600B30621 /* SPExportFileNameTokenObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 582F02301370B52600B30621 /* SPExportFileNameTokenObject.m */; };
+		583A278E23F06F1000FBE97B /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 583A278D23F06F1000FBE97B /* Colors.xcassets */; };
 		583CA21512EC8B2200C9E763 /* SPWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 583CA21412EC8B2200C9E763 /* SPWindow.m */; };
 		584095191107CB6600260CFD /* SPAlertSheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 584095181107CB6600260CFD /* SPAlertSheets.m */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
@@ -891,6 +892,7 @@
 		582E95821684D74C003459FD /* de */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = de; path = de.lproj/SPQLPluginConnectionBundleWindowTemplate.html; sourceTree = "<group>"; };
 		582F022F1370B52600B30621 /* SPExportFileNameTokenObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFileNameTokenObject.h; sourceTree = "<group>"; };
 		582F02301370B52600B30621 /* SPExportFileNameTokenObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFileNameTokenObject.m; sourceTree = "<group>"; };
+		583A278D23F06F1000FBE97B /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 		583CA21312EC8B2200C9E763 /* SPWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindow.h; sourceTree = "<group>"; };
 		583CA21412EC8B2200C9E763 /* SPWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindow.m; sourceTree = "<group>"; };
 		584094CC1107BD0500260CFD /* SPAlertSheets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAlertSheets.h; sourceTree = "<group>"; };
@@ -1829,6 +1831,7 @@
 				17F90E2B1210B34900274C98 /* Credits.rtf */,
 				17CC993A10B4C9C80034CD7A /* License.rtf */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
+				583A278D23F06F1000FBE97B /* Colors.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -2838,6 +2841,7 @@
 				58F48AA3161D03C6008536A1 /* quick-connect-icon.pdf in Resources */,
 				58F48B2E161D08C0008536A1 /* quick-connect-icon-white.pdf in Resources */,
 				5843DA6C161FA35600EAA6D1 /* key-icon-alternate.png in Resources */,
+				583A278E23F06F1000FBE97B /* Colors.xcassets in Resources */,
 				5843DA6D161FA35600EAA6D1 /* key-icon-alternate@2x.png in Resources */,
 				5843DA6E161FA35600EAA6D1 /* key-icon.png in Resources */,
 				5843DA6F161FA35600EAA6D1 /* key-icon@2x.png in Resources */,
@@ -3818,7 +3822,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20003;
+				CURRENT_PROJECT_VERSION = 20004;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -3839,7 +3843,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = "2.0-beta3";
+				MARKETING_VERSION = "2.0-beta4";
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
 				PRODUCT_NAME = "Sequel Ace";
@@ -4079,7 +4083,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20003;
+				CURRENT_PROJECT_VERSION = 20004;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -4100,7 +4104,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = "2.0-beta3";
+				MARKETING_VERSION = "2.0-beta4";
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
 				PRODUCT_NAME = "Sequel Ace";
@@ -4119,7 +4123,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20003;
+				CURRENT_PROJECT_VERSION = 20004;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -4141,7 +4145,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = "2.0-beta3";
+				MARKETING_VERSION = "2.0-beta4";
 				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace";
 				PRODUCT_NAME = "Sequel Ace";
