@@ -6345,7 +6345,12 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA
 - (void)_processDatabaseChangedBundleTriggerActions
 {
-	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	NSArray __block *triggeredCommands = nil;
+	
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	});
+
 	
 	for (NSString* cmdPath in triggeredCommands) 
 	{
@@ -6966,8 +6971,13 @@ static BOOL isOSAtLeast10_14;
 		[self endTask];
 
 #ifndef SP_CODA /* triggered commands */
-		NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
-
+		
+		NSArray __block *triggeredCommands = nil;
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+		});
+		
 		for(NSString* cmdPath in triggeredCommands)
 		{
 			NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
