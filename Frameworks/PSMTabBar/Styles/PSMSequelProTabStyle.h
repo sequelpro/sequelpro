@@ -29,7 +29,8 @@
 {
 	BOOL systemVersionIsAtLeast10_7_0;
 	BOOL systemVersionIsAtLeast10_10_0;
-
+	BOOL systemVersionIsAtLeast10_14_0;
+	
     NSImage *sequelProCloseButton;
     NSImage *sequelProCloseButtonDown;
     NSImage *sequelProCloseButtonOver;
@@ -50,5 +51,4 @@
 
 - (void)encodeWithCoder:(NSCoder *)aCoder;
 - (id)initWithCoder:(NSCoder *)aDecoder;
-
 @end

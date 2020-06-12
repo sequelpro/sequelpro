@@ -32,6 +32,46 @@
 
 @implementation SPTableTextFieldCell
 
+
+
+/**
+ * Initialise
+ */
+- (id) initWithCoder:(NSCoder *)coder
+{
+	self = [super initWithCoder:coder];
+	if (self) {
+//		noteButton = nil;
+		noteButton = [[NSCell alloc] init];
+		[noteButton setTitle:@""];
+		[noteButton setBordered:NO];
+		[noteButton setAlignment:NSRightTextAlignment];
+		[noteButton setSelectable:FALSE];
+		[noteButton setEditable:FALSE];
+	}
+	return self;
+}
+
+/**
+ * Deallocate
+ */
+- (void) dealloc
+{
+	NSLog(@"noteButton release:%@",noteButton.title);
+	[noteButton release];
+	noteButton = nil;
+	[super dealloc];
+}
+
+- copyWithZone:(NSZone *)zone
+{
+	NSLog(@"noteButton copyWithZone:%@",noteButton.title);
+	SPTableTextFieldCell *cell = (SPTableTextFieldCell *)[super copyWithZone:zone];
+	cell->noteButton = nil;
+	if (noteButton) cell->noteButton = [noteButton copyWithZone:zone];
+	return cell;
+}
+
 /**
  * Implements nicer cell truncating by appending '...' to the table name, before asking super to draw it.
  */
@@ -59,6 +99,24 @@
 	[self setAttributedStringValue:string];
 	[super drawInteriorWithFrame:cellFrame inView:controlView];
 
+	
+	// Set up new rects
+	
+	if (noteButton != nil)
+	{
+		NSRect linkRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, cellFrame.size.width, cellFrame.size.height);
+		NSLog(@"noteButton.title:%@",noteButton.title);
+		[noteButton drawInteriorWithFrame:linkRect inView:controlView];
+	}
+	
+}
+
+- (void) setNote:(NSString *)lableText
+{
+	if (noteButton != nil)
+	{
+		[noteButton setTitle:lableText];
+	}
 }
 
 - (NSSize)cellSize

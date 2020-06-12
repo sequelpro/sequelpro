@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="5100" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="ContentPaginationViewController">
@@ -21,19 +21,19 @@
             <rect key="frame" x="0.0" y="0.0" width="330" height="89"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <button verticalHuggingPriority="750" id="cXy-Rp-Edv">
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cXy-Rp-Edv">
                     <rect key="frame" x="225" y="62" width="91" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="roundRect" title="Go" bezelStyle="roundedRect" alignment="center" controlSize="small" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hd2-jJ-ldo">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </buttonCell>
                     <connections>
                         <action selector="paginationGoAction:" target="-2" id="86K-61-7Jl"/>
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="AkR-JA-LEs"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="Vtc-V2-j0v">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Vtc-V2-j0v">
                     <rect key="frame" x="150" y="61" width="52" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" alignment="right" title="1" drawsBackground="YES" usesSingleLineMode="YES" id="ctN-fm-6oy">
@@ -41,8 +41,8 @@
                             <real key="roundingIncrement" value="1"/>
                             <real key="minimum" value="1"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="message" size="11"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
@@ -52,40 +52,40 @@
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="rJH-8j-rCm"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="CL3-K8-6Zg">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CL3-K8-6Zg">
                     <rect key="frame" x="15" y="64" width="129" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Jump to page:" id="Wlh-Ec-wfF">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button id="Wjm-0L-Yq6">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wjm-0L-Yq6">
                     <rect key="frame" x="15" y="6" width="303" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Defer loading of blobs and texts" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="Giv-Ah-MTQ">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </buttonCell>
                     <connections>
                         <binding destination="24" name="value" keyPath="values.LoadBlobsAsNeeded" id="2GO-pS-eiH"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="Uld-aI-QB9">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Uld-aI-QB9">
                     <rect key="frame" x="259" y="33" width="60" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="rows" id="cTU-XP-iES">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="S7c-s1-KCT">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="S7c-s1-KCT">
                     <rect key="frame" x="204" y="59" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" minValue="1" maxValue="1000000" doubleValue="1" id="l3y-yk-wE1">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <binding destination="-2" name="maxValue" keyPath="maxPage" id="h3F-DA-oCz"/>
@@ -93,18 +93,15 @@
                         <binding destination="24" name="enabled" keyPath="values.LimitResults" id="Nl1-31-oLD"/>
                     </connections>
                 </stepper>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="Gxx-kw-h7E">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="Gxx-kw-h7E">
                     <rect key="frame" x="14" y="50" width="302" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="OtF-Sn-bou">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OtF-Sn-bou">
                     <rect key="frame" x="241" y="28" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" minValue="1" maxValue="100000" doubleValue="100" valueWraps="YES" id="389-RH-6nn">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <action selector="takeIntValueFrom:" target="yLU-Zg-DTB" id="5tp-h8-JTG"/>
@@ -112,7 +109,7 @@
                         <binding destination="24" name="value" keyPath="values.LimitResultsValue" id="xuB-vx-nBA"/>
                     </connections>
                 </stepper>
-                <textField verticalHuggingPriority="750" id="yLU-Zg-DTB">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yLU-Zg-DTB">
                     <rect key="frame" x="187" y="31" width="52" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="ZXe-ev-5Hv">
@@ -121,8 +118,8 @@
                             <real key="minimum" value="0.0"/>
                             <real key="maximum" value="100000"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="message" size="11"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
@@ -130,18 +127,19 @@
                         <binding destination="24" name="value" keyPath="values.LimitResultsValue" id="Hq1-Wj-VOf"/>
                     </connections>
                 </textField>
-                <button id="zSR-LP-XEx">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zSR-LP-XEx">
                     <rect key="frame" x="15" y="31" width="166" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Limit result to:" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="UEh-iO-mvP">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </buttonCell>
                     <connections>
                         <binding destination="24" name="value" keyPath="values.LimitResults" id="FAF-rW-5Nm"/>
                     </connections>
                 </button>
             </subviews>
+            <point key="canvasLocation" x="139" y="155"/>
         </customView>
     </objects>
 </document>
