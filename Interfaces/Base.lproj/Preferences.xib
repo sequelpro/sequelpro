@@ -936,8 +936,8 @@ Line 2</string>
                 <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Aw-q4-73u">
                     <rect key="frame" x="16" y="165" width="204" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <string key="toolTip">The cipher suites are used for SSL/TLS-secured connections and specify which algorithms Sequel Pro will use to encrypt a connection, as well as their preference. 
-Warning: If Sequel Pro and the server do not have at least one cipher suite in common, you will no longer be able to connect!</string>
+                    <string key="toolTip">The cipher suites are used for SSL/TLS-secured connections and specify which algorithms Sequel Ace will use to encrypt a connection, as well as their preference. 
+Warning: If Sequel Ace and the server do not have at least one cipher suite in common, you will no longer be able to connect!</string>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSL Cipher Suites:" id="PDB-0g-8jg">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -976,7 +976,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                     <clipView key="contentView" id="M9x-3Q-tiD">
                         <rect key="frame" x="1" y="1" width="332" height="126"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" id="RuH-Yq-cdH">
                                 <rect key="frame" x="0.0" y="0.0" width="332" height="126"/>
@@ -1337,7 +1337,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <menu key="menu" title="OtherViews" autoenablesItems="NO" id="1671">
                             <items>
                                 <menuItem state="on" image="NSAdvanced" hidden="YES" id="1672"/>
-                                <menuItem title="Save Current Theme As…" toolTip="Save the current set color theme by providing an unique name into Sequel Pro's Application Support folder." id="1796">
+                                <menuItem title="Save Current Theme As…" toolTip="Save the current set color theme by providing an unique name into Sequel Ace's Application Support folder." id="1796">
                                     <modifierMask key="keyEquivalentModifierMask"/>
                                     <connections>
                                         <action selector="saveAsColorScheme:" target="2144" id="2175"/>
@@ -1368,7 +1368,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="oEY-Qs-g9y">
                         <rect key="frame" x="1" y="1" width="220" height="286"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" id="1685">
                                 <rect key="frame" x="0.0" y="0.0" width="220" height="286"/>
@@ -1408,6 +1408,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                                 </connections>
                             </tableView>
                         </subviews>
+                        <nil key="backgroundColor"/>
                     </clipView>
                     <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="1684">
                         <rect key="frame" x="-100" y="-100" width="223" height="15"/>
@@ -1485,6 +1486,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                     </connections>
                 </stepper>
             </subviews>
+            <point key="canvasLocation" x="200" y="1295"/>
         </customView>
         <menu id="1547" userLabel="Context Menu">
             <items>
