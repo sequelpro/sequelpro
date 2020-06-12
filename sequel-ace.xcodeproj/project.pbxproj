@@ -321,8 +321,6 @@
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
 		58D2E230101222870063EF1D /* link-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22D101222870063EF1D /* link-arrow.png */; };
 		58DA8863103E15B5000B98DF /* SPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DA8862103E15B5000B98DF /* SPLogger.m */; };
-		58DC0D5F1293293400B76DA5 /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */; };
-		58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		58DF9F3315AB26C2003B4330 /* SPDateAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */; };
 		58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F7215AB8509003B4330 /* SPSplitView.m */; };
 		58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DFC91515CB3501003B4330 /* BGHUDButtonCell.m */; };
@@ -363,6 +361,8 @@
 		9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 584D876815140D3500F24774 /* SPMySQL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		96965384249314600003321E /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; };
 		96965385249314600003321E /* UniversalDetector.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		96B0A1512493DF3E007BB270 /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */; };
+		96B0A1522493DF3E007BB270 /* ShortcutRecorder.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9BE765682376A00C82FB93AA /* SPHelpViewerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */; };
 		9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE768F3989033CEDDC2027E /* SPFillView.m */; };
 		9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */; };
@@ -540,10 +540,10 @@
 			dstSubfolderSpec = 10;
 			files = (
 				9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */,
+				96B0A1522493DF3E007BB270 /* ShortcutRecorder.framework in Copy Frameworks */,
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
 				96965385249314600003321E /* UniversalDetector.framework in Copy Frameworks */,
 				9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */,
-				58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -774,8 +774,6 @@
 		4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; name = SPUserManager.xcdatamodel; path = Models/SPUserManager.xcdatamodel; sourceTree = SOURCE_ROOT; };
 		4D90B79C101E0CF200D116A1 /* SPUserMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserMO.h; sourceTree = "<group>"; };
 		4D90B79D101E0CF200D116A1 /* SPUserMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserMO.m; sourceTree = "<group>"; };
-		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
-		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		500C1F901BFB5F9F0095DC7F /* SPPrivilegesMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPrivilegesMO.h; sourceTree = "<group>"; };
 		500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrivilegesMO.m; sourceTree = "<group>"; };
 		500DA4B51BEFF877000773FE /* SPComboBoxCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPComboBoxCell.h; sourceTree = "<group>"; };
@@ -893,7 +891,6 @@
 		584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationCenterThreadingAdditions.m; sourceTree = "<group>"; };
 		584D899B15162CBE00F24774 /* SPDataBase64EncodingAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataBase64EncodingAdditions.h; sourceTree = "<group>"; };
 		584D899C15162CBE00F24774 /* SPDataBase64EncodingAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataBase64EncodingAdditions.m; sourceTree = "<group>"; };
-		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		5870868210FA3E9C00D58E1C /* SPDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataStorage.h; sourceTree = "<group>"; };
 		5870868310FA3E9C00D58E1C /* SPDataStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataStorage.m; sourceTree = "<group>"; };
 		5885CF48116A63B200A85ACB /* SPFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFileHandle.h; sourceTree = "<group>"; };
@@ -988,7 +985,6 @@
 		58D2E22D101222870063EF1D /* link-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow.png"; sourceTree = "<group>"; };
 		58DA8861103E15B5000B98DF /* SPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLogger.h; sourceTree = "<group>"; };
 		58DA8862103E15B5000B98DF /* SPLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLogger.m; sourceTree = "<group>"; };
-		58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShortcutRecorder.framework; path = Frameworks/ShortcutRecorder.framework; sourceTree = "<group>"; };
 		58DF9F3115AB26C2003B4330 /* SPDateAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDateAdditions.h; sourceTree = "<group>"; };
 		58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDateAdditions.m; sourceTree = "<group>"; };
 		58DF9F7115AB8509003B4330 /* SPSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSplitView.h; sourceTree = "<group>"; };
@@ -1074,6 +1070,7 @@
 		9651261F24926C7900E65B53 /* Sequel Ace.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Sequel Ace.entitlements"; sourceTree = "<group>"; };
 		9696538624931AD10003321E /* SequelAceTunnelAssistant.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SequelAceTunnelAssistant.entitlements; sourceTree = "<group>"; };
 		9696538724931AE10003321E /* xibLocalizationPostprocessor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = xibLocalizationPostprocessor.entitlements; sourceTree = "<group>"; };
+		96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShortcutRecorder.framework; path = Frameworks/ShortcutRecorder.framework; sourceTree = "<group>"; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
 		9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerClient.m; sourceTree = "<group>"; };
@@ -1228,11 +1225,11 @@
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
+				96B0A1512493DF3E007BB270 /* ShortcutRecorder.framework in Frameworks */,
 				9651262224926F1200E65B53 /* QueryKit.framework in Frameworks */,
 				58B907CA11BDA541000826E5 /* PSMTabBar.framework in Frameworks */,
 				179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */,
 				9651262424926F1600E65B53 /* SPMySQL.framework in Frameworks */,
-				58DC0D5F1293293400B76DA5 /* ShortcutRecorder.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1249,15 +1246,12 @@
 				58475685120A065B0057631F /* CoreFoundation.framework */,
 				58B9077D11BD9B64000826E5 /* Carbon.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
-				4DECC3340EC2A170008D359E /* Growl.framework */,
-				4DECC3320EC2A170008D359E /* Sparkle.framework */,
+				96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
-				586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */,
 				58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */,
 				584756B4120A06740057631F /* CoreServices.framework */,
 				584756B6120A067B0057631F /* ApplicationServices.framework */,
 				584756B8120A06830057631F /* QuickLook.framework */,
-				58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */,
 				11D44DEF118F5887002AA43C /* OCMock.framework */,
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				179ECEC611F265EE009C6A40 /* libbz2.dylib */,
@@ -3728,7 +3722,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20009;
+				CURRENT_PROJECT_VERSION = 20010;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -3989,7 +3983,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20009;
+				CURRENT_PROJECT_VERSION = 20010;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -4029,7 +4023,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20009;
+				CURRENT_PROJECT_VERSION = 20010;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
