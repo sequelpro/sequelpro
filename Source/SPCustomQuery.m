@@ -981,7 +981,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 		if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
 
 			// Scroll the viewport to the saved location
-			selectionViewportToRestore.size = [customQueryView visibleRect].size;
+			selectionViewportToRestore.size = [[customQueryView onMainThread] visibleRect].size;
 			[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 		}
 
@@ -1007,10 +1007,12 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
 		[tableDocumentInstance endTask];
 
-		// Restore selection indexes if appropriate
-		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
-		if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			// Restore selection indexes if appropriate
+			if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+			if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		});
 	}
 }
 
