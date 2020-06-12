@@ -8,7 +8,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPPreferenceController">
             <connections>
-                <outlet property="autoUpdatePreferencePane" destination="2145" id="2149"/>
                 <outlet property="editorPreferencePane" destination="2144" id="2148"/>
                 <outlet property="generalPreferencePane" destination="2074" id="2076"/>
                 <outlet property="networkPreferencePane" destination="2146" id="2150"/>
@@ -56,11 +55,6 @@
                 <outlet property="view" destination="802" id="2152"/>
             </connections>
         </customObject>
-        <customObject id="2145" userLabel="Auto Update" customClass="SPAutoUpdatePreferencePane">
-            <connections>
-                <outlet property="view" destination="60" id="2153"/>
-            </connections>
-        </customObject>
         <customObject id="2146" userLabel="Network" customClass="SPNetworkPreferencePane">
             <connections>
                 <outlet property="hiddenFileView" destination="GEn-6y-U3F" id="r1S-eS-uJK"/>
@@ -70,7 +64,6 @@
                 <outlet property="view" destination="641" id="2154"/>
             </connections>
         </customObject>
-        <customObject id="331" userLabel="Updater" customClass="SUUpdater"/>
         <userDefaultsController representsSharedInstance="YES" id="117"/>
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" visibleAtLaunch="NO" animationBehavior="default" id="1" userLabel="PreferencesPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
@@ -85,6 +78,7 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="599"/>
             </connections>
+            <point key="canvasLocation" x="69" y="74"/>
         </window>
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1716" userLabel="Enter Name Sheet">
             <windowStyleMask key="styleMask" titled="YES"/>
@@ -865,107 +859,6 @@ Line 2</string>
             </subviews>
             <point key="canvasLocation" x="200" y="537"/>
         </customView>
-        <customView id="60" userLabel="Auto Update">
-            <rect key="frame" x="0.0" y="0.0" width="580" height="180"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-            <userGuides>
-                <userLayoutGuide location="195" affinity="minX"/>
-            </userGuides>
-            <subviews>
-                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1353">
-                    <rect key="frame" x="201" y="105" width="172" height="26"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <popUpButtonCell key="cell" type="push" title="Weekly" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="604800" imageScaling="proportionallyDown" inset="2" selectedItem="1358" id="1354">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" title="OtherViews" id="1355">
-                            <items>
-                                <menuItem title="Hourly" tag="3600" id="1356"/>
-                                <menuItem title="Daily" tag="86400" id="1357"/>
-                                <menuItem title="Weekly" state="on" tag="604800" id="1358"/>
-                            </items>
-                        </menu>
-                    </popUpButtonCell>
-                    <connections>
-                        <binding destination="331" name="selectedTag" keyPath="updateCheckInterval" id="1361"/>
-                        <binding destination="117" name="enabled" keyPath="values.SUEnableAutomaticChecks" id="1368"/>
-                    </connections>
-                </popUpButton>
-                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="177" translatesAutoresizingMaskIntoConstraints="NO" id="1351">
-                    <rect key="frame" x="17" y="111" width="181" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Frequency:" id="1352">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1618">
-                    <rect key="frame" x="204" y="72" width="356" height="5"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                </box>
-                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="358" translatesAutoresizingMaskIntoConstraints="NO" id="100">
-                    <rect key="frame" x="201" y="49" width="362" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Dienstag, 16. Januar 2007 17:31:40.000" id="101">
-                        <dateFormatter key="formatter" dateStyle="full" timeStyle="medium" id="102"/>
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="117" name="value" keyPath="values.SULastCheckTime" id="146"/>
-                    </connections>
-                </textField>
-                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="177" translatesAutoresizingMaskIntoConstraints="NO" id="98">
-                    <rect key="frame" x="17" y="49" width="181" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Last check:" id="99">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="96">
-                    <rect key="frame" x="198" y="12" width="178" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="push" title="Check Now" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="97">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="checkForUpdates:" target="331" id="332"/>
-                    </connections>
-                </button>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="94">
-                    <rect key="frame" x="202" y="144" width="360" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Automatically check for updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="95">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="117" name="value" keyPath="values.SUEnableAutomaticChecks" id="145"/>
-                    </connections>
-                </button>
-                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1615">
-                    <rect key="frame" x="203" y="81" width="359" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Send anonymous system information" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1616">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="117" name="enabled" keyPath="values.SUEnableAutomaticChecks" id="1625"/>
-                        <binding destination="117" name="value" keyPath="values.SUSendProfileInfo" id="1624"/>
-                    </connections>
-                </button>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1620">
-                    <rect key="frame" x="204" y="135" width="356" height="5"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                </box>
-            </subviews>
-        </customView>
         <customView id="641" userLabel="Network">
             <rect key="frame" x="0.0" y="0.0" width="580" height="312"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1081,7 +974,7 @@ Warning: If Sequel Ace and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                     <clipView key="contentView" id="M9x-3Q-tiD">
                         <rect key="frame" x="1" y="1" width="332" height="126"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" id="RuH-Yq-cdH">
                                 <rect key="frame" x="0.0" y="0.0" width="332" height="126"/>
@@ -1473,7 +1366,7 @@ Warning: If Sequel Ace and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="oEY-Qs-g9y">
                         <rect key="frame" x="1" y="1" width="220" height="286"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" id="1685">
                                 <rect key="frame" x="0.0" y="0.0" width="220" height="286"/>

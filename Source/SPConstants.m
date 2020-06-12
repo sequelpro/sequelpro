@@ -244,7 +244,6 @@ NSString *SPContentFiltersHaveBeenUpdatedNotification = @"ContentFiltersHaveBeen
 NSString *SPCopyContentOnTableCopy                    = @"CopyContentOnTableCopy";
 
 // URLs
-NSString *SPDonationsURL                         = @"https://www.sequelpro.com/donate/";
 NSString *SPMySQLSearchURL                       = @"https://dev.mysql.com/doc/refman/%@/%@/%@.html";
 NSString *SPDevURL                               = @"https://github.com/sequelpro/sequelpro";
 
@@ -279,7 +278,6 @@ NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral"
 NSString *SPPreferenceToolbarTables              = @"SPPreferenceToolbarTables";
 NSString *SPPreferenceToolbarFavorites           = @"SPPreferenceToolbarFavorites";
 NSString *SPPreferenceToolbarNotifications       = @"SPPreferenceToolbarNotifications";
-NSString *SPPreferenceToolbarAutoUpdate          = @"SPPreferenceToolbarAutoUpdate";
 NSString *SPPreferenceToolbarNetwork             = @"SPPreferenceToolbarNetwork";
 NSString *SPPreferenceToolbarEditor              = @"SPPreferenceToolbarEditor";
 NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcuts";

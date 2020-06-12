@@ -48,7 +48,6 @@
 @synthesize tablesPreferencePane;
 @synthesize notificationsPreferencePane;
 @synthesize editorPreferencePane;
-@synthesize autoUpdatePreferencePane;
 @synthesize networkPreferencePane;
 @synthesize fontChangeTarget;
 
@@ -73,7 +72,6 @@
 					   tablesPreferencePane,
 					   notificationsPreferencePane,
 					   editorPreferencePane,
-					   autoUpdatePreferencePane,
 					   networkPreferencePane,
 					   nil];
 }
@@ -182,14 +180,6 @@
 	[editorItem setImage:[editorPreferencePane preferencePaneIcon]];
 	[editorItem setTarget:self];
 	[editorItem setAction:@selector(displayPreferencePane:)];
-	
-	// AutoUpdate preferences
-	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:[autoUpdatePreferencePane preferencePaneIdentifier]];
-
-	[autoUpdateItem setLabel:[autoUpdatePreferencePane preferencePaneName]];
-	[autoUpdateItem setImage:[autoUpdatePreferencePane preferencePaneIcon]];
-	[autoUpdateItem setTarget:self];
-	[autoUpdateItem setAction:@selector(displayPreferencePane:)];
 
 	// Network preferences
 	networkItem = [[NSToolbarItem alloc] initWithItemIdentifier:[networkPreferencePane preferencePaneIdentifier]];
@@ -268,9 +258,6 @@
 	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNotifications]) {
 		return notificationsItem;
 	}
-	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarAutoUpdate]) {
-		return autoUpdateItem;
-	}
 	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNetwork]) {
 		return networkItem;
 	}
@@ -292,7 +279,6 @@
 			 SPPreferenceToolbarNotifications,
 			 SPPreferenceToolbarEditor,
 			 SPPreferenceToolbarShortcuts,
-			 SPPreferenceToolbarAutoUpdate,
 			 SPPreferenceToolbarNetwork
 			 ];
 }
@@ -305,7 +291,6 @@
 			 SPPreferenceToolbarNotifications,
 			 SPPreferenceToolbarEditor,
 			 SPPreferenceToolbarShortcuts,
-			 SPPreferenceToolbarAutoUpdate,
 			 SPPreferenceToolbarNetwork
 			 ];
 }
@@ -318,7 +303,6 @@
 			 SPPreferenceToolbarNotifications,
 			 SPPreferenceToolbarEditor,
 			 SPPreferenceToolbarShortcuts,
-			 SPPreferenceToolbarAutoUpdate,
 			 SPPreferenceToolbarNetwork
 			 ];
 }
@@ -332,7 +316,6 @@
 	SPClear(tablesItem);
 	SPClear(notificationsItem);
 	SPClear(editorItem);
-	SPClear(autoUpdateItem);
 	SPClear(networkItem);
 	
 	[super dealloc];

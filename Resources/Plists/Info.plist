@@ -159,6 +159,8 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>${PRODUCT_NAME}</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.13</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -190,15 +192,6 @@
 	<string>https://sequelpro.com/api?action=feedback-submit</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>10.13.0</string>
-	<key>LSMinimumSystemVersionByArchitecture</key>
-	<dict>
-		<key>i386</key>
-		<string>10.13.0</string>
-		<key>x86_64</key>
-		<string>10.13.0</string>
-	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -256,16 +249,10 @@
 	</array>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
-	<key>SPVersionLongHash</key>
-	<string></string>
-	<key>SPVersionShortHash</key>
-	<string></string>
 	<key>SUEnableSystemProfiling</key>
 	<true/>
 	<key>SUFeedURL</key>
 	<string>https://sequelpro.com/appcast/app-releases.xml</string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>sparkle-public-key.pem</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

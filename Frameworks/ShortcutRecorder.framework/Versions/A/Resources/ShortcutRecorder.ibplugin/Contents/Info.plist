@@ -22,5 +22,11 @@
 	<string>1</string>
 	<key>NSPrincipalClass</key>
 	<string>SR_Leopard</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.11</string>
 </dict>
 </plist>

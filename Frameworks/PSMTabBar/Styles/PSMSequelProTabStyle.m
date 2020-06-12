@@ -530,7 +530,7 @@ typedef struct {
 			[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:lineColor];
 		}
 
-		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
     }
     
     // icon
@@ -546,7 +546,7 @@ typedef struct {
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0f;
         }
         
-		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
 
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;

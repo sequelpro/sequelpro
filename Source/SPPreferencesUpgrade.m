@@ -281,12 +281,7 @@ void SPApplyRevisionChanges(void)
 	if (recordedVersionNumber < 1636 && [prefs objectForKey:@"FetchCorrectRowCount"]) {
 		[prefs removeObjectForKey:@"FetchCorrectRowCount"];
 	}
-	
-	// For versions prior to r2057 (~0.9.8), reset the Sparkle prefs so the user is prompted about submitting information
-	if (recordedVersionNumber < 2057 && [prefs objectForKey:@"SUEnableAutomaticChecks"]) {
-		[prefs removeObjectForKey:@"SUEnableAutomaticChecks"];
-		[prefs removeObjectForKey:@"SUSendProfileInfo"];
-	}
+
 	
 	// For versions prior to 2325 (<0.9.9), convert the old encoding pref string into the new localizable constant
 	if  (recordedVersionNumber < 2325 && [prefs objectForKey:SPOldDefaultEncodingKey] && [[prefs objectForKey:SPOldDefaultEncodingKey] isKindOfClass:[NSString class]]) {
@@ -497,10 +492,7 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 	if (returnCode == NSAlertSecondButtonReturn) {
 
 		// Work out whether to link to the normal site or the nightly list
-		NSString *releaseNotesLink = @"http://www.sequelpro.com/release-notes";
-		if ([[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] rangeOfString:@"nightly"].location != NSNotFound) {
-			releaseNotesLink = @"http://nightly.sequelpro.com/release-notes";
-		}
+		NSString *releaseNotesLink = @"https://github.com/Sequel-Ace/Sequel-Ace/releases";
 
 		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:releaseNotesLink]];
 	}

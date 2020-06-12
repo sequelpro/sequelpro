@@ -235,7 +235,7 @@ typedef enum
 } SPPreferenceFontChangeTarget;
 
 // Predefined localisable URLs
-#define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"https://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"https://github.com/Sequel-Ace/Sequel-Ace/", @"Localized home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"https://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_DOCUMENTATION       NSLocalizedString(@"https://www.sequelpro.com/docs/", @"Localized documentation home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"https://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
@@ -484,7 +484,6 @@ extern NSString *SPPreferenceToolbarGeneral;
 extern NSString *SPPreferenceToolbarTables;
 extern NSString *SPPreferenceToolbarFavorites;
 extern NSString *SPPreferenceToolbarNotifications;
-extern NSString *SPPreferenceToolbarAutoUpdate;
 extern NSString *SPPreferenceToolbarNetwork;
 extern NSString *SPPreferenceToolbarEditor;
 extern NSString *SPPreferenceToolbarShortcuts;
