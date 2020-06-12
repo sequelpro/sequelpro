@@ -1,4 +1,4 @@
-Sequel Ace <img alt="Logo" src="https://sequelpro.com/images/logo.png" align="right" height="50">
+Sequel Ace <img alt="Logo" src="https://moballo.com/BackendHost/sequel-ace/appIcon.png" align="right" height="50">
 =======
 
 IN-DEVELOPMENT - PLEASE CONTRIBUTE TO THE 2.0-dev BRANCH
