@@ -1033,7 +1033,6 @@ CQ
             <point key="canvasLocation" x="139" y="154"/>
         </menu>
         <customObject id="213" userLabel="SPAppController" customClass="SPAppController"/>
-        <customObject id="795" customClass="SUUpdater"/>
         <menu id="956" userLabel="Dock Menu">
             <items>
                 <menuItem title="New Connection Window..." keyEquivalent="n" id="960">

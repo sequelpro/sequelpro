@@ -94,7 +94,6 @@
 		17E641D20EF02036001BC333 /* grabber-vertical.png in Resources */ = {isa = PBXBuildFile; fileRef = 17E6419E0EF02036001BC333 /* grabber-vertical.png */; };
 		17E641F20EF02036001BC333 /* toolbar-switch-to-structure.png in Resources */ = {isa = PBXBuildFile; fileRef = 17E641BE0EF02036001BC333 /* toolbar-switch-to-structure.png */; };
 		17E641F30EF02036001BC333 /* toolbar-switch-to-table-info.png in Resources */ = {isa = PBXBuildFile; fileRef = 17E641BF0EF02036001BC333 /* toolbar-switch-to-table-info.png */; };
-		17E641FA0EF02088001BC333 /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */; };
 		17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */ = {isa = PBXBuildFile; fileRef = 17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */; };
 		17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */ = {isa = PBXBuildFile; fileRef = 17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */; };
 		17E6420A0EF020CB001BC333 /* DBView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17E642060EF020CB001BC333 /* DBView.xib */; };
@@ -713,7 +712,6 @@
 		17E6419E0EF02036001BC333 /* grabber-vertical.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "grabber-vertical.png"; sourceTree = "<group>"; };
 		17E641BE0EF02036001BC333 /* toolbar-switch-to-structure.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-structure.png"; sourceTree = "<group>"; };
 		17E641BF0EF02036001BC333 /* toolbar-switch-to-table-info.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-info.png"; sourceTree = "<group>"; };
-		17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "Growl Registration Ticket.growlRegDict"; sourceTree = "<group>"; };
 		17E641F60EF02088001BC333 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Plists/Info.plist; sourceTree = "<group>"; };
 		17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptSuite; path = "sequel-pro.scriptSuite"; sourceTree = "<group>"; };
 		17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.scriptTerminology; path = "sequel-pro.scriptTerminology"; sourceTree = "<group>"; };
@@ -1790,7 +1788,6 @@
 				584756F7120A1B0B0057631F /* QuickLook Plugin */,
 				17F90E2B1210B34900274C98 /* Credits.rtf */,
 				17CC993A10B4C9C80034CD7A /* License.rtf */,
-				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
 				583A278D23F06F1000FBE97B /* Colors.xcassets */,
 			);
 			path = Resources;
@@ -2720,7 +2717,6 @@
 				17E641F30EF02036001BC333 /* toolbar-switch-to-table-info.png in Resources */,
 				17E6420A0EF020CB001BC333 /* DBView.xib in Resources */,
 				8831EFC9224016E000D10172 /* button_edit_mode_selectedTemplate.pdf in Resources */,
-				17E641FA0EF02088001BC333 /* Growl Registration Ticket.growlRegDict in Resources */,
 				17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */,
 				17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */,
 				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
@@ -3722,7 +3718,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20010;
+				CURRENT_PROJECT_VERSION = 20011;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -3983,7 +3979,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20010;
+				CURRENT_PROJECT_VERSION = 20011;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -4023,7 +4019,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20010;
+				CURRENT_PROJECT_VERSION = 20011;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
