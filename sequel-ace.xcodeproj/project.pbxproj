@@ -358,8 +358,6 @@
 		9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9651262424926F1600E65B53 /* SPMySQL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 584D876815140D3500F24774 /* SPMySQL.framework */; };
 		9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 584D876815140D3500F24774 /* SPMySQL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		96965384249314600003321E /* UniversalDetector.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; };
-		96965385249314600003321E /* UniversalDetector.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		96B0A1512493DF3E007BB270 /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */; };
 		96B0A1522493DF3E007BB270 /* ShortcutRecorder.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9BE765682376A00C82FB93AA /* SPHelpViewerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */; };
@@ -541,7 +539,6 @@
 				9651262324926F1200E65B53 /* QueryKit.framework in Copy Frameworks */,
 				96B0A1522493DF3E007BB270 /* ShortcutRecorder.framework in Copy Frameworks */,
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
-				96965385249314600003321E /* UniversalDetector.framework in Copy Frameworks */,
 				9651262524926F1600E65B53 /* SPMySQL.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
@@ -969,7 +966,6 @@
 		58C4BA1316781A93004068AB /* SequelProTabDirty@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SequelProTabDirty@2x.png"; sourceTree = "<group>"; };
 		58C56EF30F438E120035701E /* SPDataCellFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataCellFormatter.h; sourceTree = "<group>"; };
 		58C56EF40F438E120035701E /* SPDataCellFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataCellFormatter.m; sourceTree = "<group>"; };
-		58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniversalDetector.framework; path = Frameworks/UniversalDetector.framework; sourceTree = "<group>"; };
 		58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSSHTunnel.h; sourceTree = "<group>"; };
 		58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSSHTunnel.m; sourceTree = "<group>"; };
 		58CDB3310FCE139C00F8ACA3 /* SequelAceTunnelAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SequelAceTunnelAssistant.m; sourceTree = "<group>"; };
@@ -1069,6 +1065,7 @@
 		9696538624931AD10003321E /* SequelAceTunnelAssistant.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SequelAceTunnelAssistant.entitlements; sourceTree = "<group>"; };
 		9696538724931AE10003321E /* xibLocalizationPostprocessor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = xibLocalizationPostprocessor.entitlements; sourceTree = "<group>"; };
 		96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShortcutRecorder.framework; path = Frameworks/ShortcutRecorder.framework; sourceTree = "<group>"; };
+		96B0A1532493F43B007BB270 /* TunnelAssistant-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "TunnelAssistant-Info.plist"; path = "Plists/TunnelAssistant-Info.plist"; sourceTree = "<group>"; };
 		9BE760B3C4586EA3B1A48600 /* SPHelpViewerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerController.m; sourceTree = "<group>"; };
 		9BE761AE45D4F6B9B90E67DE /* SPHelpViewerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHelpViewerClient.h; sourceTree = "<group>"; };
 		9BE764320CE8E86E8F63647B /* SPHelpViewerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHelpViewerClient.m; sourceTree = "<group>"; };
@@ -1217,7 +1214,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				96965384249314600003321E /* UniversalDetector.framework in Frameworks */,
 				503CDBB21ACDC204004F8A2F /* Quartz.framework in Frameworks */,
 				17AED4161888BD67008E380F /* Security.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
@@ -1246,7 +1242,6 @@
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 				96B0A1502493DF16007BB270 /* ShortcutRecorder.framework */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
-				58C6C71511FBB17200A3F5E9 /* UniversalDetector.framework */,
 				584756B4120A06740057631F /* CoreServices.framework */,
 				584756B6120A067B0057631F /* ApplicationServices.framework */,
 				584756B8120A06830057631F /* QuickLook.framework */,
@@ -1518,6 +1513,7 @@
 			isa = PBXGroup;
 			children = (
 				17E641F60EF02088001BC333 /* Info.plist */,
+				96B0A1532493F43B007BB270 /* TunnelAssistant-Info.plist */,
 				17DD52C1115074B3007D8950 /* InfoPlist.strings */,
 				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
 				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
@@ -3718,7 +3714,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20011;
+				CURRENT_PROJECT_VERSION = 20012;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -3893,6 +3889,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 100;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
@@ -3900,14 +3897,18 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
+				GENERATE_PKGINFO_FILE = YES;
+				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 					"-framework",
 					AppKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.SequelAceTunnelAssistant";
 				PRODUCT_NAME = SequelAceTunnelAssistant;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -3922,6 +3923,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -3929,14 +3931,18 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
+				GENERATE_PKGINFO_FILE = YES;
+				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 					"-framework",
 					AppKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.SequelAceTunnelAssistant";
 				PRODUCT_NAME = SequelAceTunnelAssistant;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -3951,20 +3957,25 @@
 				CODE_SIGN_ENTITLEMENTS = SequelAceTunnelAssistant.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 100;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
+				GENERATE_PKGINFO_FILE = YES;
+				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
 					"-framework",
 					AppKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.SequelAceTunnelAssistant";
 				PRODUCT_NAME = SequelAceTunnelAssistant;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -3979,7 +3990,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20011;
+				CURRENT_PROJECT_VERSION = 20012;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -4019,7 +4030,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20011;
+				CURRENT_PROJECT_VERSION = 20012;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;

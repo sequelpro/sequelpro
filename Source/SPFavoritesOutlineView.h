@@ -32,7 +32,6 @@
 
 @interface SPFavoritesOutlineView : NSOutlineView
 {
-	BOOL isOSVersionAtLeast10_7_0;
 	BOOL justGainedFocus;
 	
 	id _itemForDoubleAction;

@@ -1770,14 +1770,12 @@ cleanup:
  */
 - (void)_importBackgroundProcess:(NSDictionary *)userInfo
 {
-	@autoreleasepool {
-		NSString *filename = [userInfo objectForKey:@"filename"];
-		NSString *fileType = [userInfo objectForKey:@"fileType"];
+	NSString *filename = [userInfo objectForKey:@"filename"];
+	NSString *fileType = [userInfo objectForKey:@"fileType"];
 
-		// Use the appropriate processing function for the file type
-		     if ([fileType isEqualToString:@"SQL"]) [self importSQLFile:filename];
-		else if ([fileType isEqualToString:@"CSV"]) [self importCSVFile:filename];
-	}
+	// Use the appropriate processing function for the file type
+		 if ([fileType isEqualToString:@"SQL"]) [self importSQLFile:filename];
+	else if ([fileType isEqualToString:@"CSV"]) [self importCSVFile:filename];
 }
 
 /**

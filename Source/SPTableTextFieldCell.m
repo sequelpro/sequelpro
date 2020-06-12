@@ -57,7 +57,6 @@
  */
 - (void) dealloc
 {
-	NSLog(@"noteButton release:%@",noteButton.title);
 	[noteButton release];
 	noteButton = nil;
 	[super dealloc];
@@ -65,7 +64,6 @@
 
 - copyWithZone:(NSZone *)zone
 {
-	NSLog(@"noteButton copyWithZone:%@",noteButton.title);
 	SPTableTextFieldCell *cell = (SPTableTextFieldCell *)[super copyWithZone:zone];
 	cell->noteButton = nil;
 	if (noteButton) cell->noteButton = [noteButton copyWithZone:zone];
@@ -105,7 +103,6 @@
 	if (noteButton != nil)
 	{
 		NSRect linkRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, cellFrame.size.width, cellFrame.size.height);
-		NSLog(@"noteButton.title:%@",noteButton.title);
 		[noteButton drawInteriorWithFrame:linkRect inView:controlView];
 	}
 	

@@ -64,7 +64,6 @@ static unsigned short getRandomPort();
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
-		BOOL isOSVersionAtLeast10_7_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -83,10 +82,10 @@ static unsigned short getRandomPort();
 
 		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
 		// muxing causes connection instability for a large number of users (see Issue #1457)
-		connectionMuxingEnabled = isOSVersionAtLeast10_7_0 && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
+		connectionMuxingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
-		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelAce-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnection = [NSConnection new];
 		

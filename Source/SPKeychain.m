@@ -99,6 +99,9 @@
 				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", (int)status, name, account);
 				passwordAccessRef = NULL;
 			}
+		} else {
+			NSLog(@"FATAL Error (%i) while trying to create access list for name: %@ account: %@", (int)status, name, account);
+			passwordAccessRef = NULL;
 		}
 		
 		// Set up the item attributes
