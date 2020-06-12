@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="16097" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="5100" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPPreferenceController">
@@ -18,7 +18,7 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="2074" userLabel="General" customClass="SPGeneralPreferencePane">
             <connections>
                 <outlet property="defaultFavoritePopup" destination="569" id="2079"/>
@@ -56,11 +56,7 @@
                 <outlet property="view" destination="802" id="2152"/>
             </connections>
         </customObject>
-        <customObject id="2145" userLabel="Auto Update" customClass="SPAutoUpdatePreferencePane">
-            <connections>
-                <outlet property="view" destination="60" id="2153"/>
-            </connections>
-        </customObject>
+        <customObject id="2145" userLabel="Auto Update" customClass="SPAutoUpdatePreferencePane"/>
         <customObject id="2146" userLabel="Network" customClass="SPNetworkPreferencePane">
             <connections>
                 <outlet property="hiddenFileView" destination="GEn-6y-U3F" id="r1S-eS-uJK"/>
@@ -70,13 +66,12 @@
                 <outlet property="view" destination="641" id="2154"/>
             </connections>
         </customObject>
-        <customObject id="331" userLabel="Updater" customClass="SUUpdater"/>
         <userDefaultsController representsSharedInstance="YES" id="117"/>
-        <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="1" userLabel="PreferencesPanel">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES" unifiedTitleAndToolbar="YES"/>
+        <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" visibleAtLaunch="NO" animationBehavior="default" id="1" userLabel="PreferencesPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="430" y="486" width="580" height="172"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1178"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3008" height="1692"/>
             <value key="minSize" type="size" width="580" height="50"/>
             <view key="contentView" id="2">
                 <rect key="frame" x="0.0" y="0.0" width="580" height="172"/>
@@ -85,32 +80,33 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="599"/>
             </connections>
+            <point key="canvasLocation" x="139" y="147"/>
         </window>
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1716" userLabel="Enter Name Sheet">
             <windowStyleMask key="styleMask" titled="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="343" y="481" width="227" height="114"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1178"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3008" height="1692"/>
             <value key="minSize" type="size" width="227" height="114"/>
             <value key="maxSize" type="size" width="247" height="124"/>
             <view key="contentView" id="1717">
                 <rect key="frame" x="0.0" y="0.0" width="227" height="114"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField verticalHuggingPriority="750" id="1721">
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1721">
                         <rect key="frame" x="17" y="86" width="192" height="14"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Name:" id="1726">
-                            <font key="font" metaFont="smallSystem"/>
+                            <font key="font" metaFont="message" size="11"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" id="1824">
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1824">
                         <rect key="frame" x="18" y="45" width="191" height="11"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Already exists and will be overwritten!" id="1825">
-                            <font key="font" metaFont="miniSystem"/>
+                            <font key="font" metaFont="toolTip" size="9"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -125,24 +121,24 @@
                             </binding>
                         </connections>
                     </textField>
-                    <textField verticalHuggingPriority="750" id="1722">
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1722">
                         <rect key="frame" x="20" y="60" width="187" height="18"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" usesSingleLineMode="YES" id="1725">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
                             <outlet property="delegate" destination="2144" id="2181"/>
                         </connections>
                     </textField>
-                    <button verticalHuggingPriority="750" tag="1" id="1718">
+                    <button verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="1718">
                         <rect key="frame" x="112" y="13" width="100" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" controlSize="small" enabled="NO" borderStyle="border" tag="1" inset="2" id="1730">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="smallSystem"/>
+                            <font key="font" metaFont="message" size="11"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
 DQ
 </string>
@@ -152,12 +148,12 @@ DQ
                             <outlet property="nextKeyView" destination="1722" id="1734"/>
                         </connections>
                     </button>
-                    <button verticalHuggingPriority="750" id="1723">
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1723">
                         <rect key="frame" x="15" y="13" width="99" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="1724">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="smallSystem"/>
+                            <font key="font" metaFont="message" size="11"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
 Gw
 </string>
@@ -174,19 +170,19 @@ Gw
             <windowStyleMask key="styleMask" titled="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="343" y="370" width="264" height="225"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1178"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3008" height="1692"/>
             <value key="minSize" type="size" width="264" height="225"/>
             <value key="maxSize" type="size" width="264" height="274"/>
             <view key="contentView" id="1757">
                 <rect key="frame" x="0.0" y="0.0" width="264" height="225"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <button verticalHuggingPriority="750" id="1759">
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1759">
                         <rect key="frame" x="161" y="13" width="88" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES"/>
                         <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="1764">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="smallSystem"/>
+                            <font key="font" metaFont="message" size="11"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
 Gw
 </string>
@@ -196,23 +192,22 @@ Gw
                             <outlet property="nextKeyView" destination="1774" id="1823"/>
                         </connections>
                     </button>
-                    <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="1771">
+                    <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1771">
                         <rect key="frame" x="-1" y="79" width="266" height="135"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <clipView key="contentView" id="eRr-LP-c79">
                             <rect key="frame" x="1" y="1" width="264" height="133"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" id="1774">
                                     <rect key="frame" x="0.0" y="0.0" width="264" height="133"/>
-                                    <autoresizingMask key="autoresizingMask"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <size key="intercellSpacing" width="3" height="2"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                     <tableColumns>
                                         <tableColumn width="261" minWidth="40" maxWidth="1000" id="1776">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                                <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
                                             </tableHeaderCell>
@@ -230,13 +225,12 @@ Gw
                                     </connections>
                                 </tableView>
                             </subviews>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1773">
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="1773">
                             <rect key="frame" x="-100" y="-100" width="223" height="15"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="1772">
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="1772">
                             <rect key="frame" x="224" y="17" width="15" height="102"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
@@ -244,18 +238,18 @@ Gw
                             <outlet property="nextKeyView" destination="2253" id="2262"/>
                         </connections>
                     </scrollView>
-                    <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="line" id="2252">
+                    <box autoresizesSubviews="NO" fixedFrame="YES" boxType="custom" borderType="line" title="Box" translatesAutoresizingMaskIntoConstraints="NO" id="2252">
                         <rect key="frame" x="-1" y="56" width="266" height="24"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <view key="contentView" id="sIK-yy-s99">
+                        <view key="contentView" id="Meu-6x-HwH">
                             <rect key="frame" x="1" y="1" width="264" height="22"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <customView id="GNX-ny-MYp" customClass="SPButtonBar">
+                                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GNX-ny-MYp" customClass="SPButtonBar">
                                     <rect key="frame" x="0.0" y="0.0" width="264" height="23"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 </customView>
-                                <button toolTip="Remove Theme" id="2255">
+                                <button toolTip="Remove Theme" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2255">
                                     <rect key="frame" x="31" y="-1" width="32" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="2256">
@@ -268,7 +262,7 @@ Gw
                                         <outlet property="nextKeyView" destination="1759" id="2263"/>
                                     </connections>
                                 </button>
-                                <button toolTip="Duplicate Theme" id="2253">
+                                <button toolTip="Duplicate Theme" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2253">
                                     <rect key="frame" x="-1" y="-1" width="33" height="25"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicateTemplate" imagePosition="overlaps" alignment="center" inset="2" id="2258">
@@ -300,14 +294,11 @@ Gw
                 <userLayoutGuide location="195" affinity="minX"/>
             </userGuides>
             <subviews>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1420">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1420">
                     <rect key="frame" x="202" y="204" width="360" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <textField verticalHuggingPriority="750" id="1419">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1419">
                     <rect key="frame" x="17" y="175" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Default View:" id="1421">
@@ -316,7 +307,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <popUpButton verticalHuggingPriority="750" id="1418">
+                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1418">
                     <rect key="frame" x="201" y="169" width="254" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="push" title="Last Used" bezelStyle="rounded" alignment="left" lineBreakMode="clipping" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="1449" id="1422">
@@ -353,7 +344,7 @@ Gw
                         <binding destination="117" name="selectedTag" keyPath="values.DefaultViewMode" id="1464"/>
                     </connections>
                 </popUpButton>
-                <textField verticalHuggingPriority="750" id="790">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="790">
                     <rect key="frame" x="247" y="23" width="316" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="queries (100 max)" id="791">
@@ -362,7 +353,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField toolTip="Enter the maximum number of entries to remember in the Custom Query query history, from 0 to 99" verticalHuggingPriority="750" id="787">
+                <textField toolTip="Enter the maximum number of entries to remember in the Custom Query query history, from 0 to 99" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="787">
                     <rect key="frame" x="203" y="20" width="38" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="center" title="20" drawsBackground="YES" usesSingleLineMode="YES" id="788">
@@ -373,14 +364,14 @@ Gw
                             <real key="maximum" value="100"/>
                         </numberFormatter>
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <binding destination="117" name="value" keyPath="values.CustomQueryMaxHistoryItems" id="800"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="785">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="785">
                     <rect key="frame" x="17" y="23" width="181" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Remember Last:" id="786">
@@ -389,28 +380,19 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="784">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="784">
                     <rect key="frame" x="204" y="53" width="357" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="582">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="582">
                     <rect key="frame" x="204" y="108" width="358" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="581">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="581">
                     <rect key="frame" x="202" y="156" width="360" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <button id="957">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="957">
                     <rect key="frame" x="202" y="62" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Display vertical grid lines" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="958">
@@ -421,7 +403,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.DisplayTableViewVerticalGridlines" id="961"/>
                     </connections>
                 </button>
-                <button id="579">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="579">
                     <rect key="frame" x="202" y="84" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Use monospaced fonts" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="580">
@@ -432,7 +414,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.UseMonospacedFonts" id="631"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="577">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="577">
                     <rect key="frame" x="17" y="127" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Default Encoding:" id="578">
@@ -441,7 +423,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="1465">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1465">
                     <rect key="frame" x="17" y="85" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Table Views:" id="1466">
@@ -450,7 +432,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <popUpButton verticalHuggingPriority="750" id="569">
+                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="569">
                     <rect key="frame" x="201" y="236" width="254" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" autoenablesItems="NO" id="570">
@@ -462,7 +444,7 @@ Gw
                         <action selector="updateDefaultFavorite:" target="2074" id="2077"/>
                     </connections>
                 </popUpButton>
-                <textField verticalHuggingPriority="750" id="568">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="568">
                     <rect key="frame" x="11" y="242" width="187" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Default Favorite:" id="575">
@@ -471,7 +453,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button id="567">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="567">
                     <rect key="frame" x="202" y="214" width="362" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Connect to default on startup" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="576">
@@ -482,15 +464,15 @@ Gw
                         <binding destination="117" name="value" keyPath="values.AutoConnectToDefault" id="629"/>
                     </connections>
                 </button>
-                <popUpButton verticalHuggingPriority="750" id="24" userLabel="Default Encoding Dropdown">
+                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="24" userLabel="Default Encoding Dropdown">
                     <rect key="frame" x="201" y="121" width="254" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <popUpButtonCell key="cell" type="push" title="Autodetect" bezelStyle="rounded" alignment="left" lineBreakMode="clipping" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="25">
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="clipping" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="25">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                         <menu key="menu" title="OtherViews" id="26">
                             <items>
-                                <menuItem title="Autodetect" state="on" id="50"/>
+                                <menuItem title="Autodetect" id="50"/>
                                 <menuItem isSeparatorItem="YES" tag="-1" id="49">
                                     <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                                 </menuItem>
@@ -553,7 +535,7 @@ Gw
                 <userLayoutGuide location="195" affinity="minX"/>
             </userGuides>
             <subviews>
-                <button id="950">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="950">
                     <rect key="frame" x="203" y="181" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="New fields should allow nulls" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="951">
@@ -564,35 +546,23 @@ Gw
                         <binding destination="117" name="value" keyPath="values.NewFieldsAllowNulls" id="953"/>
                     </connections>
                 </button>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="554">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="554">
                     <rect key="frame" x="205" y="133" width="355" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="553">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="553">
                     <rect key="frame" x="205" y="172" width="355" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="552">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="552">
                     <rect key="frame" x="205" y="227" width="355" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1492">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1492">
                     <rect key="frame" x="205" y="48" width="355" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <button id="535">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="535">
                     <rect key="frame" x="203" y="201" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Don't load blob and text fields until needed" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="538">
@@ -603,19 +573,19 @@ Gw
                         <binding destination="117" name="value" keyPath="values.LoadBlobsAsNeeded" id="614"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="532">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="532">
                     <rect key="frame" x="205" y="100" width="75" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="NULL" drawsBackground="YES" usesSingleLineMode="YES" id="533">
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <binding destination="117" name="value" keyPath="values.NullValue" id="628"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="531">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="531">
                     <rect key="frame" x="17" y="102" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Show NULL values as:" id="534">
@@ -624,7 +594,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="520">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="520">
                     <rect key="frame" x="398" y="144" width="75" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="100" placeholderString="100" drawsBackground="YES" usesSingleLineMode="YES" id="521">
@@ -636,7 +606,7 @@ Gw
                             <real key="maximum" value="100000"/>
                         </numberFormatter>
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
@@ -644,7 +614,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.LimitResultsValue" id="621"/>
                     </connections>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="519">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="519">
                     <rect key="frame" x="478" y="141" width="19" height="27"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" continuous="YES" alignment="left" minValue="1" maxValue="100000" doubleValue="100" valueWraps="YES" id="523"/>
@@ -654,7 +624,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.LimitResultsValue" id="623"/>
                     </connections>
                 </stepper>
-                <button id="518">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="518">
                     <rect key="frame" x="203" y="261" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Editing a row" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="524">
@@ -665,7 +635,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.ReloadAfterEditingRow" id="617"/>
                     </connections>
                 </button>
-                <button id="517">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="517">
                     <rect key="frame" x="203" y="146" width="189" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Limit result to:" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="525">
@@ -676,7 +646,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.LimitResults" id="619"/>
                     </connections>
                 </button>
-                <button id="516">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="516">
                     <rect key="frame" x="203" y="281" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Adding a row" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="526">
@@ -687,7 +657,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.ReloadAfterAddingRow" id="618"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="515">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="515">
                     <rect key="frame" x="499" y="147" width="64" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="rows" id="527">
@@ -699,7 +669,7 @@ Gw
                         <binding destination="117" name="enabled" keyPath="values.LimitResults" id="624"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="514">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="514">
                     <rect key="frame" x="17" y="280" width="183" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Reload Table After:" id="528">
@@ -708,7 +678,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button id="513">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="513">
                     <rect key="frame" x="203" y="241" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Removing a row" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="529">
@@ -719,14 +689,11 @@ Gw
                         <binding destination="117" name="value" keyPath="values.ReloadAfterRemovingRow" id="616"/>
                     </connections>
                 </button>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1467">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1467">
                     <rect key="frame" x="205" y="89" width="355" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <textField verticalHuggingPriority="750" id="1468">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1468">
                     <rect key="frame" x="17" y="65" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Table row counts:" id="1469">
@@ -735,7 +702,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="1485">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1485">
                     <rect key="frame" x="17" y="25" width="181" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="MySQL content font:" id="1486">
@@ -744,7 +711,7 @@ Gw
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <popUpButton verticalHuggingPriority="750" id="1470">
+                <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1470">
                     <rect key="frame" x="202" y="59" width="361" height="26"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="push" title="Only use additional queries for small tables" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="1" imageScaling="proportionallyDown" inset="2" selectedItem="1474" id="1471">
@@ -762,7 +729,7 @@ Gw
                         <binding destination="117" name="selectedTag" keyPath="values.TableRowCountQueryLevel" id="1484"/>
                     </connections>
                 </popUpButton>
-                <textField verticalHuggingPriority="750" id="1487" customClass="SPFontPreviewTextField">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1487" customClass="SPFontPreviewTextField">
                     <rect key="frame" x="205" y="20" width="194" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="1490">
@@ -771,7 +738,7 @@ Gw
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button verticalHuggingPriority="750" id="1488">
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1488">
                     <rect key="frame" x="422" y="14" width="144" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Select…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1489">
@@ -791,7 +758,7 @@ Gw
                 <userLayoutGuide location="195" affinity="minX"/>
             </userGuides>
             <subviews>
-                <button id="1154">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1154">
                     <rect key="frame" x="230" y="18" width="332" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Errors" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1155">
@@ -799,11 +766,11 @@ Gw
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1160"/>
                         <binding destination="117" name="value" keyPath="values.ConsoleEnableErrorLogging" id="1382"/>
+                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1160"/>
                     </connections>
                 </button>
-                <button id="1152">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1152">
                     <rect key="frame" x="230" y="64" width="332" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Custom Query Editor" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1153">
@@ -811,11 +778,11 @@ Gw
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1159"/>
                         <binding destination="117" name="value" keyPath="values.ConsoleEnableCustomQueryLogging" id="1381"/>
+                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1159"/>
                     </connections>
                 </button>
-                <button id="1150">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1150">
                     <rect key="frame" x="230" y="41" width="332" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Import &amp; Export" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1151">
@@ -823,11 +790,11 @@ Gw
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1158"/>
                         <binding destination="117" name="value" keyPath="values.ConsoleEnableImportExportLogging" id="1380"/>
+                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1158"/>
                     </connections>
                 </button>
-                <button id="1148">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1148">
                     <rect key="frame" x="230" y="87" width="332" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Interface" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1149">
@@ -835,11 +802,11 @@ Gw
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1157"/>
                         <binding destination="117" name="value" keyPath="values.ConsoleEnableInterfaceLogging" id="1379"/>
+                        <binding destination="117" name="enabled" keyPath="values.ConsoleEnableLogging" id="1157"/>
                     </connections>
                 </button>
-                <button id="1143">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1143">
                     <rect key="frame" x="202" y="110" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Enable logging for queries" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1144">
@@ -850,7 +817,7 @@ Gw
                         <binding destination="117" name="value" keyPath="values.ConsoleEnableLogging" id="1145"/>
                     </connections>
                 </button>
-                <button id="345">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="345">
                     <rect key="frame" x="202" y="150" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Show error when no rows are affected" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="346">
@@ -861,14 +828,11 @@ Gw
                         <binding destination="117" name="value" keyPath="values.ShowNoAffectedRowsError" id="632"/>
                     </connections>
                 </button>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1156">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1156">
                     <rect key="frame" x="202" y="136" width="360" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <button id="110">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="110">
                     <rect key="frame" x="202" y="208" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Enable notifications" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="111">
@@ -883,11 +847,11 @@ Gw
                         </binding>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" id="cv6-Te-MPL">
+                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cv6-Te-MPL">
                     <rect key="frame" x="202" y="172" width="360" height="30"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" id="JMS-lH-5Te">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <string key="title">$Growl Status Text$
 Line 2</string>
                         <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
@@ -897,139 +861,23 @@ Line 2</string>
             </subviews>
             <point key="canvasLocation" x="200" y="537"/>
         </customView>
-        <customView id="60" userLabel="Auto Update">
-            <rect key="frame" x="0.0" y="0.0" width="580" height="180"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-            <userGuides>
-                <userLayoutGuide location="195" affinity="minX"/>
-            </userGuides>
-            <subviews>
-                <popUpButton verticalHuggingPriority="750" id="1353">
-                    <rect key="frame" x="201" y="105" width="172" height="26"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <popUpButtonCell key="cell" type="push" title="Weekly" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="604800" imageScaling="proportionallyDown" inset="2" selectedItem="1358" id="1354">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" title="OtherViews" id="1355">
-                            <items>
-                                <menuItem title="Hourly" tag="3600" id="1356"/>
-                                <menuItem title="Daily" tag="86400" id="1357"/>
-                                <menuItem title="Weekly" state="on" tag="604800" id="1358"/>
-                            </items>
-                        </menu>
-                    </popUpButtonCell>
-                    <connections>
-                        <binding destination="117" name="enabled" keyPath="values.SUEnableAutomaticChecks" id="1368"/>
-                        <binding destination="331" name="selectedTag" keyPath="updateCheckInterval" id="1361"/>
-                    </connections>
-                </popUpButton>
-                <textField verticalHuggingPriority="750" id="1351">
-                    <rect key="frame" x="17" y="111" width="181" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Frequency:" id="1352">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1618">
-                    <rect key="frame" x="204" y="72" width="356" height="5"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
-                </box>
-                <textField verticalHuggingPriority="750" id="100">
-                    <rect key="frame" x="201" y="49" width="362" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Dienstag, 16. Januar 2007 17:31:40.000" id="101">
-                        <dateFormatter key="formatter" dateStyle="full" timeStyle="medium" id="102"/>
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="117" name="value" keyPath="values.SULastCheckTime" id="146"/>
-                    </connections>
-                </textField>
-                <textField verticalHuggingPriority="750" id="98">
-                    <rect key="frame" x="17" y="49" width="181" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Last check:" id="99">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <button verticalHuggingPriority="750" id="96">
-                    <rect key="frame" x="198" y="12" width="178" height="32"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="push" title="Check Now" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="97">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <action selector="checkForUpdates:" target="331" id="332"/>
-                    </connections>
-                </button>
-                <button id="94">
-                    <rect key="frame" x="202" y="144" width="360" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Automatically check for updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="95">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="117" name="value" keyPath="values.SUEnableAutomaticChecks" id="145"/>
-                    </connections>
-                </button>
-                <button id="1615">
-                    <rect key="frame" x="203" y="81" width="359" height="18"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Send anonymous system information" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1616">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                    <connections>
-                        <binding destination="117" name="enabled" keyPath="values.SUEnableAutomaticChecks" id="1625"/>
-                        <binding destination="117" name="value" keyPath="values.SUSendProfileInfo" id="1624"/>
-                    </connections>
-                </button>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1620">
-                    <rect key="frame" x="204" y="135" width="356" height="5"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
-                </box>
-            </subviews>
-        </customView>
         <customView id="641" userLabel="Network">
             <rect key="frame" x="0.0" y="0.0" width="580" height="312"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="681">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="681">
                     <rect key="frame" x="226" y="262" width="334" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="HWX-AV-xGx">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="HWX-AV-xGx">
                     <rect key="frame" x="226" y="229" width="334" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="3Fg-G1-BWj">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="3Fg-G1-BWj">
                     <rect key="frame" x="226" y="193" width="334" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <textField verticalHuggingPriority="750" id="676">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="676">
                     <rect key="frame" x="281" y="276" width="282" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="seconds" id="677">
@@ -1038,7 +886,7 @@ Line 2</string>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField toolTip="Enter how long to attempt to connect or send queries for; set a value of 0 to disable the timeout" verticalHuggingPriority="750" id="674">
+                <textField toolTip="Enter how long to attempt to connect or send queries for; set a value of 0 to disable the timeout" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="674">
                     <rect key="frame" x="226" y="273" width="50" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="60" drawsBackground="YES" usesSingleLineMode="YES" id="675">
@@ -1049,14 +897,14 @@ Line 2</string>
                             <real key="maximum" value="10000"/>
                         </numberFormatter>
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <binding destination="117" name="value" keyPath="values.ConnectionTimeoutValue" id="679"/>
                     </connections>
                 </textField>
-                <button toolTip="Enable to send a MySQL ping to ensure the connection is kept alive if it has not been used for a while" id="652">
+                <button toolTip="Enable to send a MySQL ping to ensure the connection is kept alive if it has not been used for a while" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="652">
                     <rect key="frame" x="224" y="238" width="338" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Keep connections alive" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="661">
@@ -1067,7 +915,7 @@ Line 2</string>
                         <binding destination="117" name="value" keyPath="values.UseKeepAlive" id="680"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="642">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="642">
                     <rect key="frame" x="17" y="275" width="204" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Connection Timeout:" id="669">
@@ -1076,7 +924,7 @@ Line 2</string>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="9CM-2a-2JU">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9CM-2a-2JU">
                     <rect key="frame" x="16" y="204" width="204" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH Client:" id="4Us-KF-Ysj">
@@ -1085,7 +933,7 @@ Line 2</string>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="4Aw-q4-73u">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="4Aw-q4-73u">
                     <rect key="frame" x="16" y="165" width="204" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <string key="toolTip">The cipher suites are used for SSL/TLS-secured connections and specify which algorithms Sequel Pro will use to encrypt a connection, as well as their preference. 
@@ -1096,18 +944,18 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button verticalHuggingPriority="750" id="Rsg-4x-YV2">
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rsg-4x-YV2">
                     <rect key="frame" x="452" y="204" width="109" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="roundRect" title="Change…" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="MhF-tS-nrE">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="controlContent"/>
+                        <font key="font" metaFont="label" size="12"/>
                     </buttonCell>
                     <connections>
                         <action selector="pickSSHClient:" target="2146" id="zcA-5j-KFq"/>
                     </connections>
                 </button>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="GcY-yy-sZn">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GcY-yy-sZn">
                     <rect key="frame" x="224" y="204" width="222" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" title="/path/to/ssh/binary" id="29D-bG-y15">
@@ -1123,23 +971,22 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         </binding>
                     </connections>
                 </textField>
-                <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="9lg-Fd-6u7">
+                <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9lg-Fd-6u7">
                     <rect key="frame" x="226" y="56" width="334" height="128"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                     <clipView key="contentView" id="M9x-3Q-tiD">
                         <rect key="frame" x="1" y="1" width="332" height="126"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" id="RuH-Yq-cdH">
                                 <rect key="frame" x="0.0" y="0.0" width="332" height="126"/>
-                                <autoresizingMask key="autoresizingMask"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 <tableColumns>
                                     <tableColumn editable="NO" width="329" minWidth="40" maxWidth="1000" id="2w5-RF-2LR">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Cipher Suite">
-                                            <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                         </tableHeaderCell>
@@ -1157,27 +1004,26 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                                 </connections>
                             </tableView>
                         </subviews>
-                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </clipView>
-                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="ZqJ-4c-bqV">
+                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="ZqJ-4c-bqV">
                         <rect key="frame" x="1" y="119" width="223" height="15"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
-                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="fcH-lG-egx">
+                    <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="fcH-lG-egx">
                         <rect key="frame" x="224" y="17" width="15" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" id="TG6-Q3-g30">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TG6-Q3-g30">
                     <rect key="frame" x="264" y="20" width="298" height="28"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Drag the items in the list to reorder their preference and/or disable them." id="Ukm-oW-lSS">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button toolTip="Reset the cipher list to the default configuration" verticalHuggingPriority="750" id="jJw-LF-gtW">
+                <button toolTip="Reset the cipher list to the default configuration" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jJw-LF-gtW">
                     <rect key="frame" x="226" y="22" width="32" height="25"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="resetTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7JN-Nf-GsD">
@@ -1204,18 +1050,15 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                 <userLayoutGuide location="315" affinity="minX"/>
             </userGuides>
             <subviews>
-                <box autoresizesSubviews="NO" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="1085">
+                <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1085">
                     <rect key="frame" x="204" y="349" width="356" height="5"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
-                <textField verticalHuggingPriority="750" id="1083">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1083">
                     <rect key="frame" x="423" y="186" width="140" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" title="secs" id="1084">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1223,23 +1066,23 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1112"/>
                     </connections>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="1046">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1046">
                     <rect key="frame" x="405" y="182" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" enabled="NO" alignment="left" increment="0.10000000000000001" minValue="0.10000000000000001" maxValue="5" doubleValue="1" id="1047">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <action selector="takeFloatValueFrom:" target="1044" id="1114"/>
-                        <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1110"/>
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoHelpDelay" id="1100"/>
+                        <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1110"/>
                     </connections>
                 </stepper>
-                <textField verticalHuggingPriority="750" id="1045">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1045">
                     <rect key="frame" x="269" y="186" width="96" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Delay by:" id="1048">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1247,27 +1090,27 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1108"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="1044">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1044">
                     <rect key="frame" x="370" y="184" width="29" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="0.1" drawsBackground="YES" usesSingleLineMode="YES" id="1049">
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title=".1" drawsBackground="YES" usesSingleLineMode="YES" id="1049">
                         <numberFormatter key="formatter" formatterBehavior="custom10_4" positiveFormat="#.0" alwaysShowsDecimalSeparator="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="1" minimumFractionDigits="1" maximumFractionDigits="1" decimalSeparator="." groupingSeparator="" id="1050">
                             <nil key="negativeInfinitySymbol"/>
                             <nil key="positiveInfinitySymbol"/>
                             <real key="minimum" value="0.10000000000000001"/>
                             <real key="maximum" value="5"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <action selector="takeFloatValueFrom:" target="1046" id="1113"/>
-                        <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1109"/>
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoHelpDelay" id="1104"/>
+                        <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1109"/>
                     </connections>
                 </textField>
-                <button hidden="YES" id="1043">
+                <button hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1043">
                     <rect key="frame" x="269" y="1" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Balanced brace highlighting" bezelStyle="regularSquare" imagePosition="left" alignment="left" enabled="NO" state="on" inset="2" id="1051">
@@ -1275,11 +1118,11 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                 </button>
-                <textField verticalHuggingPriority="750" id="1517">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1517">
                     <rect key="frame" x="423" y="111" width="140" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" title="secs" id="1527">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1287,11 +1130,11 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1534"/>
                     </connections>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="1518">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1518">
                     <rect key="frame" x="405" y="107" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" enabled="NO" alignment="left" increment="0.10000000000000001" minValue="0.5" maxValue="5" doubleValue="1" id="1526">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <action selector="takeFloatValueFrom:" target="1520" id="1529"/>
@@ -1299,11 +1142,11 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoCompleteDelay" id="1540"/>
                     </connections>
                 </stepper>
-                <textField verticalHuggingPriority="750" id="1519">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1519">
                     <rect key="frame" x="269" y="111" width="96" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Delay by:" id="1525">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1311,7 +1154,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="enabled" keyPath="values.CustomQueryUpdateAutoHelp" id="1535"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="1520">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1520">
                     <rect key="frame" x="370" y="109" width="29" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title=".5" drawsBackground="YES" usesSingleLineMode="YES" id="1523">
@@ -1321,7 +1164,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                             <real key="minimum" value="0.5"/>
                             <real key="maximum" value="20"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1331,7 +1174,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoCompleteDelay" id="1538"/>
                     </connections>
                 </textField>
-                <button id="1521">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1521">
                     <rect key="frame" x="270" y="134" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Auto-Completion" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1522">
@@ -1342,7 +1185,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoComplete" id="1537"/>
                     </connections>
                 </button>
-                <button id="q6h-n2-3a8">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="q6h-n2-3a8">
                     <rect key="frame" x="270" y="79" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Complete with Backticks" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="vGo-VU-lIt">
@@ -1353,7 +1196,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.SPCustomQueryEditorCompleteWithBackticks" id="ZhP-mB-7aF"/>
                     </connections>
                 </button>
-                <button id="1542">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1542">
                     <rect key="frame" x="270" y="51" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Insert function arguments" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1543">
@@ -1364,7 +1207,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryFunctionCompletionInsertsArguments" id="1545"/>
                     </connections>
                 </button>
-                <button id="1128">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1128">
                     <rect key="frame" x="270" y="162" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Highlight current query" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1129">
@@ -1375,7 +1218,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryHighlightCurrentQuery" id="1134"/>
                     </connections>
                 </button>
-                <button id="1042">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1042">
                     <rect key="frame" x="270" y="238" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Auto uppercase keywords" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1052">
@@ -1386,7 +1229,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoUppercaseKeywords" id="1093"/>
                     </connections>
                 </button>
-                <button id="1041">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1041">
                     <rect key="frame" x="270" y="209" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Update help while typing" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1053">
@@ -1397,7 +1240,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryUpdateAutoHelp" id="1107"/>
                     </connections>
                 </button>
-                <button id="1040">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1040">
                     <rect key="frame" x="270" y="267" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Auto pair characters" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1054">
@@ -1408,7 +1251,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoPairCharacters" id="1096"/>
                     </connections>
                 </button>
-                <button id="1039">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1039">
                     <rect key="frame" x="270" y="322" width="292" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Indent new lines" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="1055">
@@ -1419,7 +1262,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryAutoIndent" id="1098"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="1037" customClass="SPFontPreviewTextField">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1037" customClass="SPFontPreviewTextField">
                     <rect key="frame" x="204" y="360" width="207" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="1057">
@@ -1428,7 +1271,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button verticalHuggingPriority="750" id="1036">
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1036">
                     <rect key="frame" x="433" y="353" width="133" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Select…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1058">
@@ -1439,7 +1282,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <action selector="showCustomQueryFontPanel:" target="2144" id="2174"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="1034">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1034">
                     <rect key="frame" x="17" y="362" width="182" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Font:" id="1060">
@@ -1448,18 +1291,18 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="1497">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1497">
                     <rect key="frame" x="469" y="18" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" minValue="1" maxValue="20" doubleValue="1" id="1498">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <action selector="takeIntegerValueFrom:" target="1505" id="1509"/>
                         <binding destination="117" name="value" keyPath="values.CustomQueryEditorTabStopWidth" id="1516"/>
                     </connections>
                 </stepper>
-                <textField verticalHuggingPriority="750" id="1499">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1499">
                     <rect key="frame" x="269" y="22" width="164" height="16"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Tab Stop Width:" id="1500">
@@ -1468,7 +1311,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField verticalHuggingPriority="750" id="1505">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1505">
                     <rect key="frame" x="439" y="20" width="23" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="1506">
@@ -1476,8 +1319,8 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                             <real key="minimum" value="1"/>
                             <real key="maximum" value="20"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="message" size="11"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
@@ -1485,12 +1328,12 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQueryEditorTabStopWidth" id="1511"/>
                     </connections>
                 </textField>
-                <popUpButton toolTip="Manage Color Theme" verticalHuggingPriority="750" id="1669">
+                <popUpButton toolTip="Manage Color Theme" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1669">
                     <rect key="frame" x="20" y="19" width="24" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="noArrow" autoenablesItems="NO" selectedItem="1672" id="1670">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <menu key="menu" title="OtherViews" autoenablesItems="NO" id="1671">
                             <items>
                                 <menuItem state="on" image="NSAdvanced" hidden="YES" id="1672"/>
@@ -1520,23 +1363,22 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         </menu>
                     </popUpButtonCell>
                 </popUpButton>
-                <scrollView horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" id="1682">
+                <scrollView fixedFrame="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1682">
                     <rect key="frame" x="20" y="50" width="222" height="288"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="oEY-Qs-g9y">
                         <rect key="frame" x="1" y="1" width="220" height="286"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" id="1685">
                                 <rect key="frame" x="0.0" y="0.0" width="220" height="286"/>
-                                <autoresizingMask key="autoresizingMask"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <size key="intercellSpacing" width="3" height="2"/>
                                 <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                 <tableColumns>
                                     <tableColumn identifier="name" width="193" minWidth="40" maxWidth="1000" id="1687">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                            <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
                                         </tableHeaderCell>
@@ -1549,7 +1391,6 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                                     </tableColumn>
                                     <tableColumn identifier="color" editable="NO" width="20" minWidth="20" maxWidth="20" id="1688">
                                         <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                            <font key="font" metaFont="smallSystem"/>
                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
                                         </tableHeaderCell>
@@ -1567,31 +1408,30 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                                 </connections>
                             </tableView>
                         </subviews>
-                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </clipView>
-                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="1684">
+                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="1684">
                         <rect key="frame" x="-100" y="-100" width="223" height="15"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
-                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="1683">
+                    <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="1683">
                         <rect key="frame" x="-100" y="-100" width="15" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <textField verticalHuggingPriority="750" id="1738">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1738">
                     <rect key="frame" x="49" y="24" width="93" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Color Theme:" id="1739">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField toolTip="The name of the current set color theme" verticalHuggingPriority="750" id="1740">
+                <textField toolTip="The name of the current set color theme" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1740">
                     <rect key="frame" x="144" y="24" width="101" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="theme name" id="1741">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
@@ -1606,7 +1446,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         </binding>
                     </connections>
                 </textField>
-                <button id="2185">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2185">
                     <rect key="frame" x="270" y="294" width="162" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Soft indent" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="2186">
@@ -1617,7 +1457,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                         <binding destination="117" name="value" keyPath="values.CustomQuerySoftIndent" id="2200"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" id="2188">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2188">
                     <rect key="frame" x="439" y="293" width="23" height="19"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="2189">
@@ -1625,19 +1465,19 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
                             <real key="minimum" value="1"/>
                             <real key="maximum" value="32"/>
                         </numberFormatter>
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <font key="font" metaFont="message" size="11"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
                         <binding destination="117" name="value" keyPath="values.CustomQuerySoftIndentWidth" id="2209"/>
                     </connections>
                 </textField>
-                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" id="2196">
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2196">
                     <rect key="frame" x="469" y="291" width="15" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" minValue="1" maxValue="32" doubleValue="1" id="2197">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </stepperCell>
                     <connections>
                         <action selector="takeIntegerValueFrom:" target="2188" id="2214"/>
@@ -1667,25 +1507,25 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
             <rect key="frame" x="0.0" y="0.0" width="404" height="44"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="yQV-9I-7us">
+                <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yQV-9I-7us">
                     <rect key="frame" x="0.0" y="22" width="273" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="System default" drawsBackground="YES" usesSingleLineMode="YES" id="eS9-G4-zgt">
                         <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" id="ZHD-xB-ee1">
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZHD-xB-ee1">
                     <rect key="frame" x="-2" y="0.0" width="408" height="14"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Enter the full absolute path to your SSH binary." id="yLf-F5-exv">
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <button verticalHuggingPriority="750" id="hEB-5Q-jZ8">
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hEB-5Q-jZ8">
                     <rect key="frame" x="275" y="16" width="135" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Change…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1nt-aH-gM4">
@@ -1703,7 +1543,7 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
             <rect key="frame" x="0.0" y="0.0" width="309" height="54"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <button id="bAQ-gF-4V2">
+                <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bAQ-gF-4V2">
                     <rect key="frame" x="18" y="18" width="273" height="18"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Show hidden files" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="apR-gz-ej3">
@@ -1727,8 +1567,8 @@ Warning: If Sequel Pro and the server do not have at least one cipher suite in c
     </objects>
     <resources>
         <image name="NSAdvanced" width="32" height="32"/>
-        <image name="button_duplicateTemplate" width="33" height="23"/>
-        <image name="button_removeTemplate" width="32" height="23"/>
+        <image name="button_duplicateTemplate" width="15" height="10"/>
+        <image name="button_removeTemplate" width="10" height="10"/>
         <image name="resetTemplate" width="16" height="16"/>
     </resources>
 </document>
