@@ -640,9 +640,11 @@ static SPQueryController *sharedQueryController = nil;
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)
-	if (allowConsoleUpdate && [[self window] isVisible]) {
-		[self performSelectorOnMainThread:@selector(updateEntries) withObject:nil waitUntilDone:NO];
-	}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (allowConsoleUpdate && [[self window] isVisible]) {
+			[self performSelectorOnMainThread:@selector(updateEntries) withObject:nil waitUntilDone:NO];
+		}
+	});
 
 	pthread_mutex_unlock(&consoleLock);
 #endif

@@ -27,12 +27,6 @@
                                     <action selector="openAboutPanel:" target="213" id="1037"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Check for Updates..." id="794">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="checkForUpdates:" target="795" id="830"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="199">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
@@ -47,11 +41,6 @@
                             <menuItem title="Visit Website..." id="516">
                                 <connections>
                                     <action selector="visitWebsite:" target="213" id="517"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Make a Donation..." id="438">
-                                <connections>
-                                    <action selector="donate:" target="213" id="440"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="435">
@@ -1089,6 +1078,7 @@ CQ
                     </menu>
                 </menuItem>
             </items>
+            <point key="canvasLocation" x="139" y="32"/>
         </menu>
         <userDefaultsController representsSharedInstance="YES" id="1210"/>
     </objects>

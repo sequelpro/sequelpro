@@ -8,7 +8,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPPreferenceController">
             <connections>
-                <outlet property="autoUpdatePreferencePane" destination="2145" id="2149"/>
                 <outlet property="editorPreferencePane" destination="2144" id="2148"/>
                 <outlet property="generalPreferencePane" destination="2074" id="2076"/>
                 <outlet property="networkPreferencePane" destination="2146" id="2150"/>
@@ -56,7 +55,6 @@
                 <outlet property="view" destination="802" id="2152"/>
             </connections>
         </customObject>
-        <customObject id="2145" userLabel="Auto Update" customClass="SPAutoUpdatePreferencePane"/>
         <customObject id="2146" userLabel="Network" customClass="SPNetworkPreferencePane">
             <connections>
                 <outlet property="hiddenFileView" destination="GEn-6y-U3F" id="r1S-eS-uJK"/>
@@ -976,7 +974,7 @@ Warning: If Sequel Ace and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                     <clipView key="contentView" id="M9x-3Q-tiD">
                         <rect key="frame" x="1" y="1" width="332" height="126"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" id="RuH-Yq-cdH">
                                 <rect key="frame" x="0.0" y="0.0" width="332" height="126"/>
@@ -1368,7 +1366,7 @@ Warning: If Sequel Ace and the server do not have at least one cipher suite in c
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="oEY-Qs-g9y">
                         <rect key="frame" x="1" y="1" width="220" height="286"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnReordering="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="20" id="1685">
                                 <rect key="frame" x="0.0" y="0.0" width="220" height="286"/>

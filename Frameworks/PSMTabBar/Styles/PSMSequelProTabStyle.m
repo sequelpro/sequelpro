@@ -678,7 +678,8 @@ typedef struct {
 
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			if (cell.backgroundColor) {
-				fillColor = [NSColor colorWithCalibratedHue:cell.backgroundColor.hueComponent saturation:cell.backgroundColor.saturationComponent brightness:(cell.backgroundColor.brightnessComponent * 1.28) alpha:1.0f];
+				NSColor *backgroundRgb = [cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+				fillColor = [NSColor colorWithCalibratedHue:backgroundRgb.hueComponent saturation:backgroundRgb.saturationComponent brightness:(backgroundRgb.brightnessComponent * 1.28f) alpha:1.0f];
 			} else {
 				fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			}
@@ -691,7 +692,7 @@ typedef struct {
 			
 			//make it dark first, then desaturate
 			if (cell.backgroundColor) {
-				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
+				NSColor *dark = [[cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace] shadowWithLevel:0.15];
 				fillColor = [NSColor colorWithCalibratedHue:dark.hueComponent saturation:dark.saturationComponent * 0.15 brightness:(dark.brightnessComponent * 1.28) alpha:1.0f];
 			}
 		}

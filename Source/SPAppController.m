@@ -2419,7 +2419,9 @@
 
 - (IBAction)newWindow:(id)sender
 {
-	[self newWindow];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self newWindow];
+	});
 }
 
 /**
