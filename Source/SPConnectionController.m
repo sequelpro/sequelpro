@@ -532,11 +532,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 		// SSH key file selection
 		if (sender == sshSSHKeyButton) {
-			if([self sshKeyLocation] != nil && ![fm removeItemAtPath:[self sshKeyLocation] error:&err])
-			{
-				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
-			}
-			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSshKeyLocationEnabled:NSOffState];
 				[self setSshKeyLocation:nil];
@@ -552,11 +547,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 		// SSL key file selection
 		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
-			if([self sslKeyFileLocation] != nil && ![fm removeItemAtPath:[self sslKeyFileLocation] error:&err])
-			{
-				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
-			}
-			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslKeyFileLocationEnabled:NSOffState];
 				[self setSslKeyFileLocation:nil];
@@ -572,11 +562,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 		// SSL certificate file selection
 		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
-			if([self sslCertificateFileLocation] != nil && ![fm removeItemAtPath:[self sslCertificateFileLocation] error:&err])
-			{
-				NSLog(@"Could not copy delete file from internal filesystem - %@",[err localizedDescription]);
-			}
-			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslCertificateFileLocationEnabled:NSOffState];
 				[self setSslCertificateFileLocation:nil];
@@ -592,11 +577,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 		// SSL CA certificate file selection
 		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
-			if([self sslCACertFileLocation] != nil && ![fm removeItemAtPath:[self sslCACertFileLocation] error:&err])
-			{
-				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
-			}
-			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslCACertFileLocationEnabled:NSOffState];
 				[self setSslCACertFileLocation:nil];
