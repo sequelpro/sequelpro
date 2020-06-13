@@ -532,7 +532,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		if (sender == sshSSHKeyButton) {
 			if([self sshKeyLocation] != nil && ![fm removeItemAtPath:[self sshKeyLocation] error:&err])
 			{
-				NSLog(@"Could not copy delete file from internal filesystem - %@",[err localizedDescription]);
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
 			}
 			
 			if (returnCode == NSModalResponseCancel) {
@@ -552,7 +552,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
 			if([self sslKeyFileLocation] != nil && ![fm removeItemAtPath:[self sslKeyFileLocation] error:&err])
 			{
-				NSLog(@"Could not copy delete file from internal filesystem - %@",[err localizedDescription]);
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
 			}
 			
 			if (returnCode == NSModalResponseCancel) {
@@ -592,7 +592,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
 			if([self sslCACertFileLocation] != nil && ![fm removeItemAtPath:[self sslCACertFileLocation] error:&err])
 			{
-				NSLog(@"Could not copy delete file from internal filesystem - %@",[err localizedDescription]);
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
 			}
 			
 			if (returnCode == NSModalResponseCancel) {
