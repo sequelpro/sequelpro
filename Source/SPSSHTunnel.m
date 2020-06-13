@@ -363,7 +363,8 @@ static unsigned short getRandomPort();
 		TA(@"-o",@"NumberOfPasswordPrompts=3");
 		
 		// Use a KnownHostsFile in the sandbox folder
-		TA(@"-o", [NSString stringWithFormat:@"UserKnownHostsFile=%@/.ssh_known_hosts", NSHomeDirectory()]);
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@".keys"] withIntermediateDirectories:true attributes:nil error:nil];
+		TA(@"-o", [NSString stringWithFormat:@"UserKnownHostsFile=%@/.keys/ssh_known_hosts", NSHomeDirectory()]);
 		TA(@"-o", @"StrictHostKeyChecking=no");
 
 		// Specify an identity file if available

@@ -524,9 +524,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		
 		NSFileManager *fm=[NSFileManager defaultManager];
 		NSError *err=nil;
-		NSString *applicationSupportPath=[NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)lastObject];
+		
+		NSString *keysDirectoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@".keys"];
+		[[NSFileManager defaultManager] createDirectoryAtPath:keysDirectoryPath withIntermediateDirectories:true attributes:nil error:nil];
 		NSString *currentTimestampHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
-		NSString *internalPath = [applicationSupportPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", currentTimestampHash, [abbreviatedFileName lastPathComponent]]];
+		NSString *internalPath = [keysDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", currentTimestampHash, [abbreviatedFileName lastPathComponent]]];
 
 		// SSH key file selection
 		if (sender == sshSSHKeyButton) {
