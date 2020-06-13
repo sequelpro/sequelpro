@@ -179,7 +179,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize isEditingConnection;
 
 + (void)initialize {
-	
 }
 
 - (NSString *)keychainPassword
@@ -469,15 +468,12 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// If the custom key location is currently disabled - after the button
 		// action - leave it disabled and return without showing the sheet.
 		if (!sshKeyLocationEnabled) {
+			[self setSshKeyLocation:nil];
 			return;
 		}
 
-		// Otherwise open a panel at the last or default location
-		if (sshKeyLocation && [sshKeyLocation length]) {
-			filePath = [sshKeyLocation lastPathComponent];
-			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
-		}
-
+		filePath = nil;
+		directoryPath = @"~/.ssh";
 		accessoryView = sshKeyLocationHelp;
 	}
 	// SSL key file location:
@@ -518,51 +514,99 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[keySelectionPanel setDelegate:self];
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
+		NSString *selectedFilePath=[[keySelectionPanel URL] path];
+		NSString *abbreviatedFileName = [selectedFilePath stringByAbbreviatingWithTildeInPath];
 		
 		//delay the release so it won't happen while this block is still executing.
 		dispatch_async(dispatch_get_current_queue(), ^{
 			SPClear(keySelectionPanel);
 		});
+		
+		NSFileManager *fm=[NSFileManager defaultManager];
+		NSError *err=nil;
+		NSString *applicationSupportPath=[NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)lastObject];
+		NSString *currentTimestampHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
+		NSString *internalPath = [applicationSupportPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", currentTimestampHash, [abbreviatedFileName lastPathComponent]]];
 
 		// SSH key file selection
 		if (sender == sshSSHKeyButton) {
+			if([self sshKeyLocation] != nil && ![fm removeItemAtPath:[self sshKeyLocation] error:&err])
+			{
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
+			}
+			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSshKeyLocationEnabled:NSOffState];
+				[self setSshKeyLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSshKeyLocation:abbreviatedFileName];
+			[self setSshKeyLocation:internalPath];
 		}
 		// SSL key file selection
 		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
+			if([self sslKeyFileLocation] != nil && ![fm removeItemAtPath:[self sslKeyFileLocation] error:&err])
+			{
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
+			}
+			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslKeyFileLocationEnabled:NSOffState];
 				[self setSslKeyFileLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSslKeyFileLocation:abbreviatedFileName];
+			[self setSslKeyFileLocation:internalPath];
 		}
 		// SSL certificate file selection
 		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
+			if([self sslCertificateFileLocation] != nil && ![fm removeItemAtPath:[self sslCertificateFileLocation] error:&err])
+			{
+				NSLog(@"Could not copy delete file from internal filesystem - %@",[err localizedDescription]);
+			}
+			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslCertificateFileLocationEnabled:NSOffState];
 				[self setSslCertificateFileLocation:nil];
 				return;
 			}
-
-			[self setSslCertificateFileLocation:abbreviatedFileName];
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
+			
+			[self setSslCertificateFileLocation:internalPath];
 		}
 		// SSL CA certificate file selection
 		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
+			if([self sslCACertFileLocation] != nil && ![fm removeItemAtPath:[self sslCACertFileLocation] error:&err])
+			{
+				NSLog(@"Could not delete file from internal filesystem - %@",[err localizedDescription]);
+			}
+			
 			if (returnCode == NSModalResponseCancel) {
 				[self setSslCACertFileLocationEnabled:NSOffState];
 				[self setSslCACertFileLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSslCACertFileLocation:abbreviatedFileName];
+			[self setSslCACertFileLocation:internalPath];
 		}
 		
 		[self _startEditingConnection];
