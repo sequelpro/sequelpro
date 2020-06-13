@@ -85,7 +85,7 @@ static unsigned short getRandomPort();
 		connectionMuxingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
-		tunnelConnectionName = [[NSString alloc] initWithFormat:@"JKQ4HJ66PX.sequel-ace.SequelAce-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		tunnelConnectionName = [[NSString alloc] initWithFormat:@"NKQ4HJ66PX.sequel-ace.SequelAce-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnection = [NSConnection new];
 		
