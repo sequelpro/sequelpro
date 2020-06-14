@@ -516,9 +516,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	{
 		NSString *selectedFilePath=[[keySelectionPanel URL] path];
 		NSString *abbreviatedFileName = [selectedFilePath stringByAbbreviatingWithTildeInPath];
-		
+
 		//delay the release so it won't happen while this block is still executing.
-		dispatch_async(dispatch_get_current_queue(), ^{
+		// jamesstout notes
+		// replacing dispatch_get_current_queue with:
+		// currentQueue = The operation queue that started the operation
+		// underlyingQueue = The dispatch queue used to execute operations
+		// just so happens that in this case it's the main queue anyway
+		dispatch_async(NSOperationQueue.currentQueue.underlyingQueue, ^{
 			SPClear(keySelectionPanel);
 		});
 		
