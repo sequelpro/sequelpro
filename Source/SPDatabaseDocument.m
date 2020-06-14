@@ -2867,7 +2867,8 @@ static BOOL isOSAtLeast10_14;
 	SPTableViewType theView = NSNotFound;
 
 	// -selectedTabViewItem is a UI method according to Xcode 9.2!
-	NSString *viewName = [[tableTabView selectedTabViewItem] identifier];
+	// jamesstout note - this is called a LOT. 
+	NSString *viewName = [[[tableTabView onMainThread] selectedTabViewItem] identifier];
 
 	if ([viewName isEqualToString:@"source"]) {
 		theView = SPTableViewStructure;
