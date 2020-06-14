@@ -507,7 +507,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
     return managedObjectContext;
 }
 
-- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)(void))callback
 {
 	//copy block from stack to heap, otherwise it wouldn't live long enough to be invoked later.
 	void *heapCallback = callback? Block_copy(callback) : NULL;
@@ -525,7 +525,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	[[self window] orderOut:self];
 	//notify delegate
 	if(context) {
-		void (^callback)() = context;
+		void (^callback)(void) = context;
 		//directly invoking callback would risk that we are dealloc'd while still in this run loop iteration.
 		dispatch_async(dispatch_get_main_queue(), callback);
 		Block_release(callback);

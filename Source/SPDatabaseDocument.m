@@ -240,7 +240,7 @@ static BOOL isOSAtLeast10_14;
 		// automatically released.  Keep track of the top-level objects for release on dealloc.
 		NSArray *dbViewTopLevelObjects = nil;
 		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"DBView" bundle:[NSBundle mainBundle]];
-		[nibLoader instantiateNibWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
+		[nibLoader instantiateWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 #endif
@@ -317,7 +317,7 @@ static BOOL isOSAtLeast10_14;
 	// Load additional nibs, keeping track of the top-level objects to allow correct release
 	NSArray *connectionDialogTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
@@ -328,7 +328,7 @@ static BOOL isOSAtLeast10_14;
 
 	NSArray *progressIndicatorLayerTopLevelObjects = nil;
 	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
@@ -1105,7 +1105,7 @@ static BOOL isOSAtLeast10_14;
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		[addDatabaseCharsetHelper setEnabled:NO];
 
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
@@ -1122,18 +1122,18 @@ static BOOL isOSAtLeast10_14;
 		}
 	}
 	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _copyDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _renameDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPAlterDatabaseAction]) {
 		[alterDatabaseCharsetHelper setEnabled:NO];
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _alterDatabase];
 		}
 	}
@@ -2406,7 +2406,7 @@ static BOOL isOSAtLeast10_14;
 
 	[panel setNameFieldStringValue:[NSString stringWithFormat:@"CreateSyntax-%@", [self table]]];
 	[panel beginSheetModalForWindow:createTableSyntaxWindow completionHandler:^(NSInteger returnCode) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
 			if ([createSyntax length] > 0) {
@@ -2867,7 +2867,8 @@ static BOOL isOSAtLeast10_14;
 	SPTableViewType theView = NSNotFound;
 
 	// -selectedTabViewItem is a UI method according to Xcode 9.2!
-	NSString *viewName = [[tableTabView selectedTabViewItem] identifier];
+	// jamesstout note - this is called a LOT. 
+	NSString *viewName = [[[tableTabView onMainThread] selectedTabViewItem] identifier];
 
 	if ([viewName isEqualToString:@"source"]) {
 		theView = SPTableViewStructure;

@@ -516,9 +516,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	{
 		NSString *selectedFilePath=[[keySelectionPanel URL] path];
 		NSString *abbreviatedFileName = [selectedFilePath stringByAbbreviatingWithTildeInPath];
-		
+																		   
 		//delay the release so it won't happen while this block is still executing.
-		dispatch_async(dispatch_get_current_queue(), ^{
+		// jamesstout notes
+		// replacing dispatch_get_current_queue with:
+		// currentQueue = The operation queue that started the operation
+		// underlyingQueue = The dispatch queue used to execute operations
+		// just so happens that in this case it's the main queue anyway
+		dispatch_async(NSOperationQueue.currentQueue.underlyingQueue, ^{
 			SPClear(keySelectionPanel);
 		});
 		
@@ -1077,11 +1082,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 		
 		if (!suppressWarning) {
-			NSAlert *alert = [NSAlert alertWithMessageText:message
-			                                 defaultButton:NSLocalizedString(@"Delete", @"delete button")
-			                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-			                                   otherButton:nil
-			                     informativeTextWithFormat:@"%@", informativeMessage];
+			
+			NSAlert *alert = [[NSAlert alloc] init];
+			
+			// jamesstout notes
+			// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+			alert.messageText = message;
+			alert.informativeText = [NSString stringWithFormat:@"%@", informativeMessage];
+			[alert addButtonWithTitle:NSLocalizedString(@"Delete", @"delete button")]; // first button is delete
+			[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")]; // second is cancel
 			
 			NSArray *buttons = [alert buttons];
 			
@@ -1201,7 +1210,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[openPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
 
 			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
@@ -1231,7 +1240,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[savePanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 
 			[exporter setDelegate:self];
@@ -1272,7 +1281,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	// Remove the current favorite/group node
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == NSAlertFirstButtonReturn) {
 			[self _removeNode:[self selectedFavoriteNode]];
 		}
 	}
@@ -2450,7 +2459,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSAlertAlternateReturn) {
+	if (returnCode == NSAlertFirstButtonReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
 		[errorDetailText setAlignment:NSLeftTextAlignment];
 		[errorDetailWindow makeKeyAndOrderFront:self];
@@ -2458,7 +2467,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
 	// this will definitely need to be updated.
-	else if (returnCode == NSAlertOtherReturn) {
+	else if (returnCode == NSAlertSecondButtonReturn) {
 
 		// Extract the local port number that SSH attempted to bind to from the debug output
 		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];
@@ -3148,16 +3157,18 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)favoritesImportCompletedWithError:(NSError *)error
 {
 	if (error) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites import error", @"favorites import error message")
-		                                 defaultButton:NSLocalizedString(@"OK", @"OK")
-		                               alternateButton:nil
-		                                   otherButton:nil
-		                     informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]];
+		
+		NSAlert *alert = [[NSAlert alloc] init];
+		
+		// jamesstout notes
+		// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+		alert.messageText = NSLocalizedString(@"Favorites import error", @"favorites import error message");
+		alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]];
+		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
 
-		[alert beginSheetModalForWindow:[dbDocument parentWindow]
-		                  modalDelegate:nil
-		                 didEndSelector:NULL
-		                    contextInfo:NULL];
+		// jamesstout notes
+		// API_DEPRECATED("Use -beginSheetModalForWindow:completionHandler: instead" - - NSAlert.h L136
+		[alert beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:nil];
 	}
 }
 
@@ -3298,7 +3309,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSArray *connectionViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:SPConnectionViewNibName bundle:[NSBundle mainBundle]];
 
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
 	[nibLoader release];
 

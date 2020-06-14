@@ -109,7 +109,7 @@
 	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
 	NSArray *importAccessoryTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
 	[nibLoader release];
 
@@ -213,7 +213,7 @@
 	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
 
 	// Check if the user canceled
-	if (returnCode != NSOKButton)
+	if (returnCode != NSModalResponseOK)
 		return;
 
 	// Reset progress cancelled from any previous runs
@@ -294,7 +294,7 @@
 		[openPanel orderOut:self];
 
 		// Check if the user canceled
-		if (returnCode != NSOKButton) return;
+		if (returnCode != NSModalResponseOK) return;
 
 		// Reset progress cancelled from any previous runs
 		progressCancelled = NO;

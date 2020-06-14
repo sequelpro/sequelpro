@@ -766,12 +766,12 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 	}
 	else if ([contextInfo isEqualToString:SPAddNewTable]) {
 		[addTableCharsetHelper setEnabled:NO];
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _addTable];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPDuplicateTable]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _copyTable];
 		}
 	}

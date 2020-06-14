@@ -550,7 +550,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 {
 	[theSheet orderOut:nil];
 
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		[dbDocument startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
 
 		NSUInteger i, j;
