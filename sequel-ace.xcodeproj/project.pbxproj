@@ -3518,6 +3518,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2019;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
 					"$(inherited)",
@@ -3531,6 +3532,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Cocoa,
@@ -3549,6 +3551,7 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Ace.app/Contents/MacOS/Sequel Ace";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
 					"$(inherited)",
@@ -3560,6 +3563,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Cocoa,
@@ -3578,6 +3582,7 @@
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Sequel Ace.app/Contents/MacOS/Sequel Ace";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
 					"$(inherited)",
@@ -3589,6 +3594,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LD_RUNPATH_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3607,12 +3613,14 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2019;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
 				SKIP_INSTALL = YES;
@@ -3626,12 +3634,14 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
 				SKIP_INSTALL = YES;
@@ -3645,11 +3655,13 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Ace QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sequel-ace.sequel-ace.qlgenerator";
 				PRODUCT_NAME = "Sequel Ace";
 				SKIP_INSTALL = YES;
@@ -3682,6 +3694,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -3719,6 +3732,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				SDKROOT = macosx;
 				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Distribution;
@@ -3731,7 +3745,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20015;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -3769,8 +3783,9 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2019;
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 2019;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -3779,6 +3794,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 				SKIP_INSTALL = YES;
@@ -3791,9 +3807,10 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 2019;
 				FRAMEWORK_VERSION = A;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -3801,6 +3818,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 				SKIP_INSTALL = YES;
@@ -3813,8 +3831,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 2019;
 				FRAMEWORK_VERSION = A;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -3822,6 +3841,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.positivespinmedia.PSMTabBarFramework;
 				PRODUCT_NAME = PSMTabBar;
 				SKIP_INSTALL = YES;
@@ -3835,12 +3855,14 @@
 				CODE_SIGN_ENTITLEMENTS = xibLocalizationPostprocessor.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3859,11 +3881,13 @@
 				CODE_SIGN_ENTITLEMENTS = xibLocalizationPostprocessor.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3882,11 +3906,13 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = xibLocalizationPostprocessor.entitlements;
 				CODE_SIGN_IDENTITY = "-";
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3906,7 +3932,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
@@ -3918,7 +3944,7 @@
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3940,7 +3966,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -3952,7 +3978,7 @@
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -3974,7 +4000,7 @@
 				CODE_SIGN_ENTITLEMENTS = SequelAceTunnelAssistant.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/Frameworks";
@@ -3985,7 +4011,7 @@
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
 				INSTALL_PATH = /usr/local/bin;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"-framework",
 					Foundation,
@@ -4007,7 +4033,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20015;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = NO;
@@ -4047,7 +4073,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20015;
+				CURRENT_PROJECT_VERSION = 2019;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = NKQ4HJ66PX;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -4106,6 +4132,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
@@ -4150,6 +4177,7 @@
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Debug;
@@ -4179,6 +4207,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2019;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -4216,6 +4245,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				SDKROOT = macosx;
 				VALID_ARCHS = x86_64;
+				VERSIONING_SYSTEM = "apple-generic";
 				WARNING_CFLAGS = "-Wmost";
 			};
 			name = Release;

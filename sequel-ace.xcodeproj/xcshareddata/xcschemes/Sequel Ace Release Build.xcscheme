@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1150"
-   version = "1.3">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -93,5 +93,23 @@
       buildConfiguration = "Distribution"
       customArchiveName = "Sequel Ace (Release)"
       revealArchiveInOrganizer = "YES">
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "# Type a script or drag a script file from your workspace to insert its path.&#10;exec &gt; &quot;${PROJECT_DIR}/prebuild.log&quot; 2&gt;&amp;1&#10;cd &quot;${PROJECT_DIR}&quot;&#10;xcrun agvtool next-version -all&#10;cd -&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "8D15AC270486D014006FF6A4"
+                     BuildableName = "Sequel Ace.app"
+                     BlueprintName = "Sequel Ace"
+                     ReferencedContainer = "container:sequel-ace.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
    </ArchiveAction>
 </Scheme>
