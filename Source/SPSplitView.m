@@ -114,7 +114,7 @@
 	SPClear(viewMinimumSizes);
 	SPClear(viewMaximumSizes);
 
-	if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
+	if (animationTimer) (void)([animationTimer invalidate]), SPClear(animationTimer);
 	if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -239,7 +239,7 @@
 
 	// Otherwise, start an animation.
 	} else {
-		if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
+		if (animationTimer) (void)([animationTimer invalidate]), SPClear(animationTimer);
 		if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);
 		animationStartTime = [NSDate monotonicTimeInterval];
 

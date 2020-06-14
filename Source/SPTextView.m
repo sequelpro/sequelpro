@@ -912,7 +912,7 @@ retry:
 		}
 	}
 
-	if (completionIsOpen) [completionPopup close], completionPopup = nil;
+	if (completionIsOpen) (void)([completionPopup close]), completionPopup = nil;
 
 	completionIsOpen = YES;
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName]
@@ -1542,7 +1542,7 @@ retry:
 		return;
 	}
 
-	if (completionIsOpen) [completionPopup close], completionPopup = nil;
+	if (completionIsOpen) (void)([completionPopup close]), completionPopup = nil;
 	completionIsOpen = YES;
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
 	                                                   alreadyTyped:@""
@@ -1692,7 +1692,7 @@ retry:
 							for(id w in list)
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
 
-							if (completionIsOpen) [completionPopup close], completionPopup = nil;
+							if (completionIsOpen) (void)([completionPopup close]), completionPopup = nil;
 							completionIsOpen = YES;
 							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions
 							                                                   alreadyTyped:@""
@@ -3706,7 +3706,7 @@ retry:
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
 #endif
 
-	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
+	if (completionIsOpen) (void)([completionPopup close]), completionIsOpen = NO;
 #ifndef SP_CODA
 	SPClear(prefs);
 #endif

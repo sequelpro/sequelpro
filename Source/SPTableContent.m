@@ -3069,7 +3069,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	// this is a delegate method of the field editor controller. calling release
 	// now would risk a dealloc while it is still our parent on the stack:
-	[fieldEditor autorelease], fieldEditor = nil;
+	(void)([fieldEditor autorelease]), fieldEditor = nil;
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
 

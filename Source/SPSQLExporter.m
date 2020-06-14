@@ -463,7 +463,8 @@
 						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
 						[sqlString appendString:@")\nVALUES\n\t("];
 
-						queryLength = 0, rowsWrittenForCurrentStmt = 0;
+						queryLength = 0;
+						rowsWrittenForCurrentStmt = 0;
 
 						// Use the opportunity to drain and reset the autorelease pool at the end of this row
 						cleanAutoReleasePool = YES;

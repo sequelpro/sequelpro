@@ -38,8 +38,8 @@
 
 - (void)dealloc
 {
-	if (_field) [_field release], _field = nil;
-	if (_value) [_value release], _value = nil;
+    if (_field) (void)([_field release]), _field = nil;
+    if (_value) (void)([_value release]), _value = nil;
 	
 	[super dealloc];
 }
