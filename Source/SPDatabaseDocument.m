@@ -99,7 +99,6 @@ static NSString *SPNewDatabaseName = @"SPNewDatabaseName";
 static NSString *SPNewDatabaseCopyContent = @"SPNewDatabaseCopyContent";
 
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
-static BOOL isOSAtLeast10_14;
 
 @interface SPDatabaseDocument ()
 
@@ -148,7 +147,7 @@ static BOOL isOSAtLeast10_14;
 #pragma mark -
 
 + (void)initialize {
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+	
 }
 
 - (id)init
@@ -5911,7 +5910,11 @@ static BOOL isOSAtLeast10_14;
 	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
-	leftPaneWidth -= isOSAtLeast10_14 ? 9 : 12;
+	if (@available(macOS 10.14, *)) {
+		leftPaneWidth -= 9;
+	} else {
+		leftPaneWidth -= 12;
+	}
 
 	// make sure it's not too small or to big
 	if (leftPaneWidth < 130) leftPaneWidth = 130;

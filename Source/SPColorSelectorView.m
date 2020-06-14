@@ -89,8 +89,6 @@ enum trackingAreaIDs
 		
 		//set ourselves as observer of selectedTag (need to mark view dirty)
 		[self addObserver:self forKeyPath:@"selectedTag" options:0 context:nil];
-		
-		isOSAtLeast10_9_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:9 patch:0];
 	}
 	
 	return self;
@@ -275,14 +273,8 @@ enum trackingAreaIDs
 			[left stroke];
 		}
 		else {
-			if(!isOSAtLeast10_9_0) {
-				NSGradient *gradient = [self gradientForTag:index];
-				[self _drawDotBevelStyleWithGradient:gradient insideRect:colorSquareRect];
-			}
-			else {
-				NSColor *baseColor = (NSColor *)[colorList objectAtIndex:index];
-				[self _drawDotFlatStyleWithColor:baseColor insideRect:colorSquareRect];
-			}
+			NSColor *baseColor = (NSColor *)[colorList objectAtIndex:index];
+			[self _drawDotFlatStyleWithColor:baseColor insideRect:colorSquareRect];
 		}
 	}
 }

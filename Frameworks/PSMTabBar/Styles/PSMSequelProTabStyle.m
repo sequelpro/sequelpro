@@ -30,26 +30,6 @@
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 0
 
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-// This code is available since 10.8 but public only since 10.10
-typedef struct {
-	NSInteger major;
-	NSInteger minor;
-	NSInteger patch;
-} NSOperatingSystemVersion;
-
-@interface NSProcessInfo ()
-
-- (NSOperatingSystemVersion)operatingSystemVersion;
-- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-
-@end
-#endif
-
 @interface PSMSequelProTabStyle ()
 
 - (NSColor *)_lineColorForTabCellDrawing;
@@ -71,18 +51,6 @@ typedef struct {
 - (id) init
 {
     if ( (self = [super init]) ) {
-		// This code actually belongs in it's own class, but since both PSMTabBar.framework
-		// and SP itself would need it, the loader will complain about a duplicate class implementation.
-		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
-
-		NSOperatingSystemVersion os10_7_0 = {10,7,0};
-		NSOperatingSystemVersion os10_10_0 = {10,10,0};
-		NSOperatingSystemVersion os10_14_0 = {10,14,0};
-
-		systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
-		systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
-		systemVersionIsAtLeast10_14_0 = [procInfo isOperatingSystemAtLeastVersion:os10_14_0];
-
 		NSBundle *bundle = [PSMTabBarControl bundle];
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose"]];
@@ -126,7 +94,7 @@ typedef struct {
 
 - (BOOL)isInDarkMode
 {
-	if(systemVersionIsAtLeast10_14_0) {
+	if (@available(macOS 10.14, *)) {
 		NSAppearance *appearance = [NSAppearance currentAppearance] ?: [NSApp effectiveAppearance];
 		NSAppearanceName match = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 

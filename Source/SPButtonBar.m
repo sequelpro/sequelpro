@@ -31,8 +31,6 @@
 #import "SPButtonBar.h"
 #import "SPOSInfo.h"
 
-static BOOL isOSAtLeast10_14 = NO;
-
 static void init(SPButtonBar *obj);
 
 @interface SPButtonBar ()
@@ -45,7 +43,7 @@ static void init(SPButtonBar *obj);
 
 + (void)initialize
 {
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+	
 }
 
 - (instancetype)init

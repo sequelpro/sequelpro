@@ -45,7 +45,6 @@ typedef NS_ENUM(NSInteger, HelpNavButton) {
 };
 
 static void *HelpViewerControllerKVOContext = &HelpViewerControllerKVOContext;
-static BOOL isOSAtLeast10_14 = NO;
 
 @interface SPHelpViewerController () <WebPolicyDelegate, WebUIDelegate, NSWindowDelegate>
 - (IBAction)showHelpForSearchString:(id)sender;
@@ -72,7 +71,7 @@ static BOOL isOSAtLeast10_14 = NO;
 
 + (void)initialize
 {
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+	
 }
 
 - (instancetype)init
@@ -87,7 +86,7 @@ static BOOL isOSAtLeast10_14 = NO;
 - (void)dealloc
 {
 	[helpWebView removeObserver:self forKeyPath:@"mainFrameTitle"]; //TODO: update to ...context: variant after 10.6
-	if(isOSAtLeast10_14) {
+	if (@available(macOS 10.14, *)) {
 		[[self window] removeObserver:self forKeyPath:@"effectiveAppearance" context:HelpViewerControllerKVOContext];
 	}
 	[super dealloc];
@@ -102,7 +101,7 @@ static BOOL isOSAtLeast10_14 = NO;
 	[self updateWindowTitle];
 
 	[helpWebView addObserver:self forKeyPath:@"mainFrameTitle" options:0 context:HelpViewerControllerKVOContext];
-	if(isOSAtLeast10_14) {
+	if (@available(macOS 10.14, *)) {
 		[[self window] addObserver:self forKeyPath:@"effectiveAppearance" options:0 context:HelpViewerControllerKVOContext];
 	}
 }
