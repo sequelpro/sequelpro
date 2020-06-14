@@ -2016,7 +2016,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		mySQLConnection = nil;
 	}
 	
-	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], SPClear(sshTunnel);
+	if (sshTunnel) (void)([sshTunnel setConnectionStateChangeSelector:nil delegate:nil]), SPClear(sshTunnel);
 }
 
 #pragma mark - SPConnectionHandler
@@ -2190,7 +2190,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 				// Tidy up
 				isConnecting = NO;
 
-				if (sshTunnel) [sshTunnel disconnect], SPClear(sshTunnel);
+				if (sshTunnel) (void)([sshTunnel disconnect]), SPClear(sshTunnel);
 
 				SPClear(mySQLConnection);
 #ifndef SP_CODA
@@ -2432,7 +2432,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Release as appropriate
 	if (sshTunnel) {
-		[sshTunnel disconnect], SPClear(sshTunnel);
+		(void)([sshTunnel disconnect]), SPClear(sshTunnel);
 
 		// If the SSH tunnel connection failed because the port it was trying to bind to was already in use take note
 		// of it so we can give the user the option of connecting via standard connection and use the existing tunnel.
@@ -3662,7 +3662,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPClear(quickConnectCell);
 #endif
     
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 
 	SPClear(nibObjectsToRelease);
 

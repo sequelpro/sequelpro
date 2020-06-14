@@ -1870,8 +1870,6 @@ cleanup:
 	if (prefs)                         SPClear(prefs);
 	if (selectedTableTarget)           SPClear(selectedTableTarget);
 	
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	
 	SPClear(nibObjectsToRelease);
 	
 	[super dealloc];

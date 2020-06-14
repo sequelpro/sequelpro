@@ -443,5 +443,8 @@ NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
 NSString *SPErrorDomain = @"SPErrorDomain";
 
 void inline _SPClear(id *addr) {
-	[*addr release], *addr = nil;
+	if (addr == nil) {
+		return;
+	}
+	(void)([*addr release]), *addr = nil;
 }

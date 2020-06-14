@@ -1391,7 +1391,7 @@ static BOOL isOSAtLeast10_14;
 
 	// If the window has been fully faded in, clean up the timer.
 	if (alphaValue == 1.0) {
-		[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+		(void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 		SPClear(taskFadeInStartDate);
 	}
 #endif
@@ -1502,7 +1502,7 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA 
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) {
-			[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+			(void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 			SPClear(taskFadeInStartDate);
 		}
 
@@ -7600,8 +7600,6 @@ static BOOL isOSAtLeast10_14;
 	SPClear(chooseDatabaseButton);
 	SPClear(historyControl);
 
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	
 	SPClear(nibObjectsToRelease);
 	
 	SPClear(databaseStructureRetrieval);
@@ -7627,7 +7625,7 @@ static BOOL isOSAtLeast10_14;
 	if (mySQLConnection) SPClear(mySQLConnection);
 	if (selectedDatabase) SPClear(selectedDatabase);
 	if (mySQLVersion) SPClear(mySQLVersion);
-	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
+	if (taskDrawTimer) (void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
 	if (queryEditorInitString) SPClear(queryEditorInitString);
 	if (sqlFileURL) SPClear(sqlFileURL);
