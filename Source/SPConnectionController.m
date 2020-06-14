@@ -1210,7 +1210,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[openPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
 
 			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
@@ -1240,7 +1240,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[savePanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 
 			[exporter setDelegate:self];

@@ -1105,7 +1105,7 @@ static BOOL isOSAtLeast10_14;
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		[addDatabaseCharsetHelper setEnabled:NO];
 
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
@@ -1122,18 +1122,18 @@ static BOOL isOSAtLeast10_14;
 		}
 	}
 	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _copyDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _renameDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPAlterDatabaseAction]) {
 		[alterDatabaseCharsetHelper setEnabled:NO];
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _alterDatabase];
 		}
 	}
@@ -2406,7 +2406,7 @@ static BOOL isOSAtLeast10_14;
 
 	[panel setNameFieldStringValue:[NSString stringWithFormat:@"CreateSyntax-%@", [self table]]];
 	[panel beginSheetModalForWindow:createTableSyntaxWindow completionHandler:^(NSInteger returnCode) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
 			if ([createSyntax length] > 0) {

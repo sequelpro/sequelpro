@@ -829,7 +829,7 @@ set_input:
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Perform the export
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		
 		[prefs setObject:[self currentSettingsAsDictionary] forKey:SPLastExportSettings];
 
@@ -851,7 +851,7 @@ set_input:
 - (void)tableListChangedAlertDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Perform the export ignoring the new tables
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		
 		// Initialize the export after a short delay to give the alert a chance to close 
 		[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];

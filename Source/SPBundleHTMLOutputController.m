@@ -181,7 +181,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		[[sheet window] orderOut:nil];
 
 	if ([contextInfo isEqualToString:SPSaveDocumentAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
 			NSError *err = nil;
 			[sourceCode writeToURL:[sheet URL]

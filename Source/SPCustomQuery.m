@@ -529,7 +529,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
     [panel setNameFieldStringValue:@"history"];
     [panel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSModalResponseOK) {
 			NSError *error = nil;
             
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
@@ -3159,7 +3159,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
 #ifndef SP_CODA
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			// Remove items in the query controller
 			[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
 		}
@@ -3167,7 +3167,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 	}
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.

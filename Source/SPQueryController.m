@@ -250,7 +250,7 @@ static SPQueryController *sharedQueryController = nil;
     [panel setNameFieldStringValue:NSLocalizedString(@"ConsoleLog", @"Console : Save as : Initial filename")];
 
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSModalResponseOK) {
             [[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state]
                                        connections:[includeConnectionButton state]
 										 databases:[includeDatabaseButton state]] writeToFile:[[panel URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];

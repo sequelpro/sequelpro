@@ -714,11 +714,11 @@ typedef enum {
 }
 
 /**
- * Open file panel didEndSelector. If the returnCode == NSOKButton it opens the selected file in the editSheet.
+ * Open file panel didEndSelector. If the returnCode == NSModalResponseOK it opens the selected file in the editSheet.
  */
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
 {
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		NSString *contents = nil;
 
 		editSheetWillBeInitialized = YES;
@@ -778,11 +778,11 @@ typedef enum {
 }
 
 /**
- * Save file panel didEndSelector. If the returnCode == NSOKButton it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
+ * Save file panel didEndSelector. If the returnCode == NSModalResponseOK it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 
 		[editSheetProgressBar startAnimation:self];
 
