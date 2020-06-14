@@ -3309,7 +3309,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSArray *connectionViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:SPConnectionViewNibName bundle:[NSBundle mainBundle]];
 
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
 	[nibLoader release];
 

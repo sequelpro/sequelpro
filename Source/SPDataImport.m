@@ -109,7 +109,7 @@
 	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
 	NSArray *importAccessoryTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
 	[nibLoader release];
 

@@ -240,7 +240,7 @@ static BOOL isOSAtLeast10_14;
 		// automatically released.  Keep track of the top-level objects for release on dealloc.
 		NSArray *dbViewTopLevelObjects = nil;
 		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"DBView" bundle:[NSBundle mainBundle]];
-		[nibLoader instantiateNibWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
+		[nibLoader instantiateWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 #endif
@@ -317,7 +317,7 @@ static BOOL isOSAtLeast10_14;
 	// Load additional nibs, keeping track of the top-level objects to allow correct release
 	NSArray *connectionDialogTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
@@ -328,7 +328,7 @@ static BOOL isOSAtLeast10_14;
 
 	NSArray *progressIndicatorLayerTopLevelObjects = nil;
 	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
