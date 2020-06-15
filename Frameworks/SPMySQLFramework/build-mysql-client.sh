@@ -32,7 +32,7 @@
 #
 #  More info at <https://github.com/sequelpro/sequelpro>
 
-#  Builds the MySQL client libraries for distrubution in Sequel Pro's MySQL framework.
+#  Builds the MySQL client libraries for distrubution in Sequel Ace's MySQL framework.
 #
 #  Parameters: -s -- The path to the MySQL source directory.
 #              -q -- Quiet. Don't output any compiler messages.
@@ -45,7 +45,7 @@ CLEAN='NO'
 
 # Configuration
 MIN_OS_X_VERSION='10.6'
-ARCHITECTURES='-arch i386 -arch x86_64'
+ARCHITECTURES='-arch x86_64'
 
 CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared" -DWITHOUT_SERVER=1 -DWITH_ZLIB=system -DWITH_UNIT_TESTS=0'
 OUTPUT_DIR='SPMySQLFiles.build'
@@ -140,8 +140,7 @@ then
 fi 
 
 echo ''
-echo "This script builds the MySQL client libraries for distribution in Sequel Pro's MySQL framework."
-echo 'They are all built as 2-way binaries (32 and 64 bit i386).'
+echo "This script builds the MySQL client libraries for distribution in Sequel Ace's MySQL framework."
 echo ''
 echo -n "$ESC[1mThis may take a while, are you sure you want to continue [y | n]: $ESC[0m"
 

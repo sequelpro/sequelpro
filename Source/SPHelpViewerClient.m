@@ -37,8 +37,6 @@
 #import "ICUTemplateMatcher.h"
 #import "SPOSInfo.h"
 
-static BOOL isOSAtLeast10_14 = NO;
-
 @interface SPHelpViewerClient () <SPHelpViewerDataSource>
 
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
@@ -51,7 +49,7 @@ static BOOL isOSAtLeast10_14 = NO;
 
 + (void)initialize
 {
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+	
 }
 
 - (instancetype)init
@@ -231,7 +229,7 @@ generate_help:
 	{ // C syntax disallows a new variable directly following a label…
 		NSString *addBodyClass = @"";
 		// Add CSS class if running in dark UI mode (10.14+)
-		if (isOSAtLeast10_14) {
+		if (@available(macOS 10.14, *)) {
 			NSString *match = [[[controller window] effectiveAppearance] bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 			// aqua is already the default theme
 			if ([NSAppearanceNameDarkAqua isEqualToString:match]) {

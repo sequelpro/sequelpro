@@ -1,0 +1,1494 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SPFieldEditorController">
+            <connections>
+                <outlet property="bitSheet" destination="80" id="332"/>
+                <outlet property="bitSheetBitButton0" destination="117" id="333"/>
+                <outlet property="bitSheetBitButton1" destination="118" id="337"/>
+                <outlet property="bitSheetBitButton10" destination="115" id="408"/>
+                <outlet property="bitSheetBitButton11" destination="116" id="410"/>
+                <outlet property="bitSheetBitButton12" destination="109" id="412"/>
+                <outlet property="bitSheetBitButton13" destination="110" id="414"/>
+                <outlet property="bitSheetBitButton14" destination="111" id="416"/>
+                <outlet property="bitSheetBitButton15" destination="112" id="417"/>
+                <outlet property="bitSheetBitButton16" destination="105" id="420"/>
+                <outlet property="bitSheetBitButton17" destination="106" id="422"/>
+                <outlet property="bitSheetBitButton18" destination="107" id="423"/>
+                <outlet property="bitSheetBitButton19" destination="108" id="425"/>
+                <outlet property="bitSheetBitButton2" destination="119" id="339"/>
+                <outlet property="bitSheetBitButton20" destination="101" id="427"/>
+                <outlet property="bitSheetBitButton21" destination="102" id="429"/>
+                <outlet property="bitSheetBitButton22" destination="103" id="431"/>
+                <outlet property="bitSheetBitButton23" destination="104" id="433"/>
+                <outlet property="bitSheetBitButton24" destination="97" id="435"/>
+                <outlet property="bitSheetBitButton25" destination="98" id="437"/>
+                <outlet property="bitSheetBitButton26" destination="99" id="441"/>
+                <outlet property="bitSheetBitButton27" destination="100" id="443"/>
+                <outlet property="bitSheetBitButton28" destination="93" id="445"/>
+                <outlet property="bitSheetBitButton29" destination="94" id="446"/>
+                <outlet property="bitSheetBitButton3" destination="120" id="340"/>
+                <outlet property="bitSheetBitButton30" destination="95" id="448"/>
+                <outlet property="bitSheetBitButton31" destination="96" id="450"/>
+                <outlet property="bitSheetBitButton32" destination="149" id="485"/>
+                <outlet property="bitSheetBitButton33" destination="150" id="486"/>
+                <outlet property="bitSheetBitButton34" destination="151" id="487"/>
+                <outlet property="bitSheetBitButton35" destination="152" id="488"/>
+                <outlet property="bitSheetBitButton36" destination="153" id="489"/>
+                <outlet property="bitSheetBitButton37" destination="154" id="490"/>
+                <outlet property="bitSheetBitButton38" destination="155" id="491"/>
+                <outlet property="bitSheetBitButton39" destination="156" id="492"/>
+                <outlet property="bitSheetBitButton4" destination="121" id="342"/>
+                <outlet property="bitSheetBitButton40" destination="145" id="493"/>
+                <outlet property="bitSheetBitButton41" destination="146" id="494"/>
+                <outlet property="bitSheetBitButton42" destination="147" id="495"/>
+                <outlet property="bitSheetBitButton43" destination="148" id="496"/>
+                <outlet property="bitSheetBitButton44" destination="141" id="497"/>
+                <outlet property="bitSheetBitButton45" destination="142" id="498"/>
+                <outlet property="bitSheetBitButton46" destination="143" id="499"/>
+                <outlet property="bitSheetBitButton47" destination="144" id="500"/>
+                <outlet property="bitSheetBitButton48" destination="137" id="501"/>
+                <outlet property="bitSheetBitButton49" destination="138" id="502"/>
+                <outlet property="bitSheetBitButton5" destination="122" id="344"/>
+                <outlet property="bitSheetBitButton50" destination="139" id="503"/>
+                <outlet property="bitSheetBitButton51" destination="140" id="504"/>
+                <outlet property="bitSheetBitButton52" destination="133" id="505"/>
+                <outlet property="bitSheetBitButton53" destination="134" id="506"/>
+                <outlet property="bitSheetBitButton54" destination="135" id="507"/>
+                <outlet property="bitSheetBitButton55" destination="136" id="508"/>
+                <outlet property="bitSheetBitButton56" destination="129" id="509"/>
+                <outlet property="bitSheetBitButton57" destination="130" id="510"/>
+                <outlet property="bitSheetBitButton58" destination="131" id="511"/>
+                <outlet property="bitSheetBitButton59" destination="132" id="512"/>
+                <outlet property="bitSheetBitButton6" destination="123" id="346"/>
+                <outlet property="bitSheetBitButton60" destination="125" id="513"/>
+                <outlet property="bitSheetBitButton61" destination="126" id="514"/>
+                <outlet property="bitSheetBitButton62" destination="127" id="515"/>
+                <outlet property="bitSheetBitButton63" destination="128" id="516"/>
+                <outlet property="bitSheetBitButton7" destination="124" id="348"/>
+                <outlet property="bitSheetBitButton8" destination="113" id="350"/>
+                <outlet property="bitSheetBitButton9" destination="114" id="398"/>
+                <outlet property="bitSheetBitLabel0" destination="352" id="368"/>
+                <outlet property="bitSheetBitLabel16" destination="356" id="370"/>
+                <outlet property="bitSheetBitLabel24" destination="358" id="371"/>
+                <outlet property="bitSheetBitLabel32" destination="360" id="372"/>
+                <outlet property="bitSheetBitLabel40" destination="361" id="373"/>
+                <outlet property="bitSheetBitLabel48" destination="362" id="374"/>
+                <outlet property="bitSheetBitLabel56" destination="363" id="517"/>
+                <outlet property="bitSheetBitLabel8" destination="354" id="369"/>
+                <outlet property="bitSheetCloseButton" destination="84" id="519"/>
+                <outlet property="bitSheetFieldName" destination="92" id="321"/>
+                <outlet property="bitSheetHexTextField" destination="91" id="322"/>
+                <outlet property="bitSheetIntegerTextField" destination="90" id="323"/>
+                <outlet property="bitSheetNULLButton" destination="520" id="524"/>
+                <outlet property="bitSheetOctalTextField" destination="86" id="324"/>
+                <outlet property="bitSheetOkButton" destination="85" id="518"/>
+                <outlet property="editImage" destination="7" id="56"/>
+                <outlet property="editSheet" destination="1" id="63"/>
+                <outlet property="editSheetCancelButton" destination="10" id="68"/>
+                <outlet property="editSheetFieldName" destination="73" id="75"/>
+                <outlet property="editSheetIsNotEditableCancelButton" destination="76" id="78"/>
+                <outlet property="editSheetOkButton" destination="13" id="67"/>
+                <outlet property="editSheetOpenButton" destination="12" id="69"/>
+                <outlet property="editSheetProgressBar" destination="4" id="51"/>
+                <outlet property="editSheetQuickLookButton" destination="8" id="57"/>
+                <outlet property="editSheetSegmentControl" destination="9" id="61"/>
+                <outlet property="editTextScrollView" destination="5" id="53"/>
+                <outlet property="editTextView" destination="36" id="52"/>
+                <outlet property="hexTextScrollView" destination="6" id="55"/>
+                <outlet property="hexTextView" destination="35" id="54"/>
+                <outlet property="jsonTextScrollView" destination="1000" id="1055"/>
+                <outlet property="jsonTextView" destination="1002" id="1054"/>
+                <outlet property="window" destination="1" id="70"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Field Editor" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="1" userLabel="Field Edit Sheet" customClass="SPWindow">
+            <windowStyleMask key="styleMask" titled="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="364" y="183" width="667" height="428"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1097"/>
+            <view key="contentView" focusRingType="none" id="2">
+                <rect key="frame" x="0.0" y="0.0" width="667" height="428"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <subviews>
+                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="14">
+                        <rect key="frame" x="0.0" y="48" width="667" height="5"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                    </box>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="13">
+                        <rect key="frame" x="581.5" y="13" width="66" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="OK" bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" tag="1" inset="2" id="15">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeEditSheet:" target="-2" id="40"/>
+                        </connections>
+                    </button>
+                    <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="76">
+                        <rect key="frame" x="581.5" y="13" width="66" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="Close" bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" tag="1" inset="2" id="77">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeEditSheet:" target="-2" id="79"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="10">
+                        <rect key="frame" x="498.5" y="13" width="75" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="Cancel" bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="18">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeEditSheet:" target="-2" id="41"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="11">
+                        <rect key="frame" x="102" y="13" width="82" height="25"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <buttonCell key="cell" type="roundTextured" title="Save..." bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="17">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent">s</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="saveEditSheet:" target="-2" id="42"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="12">
+                        <rect key="frame" x="12" y="13" width="82" height="25"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <buttonCell key="cell" type="roundTextured" title="Open..." bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="16">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent">o</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="openEditSheet:" target="-2" id="43"/>
+                        </connections>
+                    </button>
+                    <popUpButton toolTip="Choose a data format to display the current data by using QuickLook" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8">
+                        <rect key="frame" x="421" y="12" width="48" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" imagePosition="only" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" pullsDown="YES" selectedItem="30" id="20">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
+                            <menu key="menu" title="OtherViews" id="21">
+                                <items>
+                                    <menuItem image="NSQuickLookTemplate" hidden="YES" id="30">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                    </menuItem>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                    </popUpButton>
+                    <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9">
+                        <rect key="frame" x="230" y="15" width="182" height="19"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <segmentedCell key="cell" controlSize="small" state="on" borderStyle="border" alignment="left" style="texturedSquare" trackingMode="selectOne" id="19">
+                            <font key="font" metaFont="message" size="11"/>
+                            <segments>
+                                <segment label="Text" toolTip="Show data as text" width="39"/>
+                                <segment label="Image" toolTip="Try to show data as image" width="53" selected="YES" tag="1"/>
+                                <segment label="Hex" toolTip="Show data hexadecimal" width="37"/>
+                                <segment label="JSON" toolTip="Try to show data as JSON" width="53"/>
+                            </segments>
+                        </segmentedCell>
+                        <connections>
+                            <action selector="segmentControllerChanged:" target="-2" id="44"/>
+                        </connections>
+                    </segmentedControl>
+                    <scrollView fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6">
+                        <rect key="frame" x="0.0" y="51" width="667" height="349"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" ambiguous="YES" drawsBackground="NO" id="vwn-fu-Tue">
+                            <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textView ambiguous="YES" editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" smartInsertDelete="YES" id="35">
+                                    <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <size key="minSize" width="667" height="349"/>
+                                    <size key="maxSize" width="1334" height="10000000"/>
+                                    <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                </textView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="33">
+                            <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="34">
+                            <rect key="frame" x="220" y="1" width="11" height="141"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <scrollView fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1000">
+                        <rect key="frame" x="0.0" y="51" width="667" height="349"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" ambiguous="YES" drawsBackground="NO" id="1001">
+                            <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textView ambiguous="YES" editable="NO" importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" usesRuler="YES" smartInsertDelete="YES" id="1002">
+                                    <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <size key="minSize" width="667" height="349"/>
+                                    <size key="maxSize" width="1334" height="10000000"/>
+                                    <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                </textView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="1003">
+                            <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="1004">
+                            <rect key="frame" x="220" y="1" width="11" height="141"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <imageView focusRingType="none" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7" customClass="SPImageView">
+                        <rect key="frame" x="0.0" y="51" width="667" height="349"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <imageCell key="cell" selectable="YES" editable="YES" focusRingType="none" alignment="left" animates="YES" imageScaling="proportionallyDown" id="32"/>
+                        <connections>
+                            <action selector="dropImage:" target="-2" id="58"/>
+                            <outlet property="delegate" destination="-2" id="59"/>
+                        </connections>
+                    </imageView>
+                    <scrollView fixedFrame="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5">
+                        <rect key="frame" x="0.0" y="51" width="667" height="349"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <clipView key="contentView" ambiguous="YES" drawsBackground="NO" id="nVu-8c-pwq">
+                            <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textView ambiguous="YES" importsGraphics="NO" richText="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" smartInsertDelete="YES" id="36" customClass="SPEditSheetTextView">
+                                    <rect key="frame" x="0.0" y="0.0" width="667" height="349"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <size key="minSize" width="667" height="349"/>
+                                    <size key="maxSize" width="1334" height="10000000"/>
+                                    <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <connections>
+                                        <outlet property="delegate" destination="-2" id="60"/>
+                                    </connections>
+                                </textView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="38">
+                            <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="37">
+                            <rect key="frame" x="639" y="2" width="11" height="359"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" minValue="16" maxValue="100" doubleValue="16" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="4">
+                        <rect key="frame" x="325" y="232" width="32" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                    </progressIndicator>
+                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="3">
+                        <rect key="frame" x="0.0" y="398" width="667" height="5"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    </box>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="73">
+                        <rect key="frame" x="9" y="408" width="379" height="14"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" alignment="left" title="Label" allowsEditingTextAttributes="YES" id="74">
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="533">
+                        <rect key="frame" x="398" y="406" width="257" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Edit All Fields in Pop-up Sheet" bezelStyle="regularSquare" imagePosition="right" alignment="right" controlSize="small" inset="2" id="534">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="535" name="value" keyPath="values.EditInSheetEnabled" id="537"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="62"/>
+                <outlet property="initialFirstResponder" destination="36" id="529"/>
+            </connections>
+            <point key="canvasLocation" x="140" y="147"/>
+        </window>
+        <window title="BIT Editor" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" animationBehavior="default" id="80" userLabel="BIT Field Editor" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="292" width="439" height="218"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1792" height="1097"/>
+            <value key="minSize" type="size" width="411" height="218"/>
+            <value key="maxSize" type="size" width="439" height="218"/>
+            <view key="contentView" id="81">
+                <rect key="frame" x="0.0" y="0.0" width="439" height="218"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button fixedFrame="YES" tag="39" translatesAutoresizingMaskIntoConstraints="NO" id="156">
+                        <rect key="frame" x="309" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="7" inset="2" id="157">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="459"/>
+                            <outlet property="nextKeyView" destination="145" id="288"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="38" translatesAutoresizingMaskIntoConstraints="NO" id="155">
+                        <rect key="frame" x="320" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="158">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="458"/>
+                            <outlet property="nextKeyView" destination="156" id="287"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="37" translatesAutoresizingMaskIntoConstraints="NO" id="154">
+                        <rect key="frame" x="331" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="159">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="457"/>
+                            <outlet property="nextKeyView" destination="155" id="286"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="36" translatesAutoresizingMaskIntoConstraints="NO" id="153">
+                        <rect key="frame" x="342" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="160">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="456"/>
+                            <outlet property="nextKeyView" destination="154" id="285"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="35" translatesAutoresizingMaskIntoConstraints="NO" id="152">
+                        <rect key="frame" x="355" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="161">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="455"/>
+                            <outlet property="nextKeyView" destination="153" id="284"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="34" translatesAutoresizingMaskIntoConstraints="NO" id="151">
+                        <rect key="frame" x="366" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="162">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="454"/>
+                            <outlet property="nextKeyView" destination="152" id="283"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="33" translatesAutoresizingMaskIntoConstraints="NO" id="150">
+                        <rect key="frame" x="377" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="163">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="453"/>
+                            <outlet property="nextKeyView" destination="151" id="282"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="32" translatesAutoresizingMaskIntoConstraints="NO" id="149">
+                        <rect key="frame" x="388" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="164">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="452"/>
+                            <outlet property="nextKeyView" destination="150" id="281"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="43" translatesAutoresizingMaskIntoConstraints="NO" id="148">
+                        <rect key="frame" x="263" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="165">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="463"/>
+                            <outlet property="nextKeyView" destination="141" id="292"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="42" translatesAutoresizingMaskIntoConstraints="NO" id="147">
+                        <rect key="frame" x="274" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="166">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="462"/>
+                            <outlet property="nextKeyView" destination="148" id="291"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="41" translatesAutoresizingMaskIntoConstraints="NO" id="146">
+                        <rect key="frame" x="285" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="167">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="461"/>
+                            <outlet property="nextKeyView" destination="147" id="290"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="40" translatesAutoresizingMaskIntoConstraints="NO" id="145">
+                        <rect key="frame" x="296" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="168">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="460"/>
+                            <outlet property="nextKeyView" destination="146" id="289"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="47" translatesAutoresizingMaskIntoConstraints="NO" id="144">
+                        <rect key="frame" x="217" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="169">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="467"/>
+                            <outlet property="nextKeyView" destination="137" id="296"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="46" translatesAutoresizingMaskIntoConstraints="NO" id="143">
+                        <rect key="frame" x="228" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="170">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="466"/>
+                            <outlet property="nextKeyView" destination="144" id="295"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="45" translatesAutoresizingMaskIntoConstraints="NO" id="142">
+                        <rect key="frame" x="239" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="171">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="465"/>
+                            <outlet property="nextKeyView" destination="143" id="294"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="44" translatesAutoresizingMaskIntoConstraints="NO" id="141">
+                        <rect key="frame" x="250" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="172">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="464"/>
+                            <outlet property="nextKeyView" destination="142" id="293"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="51" translatesAutoresizingMaskIntoConstraints="NO" id="140">
+                        <rect key="frame" x="171" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="173">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="471"/>
+                            <outlet property="nextKeyView" destination="133" id="300"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="50" translatesAutoresizingMaskIntoConstraints="NO" id="139">
+                        <rect key="frame" x="182" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="174">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="470"/>
+                            <outlet property="nextKeyView" destination="140" id="299"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="49" translatesAutoresizingMaskIntoConstraints="NO" id="138">
+                        <rect key="frame" x="193" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="175">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="469"/>
+                            <outlet property="nextKeyView" destination="139" id="298"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="48" translatesAutoresizingMaskIntoConstraints="NO" id="137">
+                        <rect key="frame" x="204" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="176">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="468"/>
+                            <outlet property="nextKeyView" destination="138" id="297"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="55" translatesAutoresizingMaskIntoConstraints="NO" id="136">
+                        <rect key="frame" x="125" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="177">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="476"/>
+                            <outlet property="nextKeyView" destination="129" id="304"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="54" translatesAutoresizingMaskIntoConstraints="NO" id="135">
+                        <rect key="frame" x="136" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="178">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="475"/>
+                            <outlet property="nextKeyView" destination="136" id="303"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="53" translatesAutoresizingMaskIntoConstraints="NO" id="134">
+                        <rect key="frame" x="147" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="179">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="474"/>
+                            <outlet property="nextKeyView" destination="135" id="302"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="52" translatesAutoresizingMaskIntoConstraints="NO" id="133">
+                        <rect key="frame" x="158" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="180">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="472"/>
+                            <outlet property="nextKeyView" destination="134" id="301"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="59" translatesAutoresizingMaskIntoConstraints="NO" id="132">
+                        <rect key="frame" x="79" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="181">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="480"/>
+                            <outlet property="nextKeyView" destination="125" id="308"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="58" translatesAutoresizingMaskIntoConstraints="NO" id="131">
+                        <rect key="frame" x="90" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="182">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="479"/>
+                            <outlet property="nextKeyView" destination="132" id="307"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="57" translatesAutoresizingMaskIntoConstraints="NO" id="130">
+                        <rect key="frame" x="101" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="183">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="478"/>
+                            <outlet property="nextKeyView" destination="131" id="306"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="56" translatesAutoresizingMaskIntoConstraints="NO" id="129">
+                        <rect key="frame" x="112" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="184">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="477"/>
+                            <outlet property="nextKeyView" destination="130" id="305"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="63" translatesAutoresizingMaskIntoConstraints="NO" id="128">
+                        <rect key="frame" x="33" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="185">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="484"/>
+                            <outlet property="nextKeyView" destination="91" id="312"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="62" translatesAutoresizingMaskIntoConstraints="NO" id="127">
+                        <rect key="frame" x="44" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="186">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="483"/>
+                            <outlet property="nextKeyView" destination="128" id="311"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="61" translatesAutoresizingMaskIntoConstraints="NO" id="126">
+                        <rect key="frame" x="55" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="187">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="482"/>
+                            <outlet property="nextKeyView" destination="127" id="310"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="60" translatesAutoresizingMaskIntoConstraints="NO" id="125">
+                        <rect key="frame" x="66" y="157" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="188">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="481"/>
+                            <outlet property="nextKeyView" destination="126" id="309"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="7" translatesAutoresizingMaskIntoConstraints="NO" id="124">
+                        <rect key="frame" x="309" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="7" inset="2" id="189">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="349"/>
+                            <outlet property="nextKeyView" destination="113" id="257"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="6" translatesAutoresizingMaskIntoConstraints="NO" id="123">
+                        <rect key="frame" x="320" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="190">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="347"/>
+                            <outlet property="nextKeyView" destination="124" id="256"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="5" translatesAutoresizingMaskIntoConstraints="NO" id="122">
+                        <rect key="frame" x="331" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="191">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="345"/>
+                            <outlet property="nextKeyView" destination="123" id="255"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="121">
+                        <rect key="frame" x="342" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="192">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="343"/>
+                            <outlet property="nextKeyView" destination="122" id="318"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="120">
+                        <rect key="frame" x="355" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="193">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="341"/>
+                            <outlet property="nextKeyView" destination="121" id="239"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="119">
+                        <rect key="frame" x="366" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="194">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="338"/>
+                            <outlet property="nextKeyView" destination="120" id="238"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="118">
+                        <rect key="frame" x="377" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="195">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="336"/>
+                            <outlet property="nextKeyView" destination="119" id="237"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="117">
+                        <rect key="frame" x="388" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="196">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="334"/>
+                            <outlet property="nextKeyView" destination="118" id="236"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="11" translatesAutoresizingMaskIntoConstraints="NO" id="116">
+                        <rect key="frame" x="263" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="197">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="409"/>
+                            <outlet property="nextKeyView" destination="109" id="260"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="10" translatesAutoresizingMaskIntoConstraints="NO" id="115">
+                        <rect key="frame" x="274" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="198">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="407"/>
+                            <outlet property="nextKeyView" destination="116" id="259"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="9" translatesAutoresizingMaskIntoConstraints="NO" id="114">
+                        <rect key="frame" x="285" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="199">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="399"/>
+                            <outlet property="nextKeyView" destination="115" id="319"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="8" translatesAutoresizingMaskIntoConstraints="NO" id="113">
+                        <rect key="frame" x="296" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="200">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="351"/>
+                            <outlet property="nextKeyView" destination="114" id="258"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="15" translatesAutoresizingMaskIntoConstraints="NO" id="112">
+                        <rect key="frame" x="217" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="201">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="418"/>
+                            <outlet property="nextKeyView" destination="105" id="263"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="14" translatesAutoresizingMaskIntoConstraints="NO" id="111">
+                        <rect key="frame" x="228" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="202">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="415"/>
+                            <outlet property="nextKeyView" destination="112" id="320"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="13" translatesAutoresizingMaskIntoConstraints="NO" id="110">
+                        <rect key="frame" x="239" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="203">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="413"/>
+                            <outlet property="nextKeyView" destination="111" id="262"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="12" translatesAutoresizingMaskIntoConstraints="NO" id="109">
+                        <rect key="frame" x="250" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="204">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="411"/>
+                            <outlet property="nextKeyView" destination="110" id="261"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="19" translatesAutoresizingMaskIntoConstraints="NO" id="108">
+                        <rect key="frame" x="171" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="205">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="426"/>
+                            <outlet property="nextKeyView" destination="101" id="267"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="18" translatesAutoresizingMaskIntoConstraints="NO" id="107">
+                        <rect key="frame" x="182" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="206">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="424"/>
+                            <outlet property="nextKeyView" destination="108" id="266"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="17" translatesAutoresizingMaskIntoConstraints="NO" id="106">
+                        <rect key="frame" x="193" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="207">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="421"/>
+                            <outlet property="nextKeyView" destination="107" id="265"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="16" translatesAutoresizingMaskIntoConstraints="NO" id="105">
+                        <rect key="frame" x="204" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="208">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="419"/>
+                            <outlet property="nextKeyView" destination="106" id="264"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="23" translatesAutoresizingMaskIntoConstraints="NO" id="104">
+                        <rect key="frame" x="125" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="209">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="434"/>
+                            <outlet property="nextKeyView" destination="97" id="271"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="22" translatesAutoresizingMaskIntoConstraints="NO" id="103">
+                        <rect key="frame" x="136" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="210">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="432"/>
+                            <outlet property="nextKeyView" destination="104" id="270"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="21" translatesAutoresizingMaskIntoConstraints="NO" id="102">
+                        <rect key="frame" x="147" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="211">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="430"/>
+                            <outlet property="nextKeyView" destination="103" id="269"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="20" translatesAutoresizingMaskIntoConstraints="NO" id="101">
+                        <rect key="frame" x="158" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="212">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="428"/>
+                            <outlet property="nextKeyView" destination="102" id="268"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="27" translatesAutoresizingMaskIntoConstraints="NO" id="100">
+                        <rect key="frame" x="79" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="213">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="442"/>
+                            <outlet property="nextKeyView" destination="93" id="276"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="26" translatesAutoresizingMaskIntoConstraints="NO" id="99">
+                        <rect key="frame" x="90" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="214">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="440"/>
+                            <outlet property="nextKeyView" destination="100" id="275"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="25" translatesAutoresizingMaskIntoConstraints="NO" id="98">
+                        <rect key="frame" x="101" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="215">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="438"/>
+                            <outlet property="nextKeyView" destination="99" id="273"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="24" translatesAutoresizingMaskIntoConstraints="NO" id="97">
+                        <rect key="frame" x="112" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="216">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="436"/>
+                            <outlet property="nextKeyView" destination="98" id="272"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="31" translatesAutoresizingMaskIntoConstraints="NO" id="96">
+                        <rect key="frame" x="33" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="217">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="451"/>
+                            <outlet property="nextKeyView" destination="149" id="280"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="30" translatesAutoresizingMaskIntoConstraints="NO" id="95">
+                        <rect key="frame" x="44" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="218">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="449"/>
+                            <outlet property="nextKeyView" destination="96" id="279"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="29" translatesAutoresizingMaskIntoConstraints="NO" id="94">
+                        <rect key="frame" x="55" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" tag="1" inset="2" id="219">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="447"/>
+                            <outlet property="nextKeyView" destination="95" id="278"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" tag="28" translatesAutoresizingMaskIntoConstraints="NO" id="93">
+                        <rect key="frame" x="66" y="129" width="10" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="below" alignment="center" controlSize="mini" inset="2" id="220">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetBitButtonWasClicked:" target="-2" id="444"/>
+                            <outlet property="nextKeyView" destination="94" id="277"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="85">
+                        <rect key="frame" x="353" y="13" width="66" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="OK" bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" tag="1" inset="2" id="228">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeEditSheet:" target="-2" id="531"/>
+                            <outlet property="nextKeyView" destination="84" id="316"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="84">
+                        <rect key="frame" x="8" y="13" width="85" height="25"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="Cancel" bezelStyle="texturedRounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="229">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="message" size="11"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="closeEditSheet:" target="-2" id="530"/>
+                            <outlet property="nextKeyView" destination="117" id="317"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="92">
+                        <rect key="frame" x="5" y="198" width="417" height="14"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="left" title="Label" allowsEditingTextAttributes="YES" id="221">
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="89">
+                        <rect key="frame" x="5" y="104" width="131" height="14"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="right" title="Hexadecimal:" allowsEditingTextAttributes="YES" id="224">
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="88">
+                        <rect key="frame" x="5" y="85" width="131" height="14"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="right" title="Integer:" allowsEditingTextAttributes="YES" id="225">
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField toolTip="Enter as hexadecimal string (⌘H)" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="91">
+                        <rect key="frame" x="139" y="102" width="138" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="222">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="-2" id="327"/>
+                            <outlet property="nextKeyView" destination="90" id="313"/>
+                        </connections>
+                    </textField>
+                    <textField toolTip="Enter as integer (⌘I)" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="90">
+                        <rect key="frame" x="139" y="84" width="138" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="223">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="-2" id="326"/>
+                            <outlet property="nextKeyView" destination="86" id="314"/>
+                        </connections>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="87">
+                        <rect key="frame" x="5" y="67" width="131" height="14"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="right" title="Octal:" allowsEditingTextAttributes="YES" id="226">
+                            <font key="font" metaFont="message" size="11"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField toolTip="Enter as octal number (⌘O)" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="86">
+                        <rect key="frame" x="139" y="66" width="138" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" usesSingleLineMode="YES" id="227">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <outlet property="delegate" destination="-2" id="325"/>
+                            <outlet property="nextKeyView" destination="376" id="397"/>
+                        </connections>
+                    </textField>
+                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="82">
+                        <rect key="frame" x="0.0" y="48" width="439" height="5"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    </box>
+                    <box autoresizesSubviews="NO" verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="532">
+                        <rect key="frame" x="0.0" y="188" width="439" height="5"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    </box>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="240">
+                        <rect key="frame" x="504" y="118" width="96" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Button_Dummy_Hex" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="241">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">h</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="selectText:" target="91" id="252"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="242">
+                        <rect key="frame" x="504" y="97" width="96" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Button_Dummy_Int" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="243">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">i</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="selectText:" target="90" id="253"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="244">
+                        <rect key="frame" x="504" y="76" width="96" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Button_Dummy_Oct" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="245">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">o</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="selectText:" target="86" id="254"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="249">
+                        <rect key="frame" x="508" y="58" width="96" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Button_Bit1" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="250">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent">b</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetSelectBit0:" target="-2" id="330"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="352">
+                        <rect key="frame" x="380" y="142" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="0" id="353">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="354">
+                        <rect key="frame" x="288" y="142" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="8" id="355">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="356">
+                        <rect key="frame" x="196" y="142" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="16" id="357">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="358">
+                        <rect key="frame" x="104" y="142" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="24" id="359">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="360">
+                        <rect key="frame" x="380" y="171" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="32" id="367">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="361">
+                        <rect key="frame" x="288" y="171" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="40" id="366">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="362">
+                        <rect key="frame" x="196" y="171" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="48" id="365">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="363">
+                        <rect key="frame" x="104" y="171" width="27" height="11"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" controlSize="mini" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="56" id="364">
+                            <font key="font" metaFont="miniSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button toolTip="Set all bits to 1 (⌘1)" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="376">
+                        <rect key="frame" x="288" y="103" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="1" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="377">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">1</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="400"/>
+                            <outlet property="nextKeyView" destination="378" id="390"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Shift right (⌘R)" verticalHuggingPriority="750" fixedFrame="YES" tag="4" translatesAutoresizingMaskIntoConstraints="NO" id="382">
+                        <rect key="frame" x="380" y="103" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="&gt;&gt;" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="383">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">r</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="404"/>
+                            <outlet property="nextKeyView" destination="388" id="394"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Shift left (⌘L)" verticalHuggingPriority="750" fixedFrame="YES" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="384">
+                        <rect key="frame" x="334" y="103" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="&lt;&lt;" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="385">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">l</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="403"/>
+                            <outlet property="nextKeyView" destination="382" id="393"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Set all bits to 0 (⌘0)" verticalHuggingPriority="750" fixedFrame="YES" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="378">
+                        <rect key="frame" x="288" y="85" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="0" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="379">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">0</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="401"/>
+                            <outlet property="nextKeyView" destination="380" id="391"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Negate all bits (⌘N)" verticalHuggingPriority="750" fixedFrame="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="380">
+                        <rect key="frame" x="288" y="67" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="x̄" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="381">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">n</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="402"/>
+                            <outlet property="nextKeyView" destination="384" id="392"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Rotate right (⇧⌘R)" verticalHuggingPriority="750" fixedFrame="YES" tag="6" translatesAutoresizingMaskIntoConstraints="NO" id="386">
+                        <rect key="frame" x="380" y="85" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="&gt;&gt;+" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="387">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">R</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="406"/>
+                            <outlet property="nextKeyView" destination="520" id="525"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Set to NULL (⇧⌘N)" verticalHuggingPriority="750" fixedFrame="YES" tag="7" translatesAutoresizingMaskIntoConstraints="NO" id="520">
+                        <rect key="frame" x="380" y="66" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="NULL" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="521">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">N</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="setToNull:" target="-2" id="528"/>
+                            <outlet property="nextKeyView" destination="85" id="526"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Rotate left (⇧⌘L)" verticalHuggingPriority="750" fixedFrame="YES" tag="5" translatesAutoresizingMaskIntoConstraints="NO" id="388">
+                        <rect key="frame" x="334" y="85" width="39" height="15"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" title="+&lt;&lt;" bezelStyle="texturedRounded" alignment="center" controlSize="mini" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="389">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="miniSystem"/>
+                            <string key="keyEquivalent">L</string>
+                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="bitSheetOperatorButtonWasClicked:" target="-2" id="405"/>
+                            <outlet property="nextKeyView" destination="386" id="395"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="331"/>
+                <outlet property="initialFirstResponder" destination="117" id="235"/>
+            </connections>
+        </window>
+        <userDefaultsController representsSharedInstance="YES" id="535"/>
+    </objects>
+    <resources>
+        <image name="NSQuickLookTemplate" width="19" height="12"/>
+    </resources>
+</document>

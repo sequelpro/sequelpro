@@ -32,7 +32,6 @@
 #import "SPUserMO.h"
 #import "SPPrivilegesMO.h"
 #import "ImageAndTextCell.h"
-#import "SPGrowlController.h"
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
@@ -508,7 +507,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
     return managedObjectContext;
 }
 
-- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)(void))callback
 {
 	//copy block from stack to heap, otherwise it wouldn't live long enough to be invoked later.
 	void *heapCallback = callback? Block_copy(callback) : NULL;
@@ -526,7 +525,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	[[self window] orderOut:self];
 	//notify delegate
 	if(context) {
-		void (^callback)() = context;
+		void (^callback)(void) = context;
 		//directly invoking callback would risk that we are dealloc'd while still in this run loop iteration.
 		dispatch_async(dispatch_get_main_queue(), callback);
 		Block_release(callback);
@@ -1238,16 +1237,18 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 - (BOOL)updateResourcesForUser:(SPUserMO *)user
 {
     if ([user valueForKey:@"parent"] != nil) {
-        NSString *updateResourcesStatement = [NSString stringWithFormat:
-                                              @"UPDATE mysql.user SET max_questions = %@, max_updates = %@, max_connections = %@ WHERE User = %@ AND Host = %@",
-                                              [user valueForKey:@"max_questions"],
-                                              [user valueForKey:@"max_updates"],
-                                              [user valueForKey:@"max_connections"],
-                                              [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
-                                              [[user valueForKey:@"host"] tickQuotedString]];
-		
-        [connection queryString:updateResourcesStatement];
-        return [self _checkAndDisplayMySqlError];
+		if([connection isNotMariadb103]){
+			NSString *updateResourcesStatement = [NSString stringWithFormat:
+												  @"UPDATE mysql.user SET max_questions = %@, max_updates = %@, max_connections = %@ WHERE User = %@ AND Host = %@",
+												  [user valueForKey:@"max_questions"],
+												  [user valueForKey:@"max_updates"],
+												  [user valueForKey:@"max_connections"],
+												  [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
+												  [[user valueForKey:@"host"] tickQuotedString]];
+			
+			[connection queryString:updateResourcesStatement];
+			return [self _checkAndDisplayMySqlError];
+		}
     }
 	
 	return YES;
@@ -1409,6 +1410,10 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
 	}
+	
+	if(![connection isNotMariadb103]){
+		grantStatement = [grantStatement stringByReplacingOccurrencesOfString:@"DELETE VERSIONING ROWS" withString:@"DELETE HISTORY"];
+	}
 
 	[connection queryString:grantStatement];
 	return [self _checkAndDisplayMySqlError];
@@ -1445,6 +1450,10 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
+	}
+	
+	if(![connection isNotMariadb103]){
+		revokeStatement = [revokeStatement stringByReplacingOccurrencesOfString:@"DELETE VERSIONING ROWS" withString:@"DELETE HISTORY"];
 	}
 
 	[connection queryString:revokeStatement];

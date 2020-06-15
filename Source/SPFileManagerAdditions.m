@@ -30,7 +30,6 @@
 
 #import "SPFileManagerAdditions.h"
 #import "SPFileHandle.h"
-#import <UniversalDetector/UniversalDetector.h>
 
 enum
 {
@@ -154,12 +153,13 @@ static NSString *DirectoryLocationDomain = @"DirectoryLocationDomain";
 }
 
 /**
- * Use the UniversalDetector library to attempt to detect the encoding at the file at
- * the supplied URL.  Only the first five megabytes are read if the file is larger.
+ * Attempt to detect the encoding at the file at
+ * the supplied URL.  Only the first five kb are read if the file is larger.
  * As with all encoding detection, this will return only best-guess result except
  * for where encoding markers exist.
  * Uses a SPFileHandle internally so it can detect the encoding within gzipped and
  * bzipped files.
+ * https://stackoverflow.com/questions/5268661/how-to-detect-text-file-encoding-in-objective-c
  * Returns NSUTF8StringEncoding if the encoding cannot be detected.
  */
 - (NSStringEncoding)detectEncodingforFileAtPath:(NSString *)aPath
@@ -169,35 +169,34 @@ static NSString *DirectoryLocationDomain = @"DirectoryLocationDomain";
 	if (!detectorFileHandle) {
 		return NSUTF8StringEncoding;
 	}
-
-	UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-	NSData *startData = [detectorFileHandle readDataOfLength:5000000];
-	[fileEncodingDetector analyzeData:startData];
-	detectedEncoding = [fileEncodingDetector encoding];
-	[fileEncodingDetector release];
 	
-	// #2860: NSUnicodeStringEncoding is itself an autodetect encoding, meaning "any UTF16 variant".
-	//        Which means that value is rather useless if we want to pass it to some byte-to-string method later,
-	//        since it may guess wrong again. Nevertheless UniversalDetector may return that "encoding".
-	//
-	//        So, if we have a BOM, let's be exact instead! That wouldn't matter if you try to convert exactly those bytes
-	//        for which you invoked this method, since NSString will itself find the BOM and read the data accordingly,
-	//        but if you do the conversion in chunks, only the first one will have the helping BOM and all following
-	//        chunks may be guessed wrong when using the unspecific NSUnicodeStringEncoding.
-	//
-	//        Apple's implementation for all byte-to-NSString methods can be found in __CFStringDecodeByteStream3()
+	NSData *startData = [detectorFileHandle readDataOfLength:500];
+	[detectorFileHandle release];
+	Byte *bytes = (Byte *)[startData bytes];
 	
-	// Note: NSUTF16StringEncoding == NSUnicodeStringEncoding
-	if(detectedEncoding == NSUnicodeStringEncoding && [startData length] >= 2) {
-		const UInt8 *bytes = [startData bytes];
-		if(bytes[0] == 0xFE && bytes[1] == 0xFF) detectedEncoding = NSUTF16BigEndianStringEncoding;
-		else if(bytes[0] == 0xFF && bytes[1] == 0xFE) detectedEncoding = NSUTF16LittleEndianStringEncoding;
+	if (bytes[0] == 0xff && bytes[1] == 0xfe && (startData.length < 4 || bytes[2] != 0 || bytes[3] != 0))
+	{
+		detectedEncoding = NSUTF16LittleEndianStringEncoding;
 	}
-	else if(detectedEncoding == NSUTF32StringEncoding && [startData length] >= 4) {
-		const UInt8 *bytes = [startData bytes];
-		if(bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xFE && bytes[3] == 0xFF) detectedEncoding = NSUTF32BigEndianStringEncoding;
-		else if(bytes[0] == 0xFF && bytes[1] == 0xFE && bytes[2] == 0 && bytes[3] == 0) detectedEncoding = NSUTF32LittleEndianStringEncoding;
+	else if (bytes[0] == 0xfe && bytes[1] == 0xff) {
+		detectedEncoding = NSUTF16BigEndianStringEncoding;
 	}
+	else if (bytes[0] == 0xef && bytes[1] == 0xbb && bytes[2] == 0xbf) {
+		detectedEncoding = NSUTF8StringEncoding;
+	}
+	else if (bytes[0] == 0xFF && bytes[1] == 0xFE && bytes[2] == 0 && bytes[3] == 0) {
+		detectedEncoding = NSUTF32LittleEndianStringEncoding;
+	}
+	else if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xFE && bytes[3] == 0xFF) {
+		detectedEncoding = NSUTF32BigEndianStringEncoding;
+	}
+	else if (startData.length < 3) {
+		detectedEncoding = NSASCIIStringEncoding;
+	}
+	else {
+		detectedEncoding = NSUTF8StringEncoding;
+	}
+	
 
 	return detectedEncoding;
 }

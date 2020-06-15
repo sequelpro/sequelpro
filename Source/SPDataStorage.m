@@ -552,7 +552,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		SPClear(editedRows);
 		SPClear(dataDownloadedLock);
 		if (unloadedColumns) {
-			free(unloadedColumns), unloadedColumns = NULL;
+			(void)(free(unloadedColumns)), unloadedColumns = NULL;
 		}
 	}
 	

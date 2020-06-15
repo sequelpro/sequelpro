@@ -35,7 +35,6 @@
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
 #import "SPCustomQuery.h"
-#import "SPGrowlController.h"
 #import "SPSQLParser.h"
 #import "SPCSVParser.h"
 #import "SPTableData.h"
@@ -110,7 +109,7 @@
 	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
 	NSArray *importAccessoryTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
 	[nibLoader release];
 
@@ -214,7 +213,7 @@
 	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
 
 	// Check if the user canceled
-	if (returnCode != NSOKButton)
+	if (returnCode != NSModalResponseOK)
 		return;
 
 	// Reset progress cancelled from any previous runs
@@ -295,7 +294,7 @@
 		[openPanel orderOut:self];
 
 		// Check if the user canceled
-		if (returnCode != NSOKButton) return;
+		if (returnCode != NSModalResponseOK) return;
 
 		// Reset progress cancelled from any previous runs
 		progressCancelled = NO;
@@ -365,9 +364,6 @@
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
 	NSString *connectionEncodingToRestore = nil;
 	NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-
-	// Start the notification timer to allow notifications to be shown, even if frontmost, for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
 
 	// Open a filehandle for the SQL file
 	sqlFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
@@ -719,11 +715,14 @@
 	// Re-query the structure of all databases in the background
 	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 
-	// Import finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished"
-	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing growl notification"), [filename lastPathComponent]]
-	                                                  document:tableDocumentInstance
-	                                          notificationName:@"Import Finished"];
+	// Import finished notification
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Import Finished";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing notification"), [filename lastPathComponent]];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 }
 
 #pragma mark -
@@ -782,8 +781,6 @@
 	[nullableNumericFields removeAllObjects];
 	[nullableNumericFieldsMapIndex removeAllIndexes];
 
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
 
 	// Open a filehandle for the CSV file
 	csvFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
@@ -1240,11 +1237,14 @@
 		[self showErrorSheetWithMessage:errors];
 	}
 	
-	// Import finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:NSLocalizedString(@"Import Finished", @"title for finished importing growl notification")
-	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing growl notification"), [filename lastPathComponent]]
-	                                                  document:tableDocumentInstance
-	                                          notificationName:@"Import Finished"];
+	// Import finished notification
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Import Finished";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing notification"), [filename lastPathComponent]];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 
 	SPMainQSync(^{
 		if(importIntoNewTable) {
@@ -1300,7 +1300,7 @@
 		SPOnewayAlertSheet(
 			NSLocalizedString(@"Error", @"error"),
 			[tableDocumentInstance parentWindow],
-			NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
+			NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Ace.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 		);
 		return NO;
 	}
@@ -1770,14 +1770,12 @@ cleanup:
  */
 - (void)_importBackgroundProcess:(NSDictionary *)userInfo
 {
-	@autoreleasepool {
-		NSString *filename = [userInfo objectForKey:@"filename"];
-		NSString *fileType = [userInfo objectForKey:@"fileType"];
+	NSString *filename = [userInfo objectForKey:@"filename"];
+	NSString *fileType = [userInfo objectForKey:@"fileType"];
 
-		// Use the appropriate processing function for the file type
-		     if ([fileType isEqualToString:@"SQL"]) [self importSQLFile:filename];
-		else if ([fileType isEqualToString:@"CSV"]) [self importCSVFile:filename];
-	}
+	// Use the appropriate processing function for the file type
+		 if ([fileType isEqualToString:@"SQL"]) [self importSQLFile:filename];
+	else if ([fileType isEqualToString:@"CSV"]) [self importCSVFile:filename];
 }
 
 /**
@@ -1871,8 +1869,6 @@ cleanup:
 	if (lastFilename)                  SPClear(lastFilename);
 	if (prefs)                         SPClear(prefs);
 	if (selectedTableTarget)           SPClear(selectedTableTarget);
-	
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	SPClear(nibObjectsToRelease);
 	

@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <development version="5100" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SPQueryFavoriteManager">
+            <connections>
+                <outlet property="favoriteNameTextField" destination="123" id="139"/>
+                <outlet property="favoriteQueryTextView" destination="130" id="140"/>
+                <outlet property="favoriteTabTriggerTextField" destination="304" id="312"/>
+                <outlet property="favoritesArrayController" destination="284" id="297"/>
+                <outlet property="favoritesSplitView" destination="278" id="375"/>
+                <outlet property="favoritesTableView" destination="23" id="141"/>
+                <outlet property="removeButton" destination="17" id="275"/>
+                <outlet property="window" destination="1" id="133"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application"/>
+        <window title="Query Favorite Manager" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="SPQueryFavoriteManagerWindow" animationBehavior="default" id="1" userLabel="Favorite Manager">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="593" y="358" width="563" height="369"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
+            <value key="minSize" type="size" width="529" height="369"/>
+            <view key="contentView" id="2">
+                <rect key="frame" x="0.0" y="0.0" width="563" height="369"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <box autoresizesSubviews="NO" focusRingType="none" verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" id="142">
+                        <rect key="frame" x="0.0" y="356" width="563" height="5"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
+                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <font key="titleFont" metaFont="system"/>
+                    </box>
+                    <splitView focusRingType="none" autosaveName="SPQueryFavoriteSplitView" dividerStyle="thin" vertical="YES" id="278" customClass="SPSplitView">
+                        <rect key="frame" x="0.0" y="0.0" width="563" height="359"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view id="279">
+                                <rect key="frame" x="0.0" y="0.0" width="177" height="359"/>
+                                <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
+                                <subviews>
+                                    <customView id="0v1-Cb-QAu" customClass="SPButtonBar">
+                                        <rect key="frame" x="0.0" y="0.0" width="177" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                    </customView>
+                                    <scrollView focusRingType="none" borderType="none" autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="14">
+                                        <rect key="frame" x="0.0" y="23" width="177" height="336"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" id="1lF-66-NR0">
+                                            <rect key="frame" x="0.0" y="0.0" width="177" height="336"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" emptySelection="NO" autosaveName="SPQueryFavoriteManagerTable" rowHeight="16" headerView="265" id="23" customClass="SPTableView">
+                                                    <rect key="frame" x="0.0" y="0.0" width="177" height="319"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <size key="intercellSpacing" width="3" height="2"/>
+                                                    <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                    <tableColumns>
+                                                        <tableColumn identifier="name" width="119" minWidth="20" maxWidth="2000" id="26">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Favorites">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="27" customClass="ImageAndTextCell">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                            <connections>
+                                                                <binding destination="284" name="value" keyPath="arrangedObjects.name" id="298">
+                                                                    <dictionary key="options">
+                                                                        <bool key="NSCreatesSortDescriptor" value="NO"/>
+                                                                    </dictionary>
+                                                                </binding>
+                                                            </connections>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="tabtrigger" editable="NO" width="52" minWidth="20" maxWidth="2000" id="302">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="303">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        </tableColumn>
+                                                    </tableColumns>
+                                                    <connections>
+                                                        <outlet property="dataSource" destination="-2" id="274"/>
+                                                        <outlet property="delegate" destination="-2" id="193"/>
+                                                        <outlet property="menu" destination="205" id="209"/>
+                                                        <outlet property="nextKeyView" destination="130" id="277"/>
+                                                    </connections>
+                                                </tableView>
+                                            </subviews>
+                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="25">
+                                            <rect key="frame" x="-100" y="-100" width="311" height="15"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="24">
+                                            <rect key="frame" x="198" y="17" width="11" height="322"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <tableHeaderView key="headerView" focusRingType="none" id="265">
+                                            <rect key="frame" x="0.0" y="0.0" width="177" height="17"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableHeaderView>
+                                    </scrollView>
+                                    <button toolTip="Delete selected favorite (⌫)" id="17">
+                                        <rect key="frame" x="32" y="0.0" width="32" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_removeTemplate" imagePosition="only" alignment="center" inset="2" id="20">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                            <string key="keyEquivalent"></string>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="removeQueryFavorite:" target="-2" id="181"/>
+                                        </connections>
+                                    </button>
+                                    <button toolTip="Add favorite (⌥⌘A)" id="18">
+                                        <rect key="frame" x="0.0" y="0.0" width="32" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_addTemplate" imagePosition="overlaps" alignment="center" inset="2" id="19">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                            <string key="keyEquivalent">a</string>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="addQueryFavorite:" target="-2" id="180"/>
+                                        </connections>
+                                    </button>
+                                    <imageView id="347">
+                                        <rect key="frame" x="162" y="0.0" width="15" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handleTemplate" id="348"/>
+                                    </imageView>
+                                    <popUpButton toolTip="(⌥⎋)" id="349">
+                                        <rect key="frame" x="64" y="0.0" width="36" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" state="on" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="358" id="350">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                                            <menu key="menu" title="OtherViews" id="351">
+                                                <items>
+                                                    <menuItem state="on" image="button_actionTemplate" hidden="YES" id="358"/>
+                                                    <menuItem title="Duplicate" keyEquivalent="d" id="359">
+                                                        <connections>
+                                                            <action selector="duplicateQueryFavorite:" target="-2" id="372"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="360"/>
+                                                    <menuItem title="Export Selected Favorites…" toolTip="Export selected favorites as SPF file" id="361">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="exportFavorites:" target="-2" id="371"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Import Favorites by Replacing…" hidden="YES" toolTip="Import query favorites from SPF file and replace the current favorites" id="362">
+                                                        <connections>
+                                                            <action selector="importFavoritesByReplacing:" target="-2" id="373"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Import Favorites…" toolTip="Import query favorites from SPF file and append them to the favorite list" id="363">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="importFavoritesByAdding:" target="-2" id="369"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="364"/>
+                                                    <menuItem title="Save Query to File..." toolTip="Save query of selected favorite to file" id="365">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="saveFavoriteToFile:" target="-2" id="370"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" hidden="YES" id="366"/>
+                                                    <menuItem title="Remove All..." hidden="YES" toolTip="Remove all favorites" id="367">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="removeAllQueryFavorites:" target="-2" id="368"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                    </popUpButton>
+                                </subviews>
+                            </view>
+                            <view focusRingType="none" id="280">
+                                <rect key="frame" x="178" y="0.0" width="385" height="359"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <button horizontalHuggingPriority="750" verticalHuggingPriority="750" id="342">
+                                        <rect key="frame" x="9" y="15" width="25" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="343">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="showHelp:" target="-2" id="344"/>
+                                        </connections>
+                                    </button>
+                                    <popUpButton verticalHuggingPriority="750" id="314">
+                                        <rect key="frame" x="40" y="15" width="144" height="25"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <popUpButtonCell key="cell" type="roundRect" title="Insert Placeholder" bezelStyle="roundedRect" alignment="center" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" autoenablesItems="NO" selectedItem="317" id="315">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <menu key="menu" title="OtherViews" autoenablesItems="NO" id="316">
+                                                <items>
+                                                    <menuItem title="Insert Placeholder" state="on" hidden="YES" id="317"/>
+                                                    <menuItem title="⇥ Snippet:" enabled="NO" id="337">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Tab Snippet" tag="100" indentationLevel="1" id="318">
+                                                        <string key="toolTip">${1:default_value} – tab key snippet with a definable default value which will be selected
+
+[“1” can be a number from 0 to 18 and defines the order of tab key down events] </string>
+                                                    </menuItem>
+                                                    <menuItem title="Tab Snippet and Shell Command" tag="101" indentationLevel="1" id="319">
+                                                        <string key="toolTip">$(shell_command) – shell_command will be executed and inserts its result
+
+[press ⌘. to cancel the execution of “shell_command”]
+ [only available inside of tab snippets] </string>
+                                                    </menuItem>
+                                                    <menuItem title="Placeholder" enabled="NO" id="341">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Mirrored Tab Snippet" tag="501" indentationLevel="1" id="340">
+                                                        <string key="toolTip">$1 – mirrored tab snippet which is a placeholder for the content of tab snippet “1”
+
+[“1” can be a number from 0 to 18 and defines the order of tab key down events]
+
+[may not be used inside of a tab snippet] </string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Completion List:" enabled="NO" id="338">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="List Template" tag="102" indentationLevel="1" id="326">
+                                                        <string key="toolTip">¦a¦b¦ – such a snippet will be shown as completion list with the items “a” and “b”
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="List Template (Fuzzy Search)" tag="103" indentationLevel="1" id="327">
+                                                        <string key="toolTip">¦¦a¦b¦¦ – such a snippet will be shown as completion list with the items “a” and “b” in fuzzy search mode
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="List Separator" tag="104" indentationLevel="1" id="328">
+                                                        <string key="toolTip">¦ – list separator
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Selection:" enabled="NO" id="339">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Name Of Selected Table" tag="105" indentationLevel="1" id="321">
+                                                        <string key="toolTip">$SP_SELECTED_TABLE – will be replaced by the selected table name
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Name Of Selected Tables" tag="106" indentationLevel="1" id="322">
+                                                        <string key="toolTip">$SP_SELECTED_TABLES – will be replaced by a comma separated list of all selected table names
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Name Of Selected Database" tag="107" indentationLevel="1" id="323">
+                                                        <string key="toolTip">$SP_SELECTED_DATABASE – will be replaced by the selected database name
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Completion Lists:" enabled="NO" id="336">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Field Names As List of Current Table" tag="108" indentationLevel="1" id="334">
+                                                        <string key="toolTip">¦$SP_ASLIST_ALL_FIELDS¦ – such a snippet will be shown as completion list with all field names from the current selected table
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Field Names As List of Current Table (Fuzzy Search)" tag="109" indentationLevel="1" id="335">
+                                                        <string key="toolTip">¦¦$SP_ASLIST_ALL_FIELDS¦¦ – such a snippet will be shown as completion list with all field names from the current selected table
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Table Names As List" tag="110" indentationLevel="1" id="332">
+                                                        <string key="toolTip">¦$SP_ASLIST_ALL_TABLES¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Table Names As List (Fuzzy Search)" tag="111" indentationLevel="1" id="333">
+                                                        <string key="toolTip">¦¦$SP_ASLIST_ALL_TABLES¦¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database in fuzzy search mode
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Database Names As List" tag="112" indentationLevel="1" id="329">
+                                                        <string key="toolTip">¦$SP_ASLIST_ALL_DATABASES¦ – such a snippet will be shown as completion list with all database names from the current connection
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                    <menuItem title="Database Names As List (Fuzzy Search)" tag="113" indentationLevel="1" id="330">
+                                                        <string key="toolTip">¦¦$SP_ASLIST_ALL_DATABASES¦¦ – such a snippet will be shown as completion list with all database names from the current connection in fuzzy search mode
+
+[only available inside of tab snippets]</string>
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                        <connections>
+                                            <action selector="insertPlaceholder:" target="-1" id="324"/>
+                                        </connections>
+                                    </popUpButton>
+                                    <textField verticalHuggingPriority="750" id="304">
+                                        <rect key="frame" x="92" y="54" width="273" height="19"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="305">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <connections>
+                                            <binding destination="284" name="value" keyPath="selection.tabtrigger" id="309"/>
+                                            <outlet property="delegate" destination="-2" id="313"/>
+                                            <outlet property="nextKeyView" destination="131" id="311"/>
+                                        </connections>
+                                    </textField>
+                                    <textField toolTip="Alphanumeric character string which inserts the favorite query string after expansion by pressing the ⇥ key." verticalHuggingPriority="750" id="306">
+                                        <rect key="frame" x="17" y="57" width="70" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Tab Trigger:" id="307">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField verticalHuggingPriority="750" id="121">
+                                        <rect key="frame" x="17" y="329" width="60" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Name:" id="122">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <textField verticalHuggingPriority="750" id="123">
+                                        <rect key="frame" x="77" y="326" width="288" height="19"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="[no selection]" drawsBackground="YES" usesSingleLineMode="YES" id="124">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                        <connections>
+                                            <binding destination="284" name="value" keyPath="selection.name" id="287"/>
+                                            <outlet property="delegate" destination="-2" id="188"/>
+                                            <outlet property="nextKeyView" destination="130" id="185"/>
+                                        </connections>
+                                    </textField>
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="127">
+                                        <rect key="frame" x="20" y="82" width="345" height="236"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" id="KNk-Zt-Spr">
+                                            <rect key="frame" x="1" y="1" width="343" height="234"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <textView importsGraphics="NO" richText="NO" findStyle="panel" allowsUndo="YES" usesFontPanel="YES" verticallyResizable="YES" smartInsertDelete="YES" id="130" customClass="SPTextView">
+                                                    <rect key="frame" x="0.0" y="0.0" width="343" height="234"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                    <size key="minSize" width="343" height="234"/>
+                                                    <size key="maxSize" width="592" height="10000000"/>
+                                                    <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                                    <connections>
+                                                        <binding destination="143" name="font" keyPath="values.CustomQueryEditorFont" id="146">
+                                                            <dictionary key="options">
+                                                                <string key="NSValueTransformerName">NSUnarchiveFromData</string>
+                                                            </dictionary>
+                                                        </binding>
+                                                        <binding destination="284" name="value" keyPath="selection.query" id="291"/>
+                                                        <outlet property="delegate" destination="-2" id="198"/>
+                                                        <outlet property="scrollView" destination="127" id="197"/>
+                                                    </connections>
+                                                </textView>
+                                            </subviews>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="129">
+                                            <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="128">
+                                            <rect key="frame" x="-100" y="-100" width="11" height="133"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                    </scrollView>
+                                    <button verticalHuggingPriority="750" tag="1" id="131">
+                                        <rect key="frame" x="282" y="13" width="88" height="28"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="132">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="closeQueryManagerSheet:" target="-2" id="184"/>
+                                        </connections>
+                                    </button>
+                                    <button verticalHuggingPriority="750" id="271">
+                                        <rect key="frame" x="196" y="13" width="88" height="28"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="272">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="closeQueryManagerSheet:" target="-2" id="273"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </view>
+                        </subviews>
+                        <holdingPriorities>
+                            <real value="250"/>
+                            <real value="250"/>
+                        </holdingPriorities>
+                        <connections>
+                            <outlet property="additionalDragHandleView" destination="347" id="374"/>
+                            <outlet property="delegate" destination="-2" id="300"/>
+                        </connections>
+                    </splitView>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="187"/>
+            </connections>
+        </window>
+        <userDefaultsController representsSharedInstance="YES" id="143"/>
+        <menu id="205" userLabel="Favorite Context Menu">
+            <items>
+                <menuItem title="Remove" id="206">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="removeQueryFavorite:" target="-2" id="211"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Duplicate" id="212">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="duplicateQueryFavorite:" target="-2" id="283"/>
+                    </connections>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="247"/>
+                <menuItem title="Save to File..." id="248">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="saveFavoriteToFile:" target="-2" id="249"/>
+                    </connections>
+                </menuItem>
+            </items>
+        </menu>
+        <arrayController selectsInsertedObjects="NO" avoidsEmptySelection="NO" id="284" userLabel="Favorites Controller">
+            <declaredKeys>
+                <string>name</string>
+                <string>query</string>
+                <string>tabtrigger</string>
+            </declaredKeys>
+        </arrayController>
+    </objects>
+    <resources>
+        <image name="button_actionTemplate" width="16" height="16"/>
+        <image name="button_addTemplate" width="16" height="16"/>
+        <image name="button_bar_handleTemplate" width="16" height="16"/>
+        <image name="button_removeTemplate" width="32" height="23"/>
+    </resources>
+</document>

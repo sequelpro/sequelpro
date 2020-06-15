@@ -33,11 +33,11 @@
 	srcRect.origin = NSZeroPoint;
 	srcRect.size = [_image size];
 	
-	[_image drawInRect:[self bounds] fromRect:srcRect operation:NSCompositeSourceOver fraction:primaryAlpha];
+	[_image drawInRect:[self bounds] fromRect:srcRect operation:NSCompositingOperationSourceOver fraction:primaryAlpha];
 
 	srcRect.size = [_alternateImage size];
 
-	[_alternateImage drawInRect:[self bounds] fromRect:srcRect operation:NSCompositeSourceOver fraction:alternateAlpha];
+	[_alternateImage drawInRect:[self bounds] fromRect:srcRect operation:NSCompositingOperationSourceOver fraction:alternateAlpha];
 }
 
 - (void)setFadeValue:(CGFloat)value

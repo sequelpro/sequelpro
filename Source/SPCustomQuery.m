@@ -31,9 +31,6 @@
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
-#ifndef SP_CODA /* headers */
-#import "SPGrowlController.h"
-#endif
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -532,7 +529,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
     [panel setNameFieldStringValue:@"history"];
     [panel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSModalResponseOK) {
 			NSError *error = nil;
             
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
@@ -665,11 +662,6 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
 		// Notify listeners that a query has started
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-
-#ifndef SP_CODA /* growl */
-		// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-		[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
-#endif
 
 		// Reset the current table view as necessary to avoid redraw and reload issues.
 		// Restore the view position to the top left to be within the results for all datasets.
@@ -963,12 +955,15 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 			// Notify any listeners that the query has completed
 			[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_CODA /* growl */
-			// Perform the Growl notification for query completion
-			[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
-			                                                  document:tableDocumentInstance
-			                                          notificationName:@"Query Finished"];
+#ifndef SP_CODA /* notification */
+			// Perform the notification for query completion
+			NSUserNotification *notification = [[NSUserNotification alloc] init];
+			notification.title = @"Query Finished";
+			notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished notification"), [[errorText onMainThread] string]];
+			notification.soundName = NSUserNotificationDefaultSoundName;
+
+			[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+			[notification release];
 #endif
 
 			// Set up the callback if present
@@ -986,19 +981,22 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 		if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
 
 			// Scroll the viewport to the saved location
-			selectionViewportToRestore.size = [customQueryView visibleRect].size;
+			selectionViewportToRestore.size = [[customQueryView onMainThread] visibleRect].size;
 			[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 		}
 
 		//query finished
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_CODA /* growl */
-		// Query finished Growl notification
-		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
-		                                                  document:tableDocumentInstance
-		                                          notificationName:@"Query Finished"];
+#ifndef SP_CODA /* notification */
+		// Query finished notification
+		NSUserNotification *notification = [[NSUserNotification alloc] init];
+		notification.title = @"Query Finished";
+		notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished notification"), [[errorText onMainThread] string]];
+		notification.soundName = NSUserNotificationDefaultSoundName;
+
+		[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		[notification release];
 #endif
 
 		// Set up the callback if present
@@ -1009,10 +1007,12 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
 		[tableDocumentInstance endTask];
 
-		// Restore selection indexes if appropriate
-		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
-		if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			// Restore selection indexes if appropriate
+			if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+			if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		});
 	}
 }
 
@@ -2698,7 +2698,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 }
 
 /**
- * Resize a column when it's double-clicked.  (10.6+)
+ * Resize a column when it's double-clicked.  (10.13+)
  */
 - (CGFloat)tableView:(NSTableView *)tableView sizeToFitWidthOfColumn:(NSInteger)columnIndex
 {
@@ -3159,7 +3159,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 
 #ifndef SP_CODA
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			// Remove items in the query controller
 			[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
 		}
@@ -3167,7 +3167,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 	}
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.

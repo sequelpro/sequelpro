@@ -563,12 +563,14 @@
 
 			[commandsOutlineView reloadData];
 
-			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error", @"Bundle Editor : Copy-Command-Error : error dialog title")
-											 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Copy-Command-Error : OK button") 
-										   alternateButton:nil 
-											  otherButton:nil 
-								informativeTextWithFormat:NSLocalizedString(@"Error while duplicating Bundle content.", @"Bundle Editor : Copy-Command-Error : Copying failed error message")];
-		
+			// jamesstout notes
+			// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+			NSAlert *alert = [[NSAlert alloc] init];
+			
+			alert.messageText = NSLocalizedString(@"Error", @"Bundle Editor : Copy-Command-Error : error dialog title");
+			alert.informativeText = NSLocalizedString(@"Error while duplicating Bundle content.", @"Bundle Editor : Copy-Command-Error : Copying failed error message");
+			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"Bundle Editor : Copy-Command-Error : OK button")]; // first button is OK
+					
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
 
@@ -672,13 +674,16 @@
 {
 
 	[commandsOutlineView abortEditing];
-
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected Bundle?", @"Bundle Editor : Remove-Bundle: remove dialog title") 
-									 defaultButton:NSLocalizedString(@"Remove", @"Bundle Editor : Remove-Bundle: remove button")
-								   alternateButton:NSLocalizedString(@"Cancel", @"Bundle Editor : Remove-Bundle: cancel button")
-									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to move the selected Bundle to the Trash and remove them respectively?", @"Bundle Editor : Remove-Bundle: remove dialog message")];
-
+	
+	NSAlert *alert = [[NSAlert alloc] init];
+	
+	// jamesstout notes
+	// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+	alert.messageText = NSLocalizedString(@"Remove selected Bundle?", @"Bundle Editor : Remove-Bundle: remove dialog title") ;
+	alert.informativeText = NSLocalizedString(@"Are you sure you want to move the selected Bundle to the Trash and remove them respectively?", @"Bundle Editor : Remove-Bundle: remove dialog message");
+	[alert addButtonWithTitle:NSLocalizedString(@"Remove", @"Bundle Editor : Remove-Bundle: remove button")]; // first button is delete
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Bundle Editor : Remove-Bundle: cancel button")]; // second is cancel
+	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
 	NSArray *buttons = [alert buttons];
@@ -872,12 +877,14 @@
 		for(id item in allBundles) {
 			if(![self saveBundle:item atPath:nil]) {
 				closeMe = NO;
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while saving “%@”.", @"Bundle Editor : Save-and-Close-Error : error dialog title"), [item objectForKey:kBundleNameKey]]
-												 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Save-and-Close-Error : OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:@""];
-			
+		
+				// jamesstout notes
+				// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+				NSAlert *alert = [[NSAlert alloc] init];
+		
+				alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"Error while saving “%@”.", @"Bundle Editor : Save-and-Close-Error : error dialog title"), [item objectForKey:kBundleNameKey]];
+				alert.informativeText = @"";
+				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"Bundle Editor : Save-and-Close-Error : OK button")]; // first button is OK
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
 				break;
@@ -987,7 +994,8 @@
 		[[sheet window] orderOut:nil];
 
 	if([contextInfo isEqualToString:@"removeSelectedBundles"]) {
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == (NSInteger)NSAlertFirstButtonReturn) { // this is an NSModalResponse as instatiated via NSAlert init,
+																// for some reason it must be cast to NSInteger
 			
 			NSArray *selObjects = [commandBundleTreeController selectedObjects];
 			NSArray *selIndexPaths = [commandBundleTreeController selectionIndexPaths];
@@ -1008,12 +1016,15 @@
 					[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 					
 					if(error != nil) {
-						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Bundle Editor : Trash-Bundle(s)-Error : error dialog title"), thePath]
-														 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button") 
-													   alternateButton:nil 
-														  otherButton:nil 
-											informativeTextWithFormat:@"%@", [error localizedDescription]];
-					
+						
+						NSAlert *alert = [[NSAlert alloc] init];
+						
+						// jamesstout notes
+						// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+						alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Bundle Editor : Trash-Bundle(s)-Error : error dialog title"), thePath];
+						alert.informativeText = [NSString stringWithFormat:@"%@", [error localizedDescription]];
+						[alert addButtonWithTitle:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button")]; // first button is OK
+						
 						[alert setAlertStyle:NSCriticalAlertStyle];
 						[alert runModal];
 						deletionSuccessfully = NO;
@@ -1046,7 +1057,8 @@
 		}
 	}
 	else if([contextInfo isEqualToString:@"undeleteSelectedDefaultBundles"]) {
-		if(returnCode == 1) {
+		if(returnCode == 1) { //  these return values do not apply to an NSAlert created via
+								// +alertWithMessageText:defaultButton:alternateButton:otherButton:informativeTextWithFormat,
 
 			NSIndexSet *selectedRows = [undeleteTableView selectedRowIndexes];
 
@@ -1474,8 +1486,7 @@
 /**
  * Allow for drag-n-drop out of the application as a copy
  */
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
-{
+- (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context{
 	return NSDragOperationMove;
 }
 

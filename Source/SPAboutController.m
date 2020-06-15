@@ -65,7 +65,7 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	BOOL isSnapshotBuild = matchRange.location != NSNotFound;
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
-	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
+	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Ace" : [NSString stringWithFormat:@"Sequel Ace %@", version]];
 
 	[self _setVersionLabel:isSnapshotBuild];
 	

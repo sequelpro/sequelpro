@@ -86,8 +86,6 @@ static NSString *SPConnectionViewNibName   = @"ConnectionView";
  */
 static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len);
 
-static BOOL isOSAtLeast10_7;
-
 @interface SPConnectionController ()
 
 // Privately redeclare as read/write to get the synthesized setter
@@ -181,7 +179,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize isEditingConnection;
 
 + (void)initialize {
-	isOSAtLeast10_7 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 }
 
 - (NSString *)keychainPassword
@@ -471,15 +468,12 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// If the custom key location is currently disabled - after the button
 		// action - leave it disabled and return without showing the sheet.
 		if (!sshKeyLocationEnabled) {
+			[self setSshKeyLocation:nil];
 			return;
 		}
 
-		// Otherwise open a panel at the last or default location
-		if (sshKeyLocation && [sshKeyLocation length]) {
-			filePath = [sshKeyLocation lastPathComponent];
-			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
-		}
-
+		filePath = nil;
+		directoryPath = @"~/.ssh";
 		accessoryView = sshKeyLocationHelp;
 	}
 	// SSL key file location:
@@ -520,51 +514,86 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[keySelectionPanel setDelegate:self];
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
-		
+		NSString *selectedFilePath=[[keySelectionPanel URL] path];
+		NSString *abbreviatedFileName = [selectedFilePath stringByAbbreviatingWithTildeInPath];
+																		   
 		//delay the release so it won't happen while this block is still executing.
-		dispatch_async(dispatch_get_current_queue(), ^{
+		// jamesstout notes
+		// replacing dispatch_get_current_queue with:
+		// currentQueue = The operation queue that started the operation
+		// underlyingQueue = The dispatch queue used to execute operations
+		// just so happens that in this case it's the main queue anyway
+		dispatch_async(NSOperationQueue.currentQueue.underlyingQueue, ^{
 			SPClear(keySelectionPanel);
 		});
+		
+		NSFileManager *fm=[NSFileManager defaultManager];
+		NSError *err=nil;
+		
+		NSString *keysDirectoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@".keys"];
+		[[NSFileManager defaultManager] createDirectoryAtPath:keysDirectoryPath withIntermediateDirectories:true attributes:nil error:nil];
+		NSString *currentTimestampHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
+		NSString *internalPath = [keysDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", currentTimestampHash, [abbreviatedFileName lastPathComponent]]];
 
 		// SSH key file selection
 		if (sender == sshSSHKeyButton) {
-			if (returnCode == NSCancelButton) {
+			if (returnCode == NSModalResponseCancel) {
 				[self setSshKeyLocationEnabled:NSOffState];
+				[self setSshKeyLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSshKeyLocation:abbreviatedFileName];
+			[self setSshKeyLocation:internalPath];
 		}
 		// SSL key file selection
 		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
-			if (returnCode == NSCancelButton) {
+			if (returnCode == NSModalResponseCancel) {
 				[self setSslKeyFileLocationEnabled:NSOffState];
 				[self setSslKeyFileLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSslKeyFileLocation:abbreviatedFileName];
+			[self setSslKeyFileLocation:internalPath];
 		}
 		// SSL certificate file selection
 		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
-			if (returnCode == NSCancelButton) {
+			if (returnCode == NSModalResponseCancel) {
 				[self setSslCertificateFileLocationEnabled:NSOffState];
 				[self setSslCertificateFileLocation:nil];
 				return;
 			}
-
-			[self setSslCertificateFileLocation:abbreviatedFileName];
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
+			
+			[self setSslCertificateFileLocation:internalPath];
 		}
 		// SSL CA certificate file selection
 		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
-			if (returnCode == NSCancelButton) {
+			if (returnCode == NSModalResponseCancel) {
 				[self setSslCACertFileLocationEnabled:NSOffState];
 				[self setSslCACertFileLocation:nil];
 				return;
 			}
+			
+			if (![fm copyItemAtPath:selectedFilePath toPath:internalPath error:&err])
+			{
+				NSLog(@"Could not copy file to internal filesystem - %@",[err localizedDescription]);
+			}
 
-			[self setSslCACertFileLocation:abbreviatedFileName];
+			[self setSslCACertFileLocation:internalPath];
 		}
 		
 		[self _startEditingConnection];
@@ -1053,11 +1082,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 		
 		if (!suppressWarning) {
-			NSAlert *alert = [NSAlert alertWithMessageText:message
-			                                 defaultButton:NSLocalizedString(@"Delete", @"delete button")
-			                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-			                                   otherButton:nil
-			                     informativeTextWithFormat:@"%@", informativeMessage];
+			
+			NSAlert *alert = [[NSAlert alloc] init];
+			
+			// jamesstout notes
+			// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+			alert.messageText = message;
+			alert.informativeText = [NSString stringWithFormat:@"%@", informativeMessage];
+			[alert addButtonWithTitle:NSLocalizedString(@"Delete", @"delete button")]; // first button is delete
+			[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")]; // second is cancel
 			
 			NSArray *buttons = [alert buttons];
 			
@@ -1177,7 +1210,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[openPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
 
 			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
@@ -1207,7 +1240,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[savePanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 
 			[exporter setDelegate:self];
@@ -1248,7 +1281,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	// Remove the current favorite/group node
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
-		if (returnCode == NSAlertDefaultReturn) {
+		if (returnCode == NSAlertFirstButtonReturn) {
 			[self _removeNode:[self selectedFavoriteNode]];
 		}
 	}
@@ -1983,7 +2016,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		mySQLConnection = nil;
 	}
 	
-	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], SPClear(sshTunnel);
+	if (sshTunnel) (void)([sshTunnel setConnectionStateChangeSelector:nil delegate:nil]), SPClear(sshTunnel);
 }
 
 #pragma mark - SPConnectionHandler
@@ -2157,7 +2190,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 				// Tidy up
 				isConnecting = NO;
 
-				if (sshTunnel) [sshTunnel disconnect], SPClear(sshTunnel);
+				if (sshTunnel) (void)([sshTunnel disconnect]), SPClear(sshTunnel);
 
 				SPClear(mySQLConnection);
 #ifndef SP_CODA
@@ -2218,6 +2251,19 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:[[self sshPort] integerValue] login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] integerValue]:3306) onHost:[self host]];
+	
+	if(sshTunnel == nil) {
+		#ifndef SP_CODA
+				[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
+		#endif
+
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title")
+												errorMessage:@"Failed to Initialize SSH Handle"
+													  detail:@"Could not initiate ssh connection worker."
+												rawErrorText:@"Could not initiate ssh connection worker."];
+		return;
+	}
+	
 	[sshTunnel setParentWindow:[dbDocument parentWindow]];
 
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
@@ -2386,7 +2432,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Release as appropriate
 	if (sshTunnel) {
-		[sshTunnel disconnect], SPClear(sshTunnel);
+		(void)([sshTunnel disconnect]), SPClear(sshTunnel);
 
 		// If the SSH tunnel connection failed because the port it was trying to bind to was already in use take note
 		// of it so we can give the user the option of connecting via standard connection and use the existing tunnel.
@@ -2413,7 +2459,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSAlertAlternateReturn) {
+	if (returnCode == NSAlertFirstButtonReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
 		[errorDetailText setAlignment:NSLeftTextAlignment];
 		[errorDetailWindow makeKeyAndOrderFront:self];
@@ -2421,7 +2467,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
 	// this will definitely need to be updated.
-	else if (returnCode == NSAlertOtherReturn) {
+	else if (returnCode == NSAlertSecondButtonReturn) {
 
 		// Extract the local port number that SSH attempted to bind to from the debug output
 		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];
@@ -2987,15 +3033,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// the division may lead to values that are not valid for the current screen size (e.g. non-integer values on a
 		// @1x non-retina screen). The OS works something out when not using layer-backed views, but in the latter
 		// case the result will look like garbage if we don't fix this.
-		if(isOSAtLeast10_7) {
-			connectionDetailsFrame = [connectionDetailsScrollView backingAlignedRect:connectionDetailsFrame options:NSAlignAllEdgesNearest];
-		}
-		else {
-			// This code is taken from Apple's "BlurryView" example code.
-			connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectToBase:connectionDetailsFrame];
-			connectionDetailsFrame.origin.y = round(connectionDetailsFrame.origin.y);
-			connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectFromBase:connectionDetailsFrame];
-		}
+		connectionDetailsFrame = [connectionDetailsScrollView backingAlignedRect:connectionDetailsFrame options:NSAlignAllEdgesNearest];
 		[connectionResizeContainer setFrame:connectionDetailsFrame];
 		scrollDocumentFrame.size.height = scrollViewFrame.size.height;
 		[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];
@@ -3119,16 +3157,18 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)favoritesImportCompletedWithError:(NSError *)error
 {
 	if (error) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites import error", @"favorites import error message")
-		                                 defaultButton:NSLocalizedString(@"OK", @"OK")
-		                               alternateButton:nil
-		                                   otherButton:nil
-		                     informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]];
+		
+		NSAlert *alert = [[NSAlert alloc] init];
+		
+		// jamesstout notes
+		// Alerts should be created with the -init method and setting properties. - NSAlert.h L132
+		alert.messageText = NSLocalizedString(@"Favorites import error", @"favorites import error message");
+		alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]];
+		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
 
-		[alert beginSheetModalForWindow:[dbDocument parentWindow]
-		                  modalDelegate:nil
-		                 didEndSelector:NULL
-		                    contextInfo:NULL];
+		// jamesstout notes
+		// API_DEPRECATED("Use -beginSheetModalForWindow:completionHandler: instead" - - NSAlert.h L136
+		[alert beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:nil];
 	}
 }
 
@@ -3269,7 +3309,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSArray *connectionViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:SPConnectionViewNibName bundle:[NSBundle mainBundle]];
 
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
+	[nibLoader instantiateWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
 	[nibLoader release];
 
@@ -3622,7 +3662,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPClear(quickConnectCell);
 #endif
     
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 
 	SPClear(nibObjectsToRelease);
 

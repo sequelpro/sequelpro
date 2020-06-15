@@ -108,8 +108,10 @@ typedef enum SRRecorderStyle SRRecorderStyle;
 - (void)setRequiredFlags:(NSUInteger)flags;
 
 - (BOOL)allowsKeyOnly;
+- (void)setAllowsKeyOnly:(BOOL)nAllowsKeyOnly;
 - (void)setAllowsKeyOnly:(BOOL)nAllowsKeyOnly escapeKeysRecord:(BOOL)nEscapeKeysRecord;
 - (BOOL)escapeKeysRecord;
+- (void)setEscapeKeysRecord:(BOOL)nEscapeKeysRecord;
 
 - (BOOL)canCaptureGlobalHotKeys;
 - (void)setCanCaptureGlobalHotKeys:(BOOL)inState;

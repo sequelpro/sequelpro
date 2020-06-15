@@ -65,8 +65,10 @@
 	IBOutlet id editImage;
 	IBOutlet id editTextView;
 	IBOutlet id hexTextView;
+	IBOutlet id jsonTextView;
 	IBOutlet id editTextScrollView;
 	IBOutlet id hexTextScrollView;
+	IBOutlet id jsonTextScrollView;
 	IBOutlet SPWindow *editSheet;
 	IBOutlet id editSheetCancelButton;
 	IBOutlet id editSheetIsNotEditableCancelButton;

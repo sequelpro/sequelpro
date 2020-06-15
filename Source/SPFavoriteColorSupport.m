@@ -80,6 +80,18 @@ static SPFavoriteColorSupport *_colorSupport = nil;
 
 - (NSArray *)userColorList
 {
+	if (@available(macOS 10.13, *)) {
+		return @[
+			[NSColor colorNamed:@"favoriteRed"],
+			[NSColor colorNamed:@"favoriteOrange"],
+			[NSColor colorNamed:@"favoriteYellow"],
+			[NSColor colorNamed:@"favoriteGreen"],
+			[NSColor colorNamed:@"favoriteBlue"],
+			[NSColor colorNamed:@"favoritePurple"],
+			[NSColor colorNamed:@"favoriteGraphite"]
+		];
+	}
+	
 	NSArray *archivedColors = [prefs objectForKey:SPFavoriteColorList];
 	NSMutableArray *colorList = [NSMutableArray arrayWithCapacity:[archivedColors count]];
 

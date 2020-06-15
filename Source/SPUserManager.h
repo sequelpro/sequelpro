@@ -137,6 +137,6 @@
  * @param docWindow The parent window.
  * @param callback  A callback that will be called once the window is closed again. Can be NULL.
  */
-- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback;
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)(void))callback;
 
 @end

@@ -156,7 +156,7 @@ int _isSPLeaksLog(const struct direct *entry);
 				snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
 				
 				if (remove(fpath) != 0) {
-					printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
+					printf("Unable to remove Sequel Ace leaks log '%s'\n", files[i]->d_name);
 				}
 			}
 			
@@ -172,7 +172,7 @@ int _isSPLeaksLog(const struct direct *entry);
 					snprintf(fpath3, sizeof(fpath3), "%s/%s", fpath2, files[i]->d_name);
 					
 					if (remove(fpath3) != 0) {
-						printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
+						printf("Unable to remove Sequel Ace leaks log '%s'\n", files[i]->d_name);
 					}
 				}
 			}
@@ -204,7 +204,7 @@ int _isSPLeaksLog(const struct direct *entry);
 - (void)_initLogFile
 {
 	NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDesktopDirectory, NSUserDomainMask, YES);
-	NSString *logFilePath = [NSString stringWithFormat:@"%@/Sequel Pro Debug Log.log", [paths objectAtIndex:0]];
+	NSString *logFilePath = [NSString stringWithFormat:@"%@/Sequel Ace Debug Log.log", [paths objectAtIndex:0]];
 	
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	

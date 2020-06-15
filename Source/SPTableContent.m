@@ -509,12 +509,19 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	{
 		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[constraint objectForKey:@"ref_columns"] objectAtIndex:0];
+		NSString *refDatabase    = [tableDocumentInstance database];
 		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
+		
+		// Overwrite database name if exists
+		if ([constraint objectForKey:@"ref_database"]) {
+			refDatabase = [constraint objectForKey:@"ref_database"];
+		}
 
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
 											firstRefColumn, @"column",
+											refDatabase, @"database",
 											nil];
 			NSMutableDictionary *rowDictionary = [NSMutableDictionary dictionaryWithDictionary:[dataColumns objectAtIndex:columnIndex]];
 			[rowDictionary setObject:refDictionary forKey:@"foreignkeyreference"];
@@ -1398,7 +1405,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			return;
 		}
 
-		NSEventModifierFlags modifierFlags = [[NSApp currentEvent] modifierFlags];
+		NSEventModifierFlags modifierFlags = [[[NSApp onMainThread] currentEvent] modifierFlags];
 
 		// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 		// header is clicked several times
@@ -1424,7 +1431,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 				isDesc = NO;
 			}
 
-			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
+			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[[tableContentView onMainThread] tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
 
 			if (sortCol) [sortCol release];
 
@@ -1521,12 +1528,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	if(makeVisible) {
 		[paginationButton setState:NSOnState];
-		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
+		[paginationButton setImage:[NSImage imageNamed:@"button_actionTemplate"]];
 		[paginationViewController makeInputFirstResponder];
 	}
 	else {
 		[paginationButton setState:NSOffState];
-		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
+		[paginationButton setImage:[NSImage imageNamed:@"button_paginationTemplate"]];
 		// TODO This is only relevant in 10.6 legacy mode.
 		// When using a modern NSPopover, the view controller's parent window is an _NSPopoverWindow,
 		// not the SP window and we don't care what the first responder in the popover is.
@@ -2129,7 +2136,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 					else
 						 [messageText appendFormat:NSLocalizedString(@"%ld additional rows were removed!",@"Table Content : Remove Row : Result : Too Many : Part 1 : n+y (y!=1) rows instead of n selected were deleted."),numErrors];
 					
-					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Pro team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
+					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Ace team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
 					
 				}
 				else {
@@ -2412,6 +2419,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 		else {
 			SPMainQSync(^{
+				// Switch databases if needed
+				if (![[refDictionary objectForKey:@"database"] isEqualToString:[tableDocumentInstance database]]) {
+					NSString *databaseToJumpTo = [refDictionary objectForKey:@"database"];
+					NSString *tableToJumpTo = [refDictionary objectForKey:@"table"];
+					[[tableDocumentInstance onMainThread] selectDatabase:databaseToJumpTo item:tableToJumpTo];
+				}
 				[self setFiltersToRestore:filterSettings];
 				[self setActiveFilterToRestore:SPTableContentFilterSourceRuleFilter];
 				// Attempt to switch to the target table
@@ -3056,7 +3069,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	// this is a delegate method of the field editor controller. calling release
 	// now would risk a dealloc while it is still our parent on the stack:
-	[fieldEditor autorelease], fieldEditor = nil;
+	(void)([fieldEditor autorelease]), fieldEditor = nil;
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
 
@@ -3263,7 +3276,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// Only proceed with key-based selection if there were no problem columns
 		if (!problemColumns) {
-			NSIndexSet *selectedRowIndexes = [tableContentView selectedRowIndexes];
+			NSIndexSet *selectedRowIndexes = [[tableContentView onMainThread] selectedRowIndexes];
 			NSUInteger *indexBuffer = calloc([selectedRowIndexes count], sizeof(NSUInteger));
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 

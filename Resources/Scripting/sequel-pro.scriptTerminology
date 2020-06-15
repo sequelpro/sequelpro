@@ -1,17 +1,16 @@
 {
-	"Name" = "Sequel Pro Suite";
-	"Description" = "Sequel Pro specific classes.";
-
-	"Classes" = {
-		"SPAppController" = {
-			"Name" = "application";
-			"PluralName" = "applications";
-			"Description" = "Sequel Pro's top level scripting object.";
+	Name = "Sequel Ace Suite";
+	Description = "Sequel Ace specific classes.";
+	Classes = {
+		SPAppController = {
+			Name = application;
+			PluralName = applications;
+			Description = "Sequel Ace's top level scripting object.";
 		};
-		"SPDatabaseDocument" = {
-			"Name" = "document";
-			"PluralName" = "documents";
-			"Description" = "A Sequel Pro document.";
+		SPDatabaseDocument = {
+			Name = document;
+			PluralName = documents;
+			Description = "A Sequel Ace document.";
 		};
 	};
 }

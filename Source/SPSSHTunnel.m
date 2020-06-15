@@ -64,7 +64,6 @@ static unsigned short getRandomPort();
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
-		BOOL isOSVersionAtLeast10_7_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -83,10 +82,10 @@ static unsigned short getRandomPort();
 
 		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
 		// muxing causes connection instability for a large number of users (see Issue #1457)
-		connectionMuxingEnabled = isOSVersionAtLeast10_7_0 && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
+		connectionMuxingEnabled = [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
-		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		tunnelConnectionName = [[NSString alloc] initWithFormat:@"NKQ4HJ66PX.sequel-ace.SequelAce-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnection = [NSConnection new];
 		
@@ -94,7 +93,11 @@ static unsigned short getRandomPort();
 		[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
 		[tunnelConnection setRootObject:self];
 		
-		if (![tunnelConnection registerName:tunnelConnectionName]) return nil;
+		
+		if (![tunnelConnection registerName:tunnelConnectionName]) {
+			NSLog(@"Could not start ssh connection. %@", tunnelConnectionName);
+			return nil;
+		}
 		
 		parentWindow = nil;
 		identityFilePath = nil;
@@ -335,7 +338,7 @@ static unsigned short getRandomPort();
 			// Enable automatic connection muxing/sharing, for faster connections
 			TA(@"-o",@"ControlMaster=auto");
 
-			// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+			// Set a custom control path to isolate connection sharing to Sequel Ace, to prevent picking up
 			// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
 			// hashed path to aid length limit issues.
 			unsigned char hashedPathResult[16];
@@ -358,6 +361,11 @@ static unsigned short getRandomPort();
 
 		// Allow three password prompts
 		TA(@"-o",@"NumberOfPasswordPrompts=3");
+		
+		// Use a KnownHostsFile in the sandbox folder
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@".keys"] withIntermediateDirectories:true attributes:nil error:nil];
+		TA(@"-o", [NSString stringWithFormat:@"UserKnownHostsFile=%@/.keys/ssh_known_hosts", NSHomeDirectory()]);
+		TA(@"-o", @"StrictHostKeyChecking=no");
 
 		// Specify an identity file if available
 		if (identityFilePath) {
@@ -392,7 +400,7 @@ static unsigned short getRandomPort();
 		[task setArguments:taskArguments];
 
 		// Set up the environment for the task
-		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
+		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelAceTunnelAssistant"];
 		taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 		[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 		[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
@@ -431,7 +439,7 @@ static unsigned short getRandomPort();
 					close(fd);
 					fprintf(stderr, (
 						"!!!\n"
-						"!!! You are running Sequel Pro from a TTY.\n"
+						"!!! You are running Sequel Ace from a TTY.\n"
 						"!!! Any SSH connections that require user input (e.g. a password/passphrase) will fail\n"
 						"!!!  and appear stalled indefinitely.\n"
 						"!!! Sorry!\n"
@@ -615,7 +623,7 @@ static unsigned short getRandomPort();
 }
 
 /*
- * Method to request the password for the current connection, as used by SequelProTunnelAssistant;
+ * Method to request the password for the current connection, as used by SequelAceTunnelAssistant;
  * called with a verification hash to check against the stored hash, to provide basic security.  Note
  * that this is easily bypassed, but if bypassed the password can already easily be retrieved in the same way.
  */

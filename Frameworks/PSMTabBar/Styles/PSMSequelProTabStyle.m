@@ -30,30 +30,11 @@
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 0
 
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-// This code is available since 10.8 but public only since 10.10
-typedef struct {
-	NSInteger major;
-	NSInteger minor;
-	NSInteger patch;
-} NSOperatingSystemVersion;
-
-@interface NSProcessInfo ()
-
-- (NSOperatingSystemVersion)operatingSystemVersion;
-- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-
-@end
-#endif
-
 @interface PSMSequelProTabStyle ()
 
 - (NSColor *)_lineColorForTabCellDrawing;
 - (void)_drawTabCell:(PSMTabBarCell *)cell withBackgroundColor:(NSColor *)backgroundColor lineColor:(NSColor *)lineColor;
+- (BOOL)isInDarkMode;
 
 @end
 
@@ -70,28 +51,6 @@ typedef struct {
 - (id) init
 {
     if ( (self = [super init]) ) {
-		// Avoid call to the deprecated (10.8+) Gestalt() function.
-		// This code actually belongs in it's own class, but since both PSMTabBar.framework
-		// and SP itself would need it, the loader will complain about a duplicate class implementation.
-		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
-
-		if ([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
-			NSOperatingSystemVersion os10_7_0 = {10,7,0};
-			NSOperatingSystemVersion os10_10_0 = {10,10,0};
-
-			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
-			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
-		}
-		else {
-			SInt32 versionMajor = 0;
-			SInt32 versionMinor = 0;
-			Gestalt(gestaltSystemVersionMajor, &versionMajor);
-			Gestalt(gestaltSystemVersionMinor, &versionMinor);
-			
-			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
-			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
-		}
-
 		NSBundle *bundle = [PSMTabBarControl bundle];
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose"]];
@@ -128,6 +87,22 @@ typedef struct {
 	[_objectCountStringAttributes release];
 	
     [super dealloc];
+}
+
+#pragma mark -
+#pragma mark Detect Dark Aqua Mode
+
+- (BOOL)isInDarkMode
+{
+	if (@available(macOS 10.14, *)) {
+		NSAppearance *appearance = [NSAppearance currentAppearance] ?: [NSApp effectiveAppearance];
+		NSAppearanceName match = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+
+		if ([NSAppearanceNameDarkAqua isEqualToString:match]) {
+			return YES;
+		}
+	}
+	return NO;
 }
 
 #pragma mark -
@@ -472,6 +447,12 @@ typedef struct {
 		shadowAlpha = 0.3f;
 	}
 	
+	if ([self isInDarkMode]) {
+		backgroundCalibratedWhite -= 0.55f;
+		lineCalibratedWhite -= 0.39f;
+		shadowAlpha -= 0.1f;
+	}
+	
 	// Fill in background of tab bar
 	if (tabBar.cells.count != 1) { // multiple tabs - fill with background color
 		[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
@@ -541,7 +522,7 @@ typedef struct {
 			[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:lineColor];
 		}
 
-		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
     }
     
     // icon
@@ -557,7 +538,7 @@ typedef struct {
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0f;
         }
         
-		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
 
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
@@ -601,9 +582,12 @@ typedef struct {
 	NSAttributedString *labelString = cell.attributedStringValue;
 	if (cell.state != NSOnState) {
 		NSMutableAttributedString *newLabelString = labelString.mutableCopy;
+		NSColor *textColor = [NSColor darkGrayColor];
+		if ([self isInDarkMode]) {
+			textColor = [cell backgroundColor] ? [NSColor blackColor] : [NSColor lightGrayColor];
+		}
 		
-		[newLabelString addAttribute:NSForegroundColorAttributeName value:[NSColor darkGrayColor] range:NSMakeRange(0, newLabelString.length)];
-		
+		[newLabelString addAttribute:NSForegroundColorAttributeName value:textColor range:NSMakeRange(0, newLabelString.length)];
 		labelString = newLabelString.copy;
 	}
 	
@@ -614,22 +598,28 @@ typedef struct {
 - (NSColor *)fillColorForCell:(PSMTabBarCell *)cell
 {
 	NSColor *fillColor = nil;
-	
+
 	// Set up colours
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		if ([cell state] == NSOnState) { //active window, active cell
 			float tabWhiteComponent = 0.795f;
-			
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.02f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.55f;
 			
-			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
+			if([cell backgroundColor]) {
+				fillColor = [self isInDarkMode] ? [[cell backgroundColor] shadowWithLevel:0.25] : [cell backgroundColor];;
+			}
 		} else { //active window, background cell
 			float tabWhiteComponent = 0.68f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.51f;
+			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
 			if([cell backgroundColor]) {
 				//should be a slightly darker variant of the color
-				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
+				fillColor = [self isInDarkMode] ? [[cell backgroundColor] shadowWithLevel:0.40] : [[cell backgroundColor] shadowWithLevel:0.15];
 				
 				// also desaturate the color
 				fillColor = [NSColor colorWithCalibratedHue:fillColor.hueComponent saturation:fillColor.saturationComponent * 0.4 brightness:fillColor.brightnessComponent alpha:1.0f];
@@ -639,21 +629,25 @@ typedef struct {
 		if ([cell state] == NSOnState) { //background window, active cell
 			float tabWhiteComponent = 0.957f;
 			if (!tabBar.window.toolbar.isVisible) tabWhiteComponent += 0.01f;
-			
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.75f;
+
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			if (cell.backgroundColor) {
-				fillColor = [NSColor colorWithCalibratedHue:cell.backgroundColor.hueComponent saturation:cell.backgroundColor.saturationComponent brightness:(cell.backgroundColor.brightnessComponent * 1.28) alpha:1.0f];
+				NSColor *backgroundRgb = [cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+				fillColor = [NSColor colorWithCalibratedHue:backgroundRgb.hueComponent saturation:backgroundRgb.saturationComponent brightness:(backgroundRgb.brightnessComponent * 1.28f) alpha:1.0f];
 			} else {
 				fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			}
 			
 		} else { //background window, background cell
 			float tabWhiteComponent = 0.86f;
+			if ([self isInDarkMode]) tabWhiteComponent -= 0.7f;
+			
 			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			
 			//make it dark first, then desaturate
 			if (cell.backgroundColor) {
-				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
+				NSColor *dark = [[cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace] shadowWithLevel:0.15];
 				fillColor = [NSColor colorWithCalibratedHue:dark.hueComponent saturation:dark.saturationComponent * 0.15 brightness:(dark.brightnessComponent * 1.28) alpha:1.0f];
 			}
 		}
@@ -707,12 +701,20 @@ typedef struct {
 - (NSColor *)_lineColorForTabCellDrawing
 {
 	NSColor *lineColor = nil;
-
+	
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
-		lineColor = [NSColor grayColor];
+		if ([self isInDarkMode]) {
+			lineColor = [NSColor colorWithCalibratedWhite:0.29f alpha:.42f];
+		} else {
+			lineColor = [NSColor grayColor];
+		}
 	}
 	else {
-		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
+		if ([self isInDarkMode]) {
+			lineColor = [NSColor colorWithCalibratedWhite:0.19f alpha:.42f];
+		} else {
+			lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
+		}
 	}
 
 	return lineColor;

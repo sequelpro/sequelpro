@@ -50,9 +50,7 @@
 #import "SPCopyTable.h"
 #import "SPSyntaxParser.h"
 #import "SPOSInfo.h"
-
 #import <PSMTabBar/PSMTabBarControl.h>
-#import <Sparkle/Sparkle.h>
 
 @interface SPAppController ()
 
@@ -133,9 +131,6 @@
 	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
 
-	// Set Sparkle delegate
-	[[SUUpdater sharedUpdater] setDelegate:self];
-
 	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];
 	
@@ -166,12 +161,6 @@
 	}
 	
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(externalApplicationWantsToOpenADatabaseConnection:) name:@"ExternalApplicationWantsToOpenADatabaseConnection" object:nil];
-	
-	// Set ourselves as the crash reporter delegate
-	[[FRFeedbackReporter sharedReporter] setDelegate:self];
-
-	// Report any crashes
-	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
     [self _copyDefaultThemes];
@@ -317,7 +306,7 @@
 }
 
 /**
- * Called if user drag and drops files on Sequel Pro's dock item or double-clicked
+ * Called if user drag and drops files on Sequel Ace's dock item or double-clicked
  * at files *.spf or *.sql
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
@@ -681,7 +670,7 @@
 		return;
 	}
 	
-	// Reload Bundles if Sequel Pro didn't run
+	// Reload Bundles if Sequel Ace didn't run
 	if (![installedBundleUUIDs count]) {
 		[self reloadBundles:self];
 	}
@@ -1520,15 +1509,7 @@
 }
 
 #pragma mark -
-#pragma mark Sequel Pro menu methods
-
-/**
- * Opens donate link in default browser
- */
-- (IBAction)donate:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDonationsURL]];
-}
+#pragma mark Sequel Ace menu methods
 
 /**
  * Opens website link in default browser
@@ -1552,22 +1533,6 @@
 - (IBAction)visitFAQWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_FAQ]];
-}
-
-/**
- * Opens the 'Contact the developers' page in the default browser
- */
-- (IBAction)provideFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTACT]];
-}
-
-/**
- * Opens the 'Translation Feedback' page in the default browser.
- */
-- (IBAction)provideTranslationFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_TRANSLATIONFEEDBACK]];
 }
 
 /**
@@ -1630,7 +1595,7 @@
 		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
 		nil];
 
-	// If ~/Library/Application Path/Sequel Pro/Bundles couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Bundles couldn't be created bail
 	if(appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Bundles Installation Error", @"bundles installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -2152,31 +2117,6 @@
 		NSBeep();
 	}
 }
-
-#pragma mark -
-#pragma mark Feedback reporter delegate methods
-
-/**
- * Anonymises the preferences dictionary before feedback submission
- */
-- (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
-{
-	[preferences removeObjectsForKeys:@[
-			@"ContentFilters",
-			@"favorites",
-			@"lastSqlFileName",
-			@"NSNavLastRootDirectory",
-			@"openPath",
-			@"queryFavorites",
-			@"queryHistory",
-			@"tableColumnWidths",
-			@"savePath",
-			@"NSRecentDocumentRecords"
-	]];
-	
-	return preferences;
-}
-
 #pragma mark -
 #pragma mark Other methods
 
@@ -2217,30 +2157,7 @@
 }
 
 /**
- * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
- * sure that no sheets are currently open, which will prevent the app from being quit. 
- */
-- (void)updaterWillRelaunchApplication:(SUUpdater *)updater
-{	
-	// Sparkle might call this on a background thread, but calling endSheet: from a bg thread is unhealthy
-	if(![NSThread isMainThread]) return [[self onMainThread] updaterWillRelaunchApplication:updater];
-
-	// Get all the currently open windows and their attached sheets if any
-	NSArray *windows = [NSApp windows];
-	
-	for (NSWindow *window in windows)
-	{
-		NSWindow *attachedSheet = [window attachedSheet];
-		
-		if (attachedSheet) {
-			[NSApp endSheet:attachedSheet returnCode:0];
-			[attachedSheet orderOut:nil];
-		}
-	}
-}
-
-/**
- * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller.
+ * If Sequel Ace is terminating kill all running BASH scripts and release all HTML output controller.
  *
  * TODO: Remove a lot of this duplicate code.
  */
@@ -2317,7 +2234,7 @@
     NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
     NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
 	
-	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Themes couldn't be created bail
 	if (appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button")
@@ -2414,7 +2331,7 @@
 }
 
 /**
- * AppleScript handler to quit Sequel Pro
+ * AppleScript handler to quit Sequel Ace
  *
  * This handler is required to allow termination via the Dock or AppleScript event after activating it using AppleScript
  */
@@ -2455,7 +2372,9 @@
 
 - (IBAction)newWindow:(id)sender
 {
-	[self newWindow];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self newWindow];
+	});
 }
 
 /**

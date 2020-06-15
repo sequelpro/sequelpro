@@ -400,7 +400,7 @@ static BOOL StringQualifiesForWordSearch(NSString *s);
 	// the keyboard event is the preferable choice as it will also scroll the window
 	// TODO: check if the other path is ever used
 	NSEvent *currentEvent = [NSApp currentEvent];
-	BOOL isKeyDownEvent = ([currentEvent type] == NSKeyDown);
+	BOOL isKeyDownEvent = ([currentEvent type] == NSEventTypeKeyDown);
 
 	// Arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
 	if (commandSelector == @selector(moveDown:)) {
