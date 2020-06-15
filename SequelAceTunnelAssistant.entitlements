@@ -10,12 +10,6 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
-	<key>com.apple.security.files.user-selected.executable</key>
-	<true/>
-	<key>com.apple.security.files.bookmarks.app-scope</key>
-	<true/>
-	<key>com.apple.security.files.bookmarks.document-scope</key>
-	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>NKQ4HJ66PX.sequel-ace</string>
