@@ -1,7 +1,7 @@
 Sequel Ace <img alt="Logo" src="https://moballo.com/BackendHost/sequel-ace/appIcon.png" align="right" height="50">
 =======
 
-IN-DEVELOPMENT - PLEASE CONTRIBUTE TO THE 2.0-dev BRANCH
+Download Sequel Ace today from the [macOS App Store](https://apps.apple.com/us/app/sequel-ace/id1518036000?ls=1)!
 
 Sequel Ace is the "sequel" to longtime macOS tool Sequel Pro.
 Sequel Ace is a fast, easy-to-use Mac database management application for working with MySQL & MariaDB databases.
@@ -22,7 +22,9 @@ Build Instructions
 Contributing
 =======
 
-We have a lot of work to do, but we're here to provide an always-free, macOS first SQL database tool for everyone.
+We have a lot of work to do, but we're here to provide, with your help, an always-free, macOS first SQL database tool for everyone.
+
+Please base contributions off of the 2.0-Dev branch and submit PRs against this branch as well. The master branch is reserved for macOS App Store releases.
 
 Please see our [projects page](https://github.com/sequel-ace/sequel-ace/projects). This lists the issues where we would most like your help. There are simple and difficult tasks there so new contributors should be able to get started.
 
