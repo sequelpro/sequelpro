@@ -24,7 +24,7 @@ Contributing
 
 We have a lot of work to do, but we're here to provide, with your help, an always-free, macOS first SQL database tool for everyone.
 
-Please base contributions off of the 2.0-Dev branch and submit PRs against this branch as well. The master branch is reserved for macOS App Store releases.
+Please base contributions off of the `dev` branch and submit PRs against this branch as well. The `master` branch is reserved for macOS App Store releases.
 
 Please see our [projects page](https://github.com/sequel-ace/sequel-ace/projects). This lists the issues where we would most like your help. There are simple and difficult tasks there so new contributors should be able to get started.
 
