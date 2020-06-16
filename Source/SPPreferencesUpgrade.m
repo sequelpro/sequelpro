@@ -489,7 +489,7 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 	[noteAlert release];
 
 	// Show releae notes if desired
-	if (returnCode == NSAlertSecondButtonReturn) {
+	if (returnCode == NSAlertSecondButtonReturn || returnCode == NSAlertOtherReturn) {
 
 		// Work out whether to link to the normal site or the nightly list
 		NSString *releaseNotesLink = @"https://github.com/Sequel-Ace/Sequel-Ace/releases";

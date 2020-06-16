@@ -387,7 +387,7 @@
 				
 				[alert release];
 				
-				if (returnCode == NSAlertSecondButtonReturn) return; // Cancel
+				if (returnCode == NSAlertSecondButtonReturn || returnCode == NSAlertOtherReturn) return; // Cancel
 				else if (returnCode == NSAlertThirdButtonReturn) {   // Import
 					// begin import process
 					[[frontDocument tableDumpInstance] startSQLImportProcessWithFile:filePath];

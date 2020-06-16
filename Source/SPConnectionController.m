@@ -1280,7 +1280,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	// Remove the current favorite/group node
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
-		if (returnCode == NSAlertFirstButtonReturn) {
+		if (returnCode == NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn) {
 			[self _removeNode:[self selectedFavoriteNode]];
 		}
 	}
@@ -2458,7 +2458,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSAlertFirstButtonReturn) {
+	if (returnCode == NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
 		[errorDetailText setAlignment:NSLeftTextAlignment];
 		[errorDetailWindow makeKeyAndOrderFront:self];
@@ -2466,7 +2466,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
 	// this will definitely need to be updated.
-	else if (returnCode == NSAlertSecondButtonReturn) {
+	else if (returnCode == NSAlertSecondButtonReturn || returnCode == NSAlertOtherReturn) {
 
 		// Extract the local port number that SSH attempted to bind to from the debug output
 		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];

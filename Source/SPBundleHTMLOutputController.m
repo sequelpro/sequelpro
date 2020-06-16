@@ -433,7 +433,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 	[alert release];
 
-	if(returnCode == NSAlertFirstButtonReturn) return YES;
+	if(returnCode == NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn) return YES;
 	return NO;
 }
 

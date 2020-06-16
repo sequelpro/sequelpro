@@ -2310,7 +2310,7 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 			else {
 				NSInteger choice = [alert runModal];
 				
-				currentIndex = choice == NSAlertFirstButtonReturn ? [indexes indexLessThanIndex:currentIndex] : NSNotFound;
+				currentIndex = (choice == NSAlertFirstButtonReturn || choice == NSAlertAlternateReturn) ? [indexes indexLessThanIndex:currentIndex] : NSNotFound;
 			}
 		}
 	}
