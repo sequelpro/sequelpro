@@ -364,7 +364,6 @@ static unsigned short getRandomPort();
 		
 		// Use a KnownHostsFile in the sandbox folder
 		TA(@"-o", [NSString stringWithFormat:@"UserKnownHostsFile=%@/.keys/ssh_known_hosts", NSHomeDirectory()]);
-		TA(@"-o", @"StrictHostKeyChecking=no");
 
 		// Specify an identity file if available
 		if (identityFilePath) {
