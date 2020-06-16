@@ -7,7 +7,7 @@ about: Create a report to help us improve
 <!-- Please search existing issues to avoid creating duplicates. -->
 <!-- For application crashes on macOS 10.14 (Mojave) please see issue #3116. -->
 
-- Sequel Pro Version:
+- Sequel Ace Version:
 - macOS Version:
 - MySQL Version:
 
