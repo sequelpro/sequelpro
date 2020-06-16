@@ -552,7 +552,7 @@
 		NSString *inputFallBackAction = @"";
 		NSError *err = nil;
 		NSString *uuid = [NSString stringWithNewUUID];
-		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskInputFilePath stringByExpandingTildeInPath], uuid];
 
 		NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 

@@ -153,7 +153,7 @@ int _isSPLeaksLog(const struct direct *entry);
 			
 			for (i = 0; i < cnt; i++)
 			{
-				snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
+				snprintf(fpath, sizeof(fpath), "~/tmp/%s", files[i]->d_name);
 				
 				if (remove(fpath) != 0) {
 					printf("Unable to remove Sequel Ace leaks log '%s'\n", files[i]->d_name);

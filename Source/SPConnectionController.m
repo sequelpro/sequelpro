@@ -531,7 +531,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		NSError *err=nil;
 		
 		NSString *keysDirectoryPath = [NSHomeDirectory() stringByAppendingPathComponent:@".keys"];
-		[[NSFileManager defaultManager] createDirectoryAtPath:keysDirectoryPath withIntermediateDirectories:true attributes:nil error:nil];
 		NSString *currentTimestampHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
 		NSString *internalPath = [keysDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", currentTimestampHash, [abbreviatedFileName lastPathComponent]]];
 

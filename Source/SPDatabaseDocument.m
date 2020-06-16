@@ -5350,7 +5350,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if([command isEqualToString:@"ReloadContentTableWithWHEREClause"]) {
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
@@ -5365,7 +5365,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if([command isEqualToString:@"RunQueryInQueryEditor"]) {
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
@@ -5383,10 +5383,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 		if([params count] > 1) {
 
-			NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-			NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
-			NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
-			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+			NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], docProcessID];
 			NSFileManager *fm = [NSFileManager defaultManager];
 			NSString *status = @"0";
 			BOOL userTerminated = NO;
@@ -5534,10 +5534,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 		BOOL writeAsCsv = ([outputFormat isEqualToString:@"csv"]) ? YES : NO;
 
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
-		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		NSString *status = @"0";
 		BOOL isDir;

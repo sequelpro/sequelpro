@@ -690,10 +690,10 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 		[theEnv addEntriesFromDictionary:[SPAppDelegate shellEnvironmentForDocument:nil]];
 		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
 		
 		output = [SPBundleCommandRunner runBashCommand:command 
 									   withEnvironment:theEnv 

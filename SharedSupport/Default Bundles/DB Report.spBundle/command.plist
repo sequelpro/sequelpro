@@ -18,7 +18,7 @@ if [ -z $SP_PROCESS_ID ]; then
 	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
 fi
 
-# send query to Sequel Pro
+# send query to Sequel Ace
 cat &lt;&lt;SQL &gt; "$SP_QUERY_FILE"
 SELECT TABLE_SCHEMA AS Name, FORMAT((SUM(DATA_LENGTH)+SUM(INDEX_LENGTH))/1000, 1) AS \`Size (kiB) incl. indices\`
 FROM information_schema.TABLES
@@ -28,7 +28,7 @@ SQL
 # execute the SQL statement; the result will be available in the file $SP_QUERY_RESULT_FILE
 open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery"
 
-# wait for Sequel Pro; status file will be written to disk if query was finished
+# wait for Sequel Ace; status file will be written to disk if query was finished
 while [ 1 ]
 do
 	[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
@@ -58,10 +58,10 @@ if [ `cat "$SP_QUERY_RESULT_STATUS_FILE"` == 1 ]; then
 else
 
 	# $SP_QUERY_RESULT_FILE contains the file path to the query result
-	
+
 	# First line contains the column names - wrap them into &lt;th&gt; tags
 	cat "$SP_QUERY_RESULT_FILE" | head -n 1 |perl -pe 's!\t!&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;th align=right&gt;!g;s!$!&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;!'
-	
+
 	# Output all row except the first one and wrap them into &lt;tr&gt;&lt;td&gt; tags
 	cat "$SP_QUERY_RESULT_FILE" | sed '1d' | perl -pe 's!\t!&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td align='right'&gt;!g;s!$!&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;!'
 
@@ -82,7 +82,7 @@ rm -f "$SP_QUERY_RESULT_FILE"
 rm -f "$SP_QUERY_RESULT_META_FILE"
 
 # Read all databases into a BASH array; $SP_ALL_DATABASES provides them as a tab delimited string
-# Set the Internal Field Separator IFS to 'tab' and process the array by using the new IFS due to 
+# Set the Internal Field Separator IFS to 'tab' and process the array by using the new IFS due to
 # the fact that a database name could contain 'spaces'
 OLDIFS="$IFS"
 IFS="	"
@@ -111,8 +111,8 @@ HTML3
 	# Query for table status
 	echo "SHOW TABLE STATUS IN \`$db\`" &gt; "$SP_QUERY_FILE"
 	open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery"
-	
-	# wait for Sequel Pro; status file will be written to disk if query was finished
+
+	# wait for Sequel Ace; status file will be written to disk if query was finished
 	while [ 1 ]
 	do
 		[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
@@ -127,7 +127,7 @@ HTML3
 	cat "$SP_QUERY_RESULT_FILE" | sed '1d' | perl "$SP_BUNDLE_PATH/Support/processTableData.pl"
 
 	echo "&lt;/table&gt;"
-	
+
 	# Clear hand-shake files
 	rm -f "$SP_QUERY_FILE"
 	rm -f "$SP_QUERY_RESULT_STATUS_FILE"

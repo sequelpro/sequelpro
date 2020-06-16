@@ -90,6 +90,10 @@
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
+		
+		//Create runtime directiories
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@"tmp"] withIntermediateDirectories:true attributes:nil error:nil];
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@".keys"] withIntermediateDirectories:true attributes:nil error:nil];
 
 		[NSApp setDelegate:self];
 	}
@@ -688,9 +692,7 @@
 		if (answer == NSAlertDefaultReturn) {
 			NSError *error = nil;
 			NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([(NSString *)[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
-			NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", removePath];
-			
-			[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+			[[NSFileManager defaultManager] removeItemAtPath:removePath error:&error];
 			
 			if (error != nil) {
 				alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
@@ -845,8 +847,8 @@
 
 	// Handle commands which don't need a connection window
 	if([command isEqualToString:@"chooseItemFromList"]) {
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
 		[fm removeItemAtPath:statusFileName error:nil];
 		[fm removeItemAtPath:resultFileName error:nil];
 		NSString *result = @"";
@@ -870,10 +872,10 @@
 		BOOL isDir;
 
 		NSString *anUUID = (passedProcessID && [passedProcessID length]) ? passedProcessID : @"";
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, anUUID];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, anUUID];
-		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, anUUID];
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], anUUID];
 
 		NSError *inError = nil;
 		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
@@ -961,13 +963,13 @@
 			else
 				anUUID = command;
 			
-			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID]
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], anUUID]
 				atomically:YES
 				encoding:NSUTF8StringEncoding
 				   error:nil];
 
 			out = @"Error";
-			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, anUUID]
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], anUUID]
 				atomically:YES
 				encoding:NSUTF8StringEncoding
 				   error:nil];
@@ -981,12 +983,12 @@
 	if(passedProcessID && [passedProcessID length]) {
 		// If command failed notify the file handle hand shake mechanism
 		NSString *out = @"1";
-		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
 		out = NSLocalizedString(@"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.", @"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.");
-		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
@@ -998,10 +1000,10 @@
 		);
 
 		usleep(5000);
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
 
 
 
@@ -1142,7 +1144,7 @@
 		NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 		NSError *err = nil;
 		NSString *uuid = [NSString stringWithNewUUID];
-		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskInputFilePath stringByExpandingTildeInPath], uuid];
 
 		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1150,8 +1152,8 @@
 		[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 		[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 		[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
-		[env setObject:SPURLSchemeQueryResultPathHeader forKey:SPBundleShellVariableQueryResultFile];
-		[env setObject:SPURLSchemeQueryResultStatusPathHeader forKey:SPBundleShellVariableQueryResultStatusFile];
+		[env setObject:[SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath] forKey:SPBundleShellVariableQueryResultFile];
+		[env setObject:[SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath] forKey:SPBundleShellVariableQueryResultStatusFile];
 
 		NSString *input = @"";
 		NSError *inputFileError = nil;
@@ -1618,6 +1620,7 @@
 
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
 	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
+	doBundleUpdate = YES;
 
 	for(NSString* bundlePath in bundlePaths) {
 		if([bundlePath length]) {
@@ -1744,9 +1747,7 @@
 											[dupData writeToFile:duplicatedBundleCommand atomically:YES];
 
 											error = nil;
-											NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
-											
-											[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+											[[NSFileManager defaultManager] removeItemAtPath:oldBundle error:&error];
 
 											if(error != nil) {
 												NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdDataOld objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]

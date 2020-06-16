@@ -193,7 +193,7 @@ NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
-NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
+NSString *SPImportClipboardTempFileNamePrefix    = @"~/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPLastExportSettings                   = @"LastExportSettings";
 
 // Export filename tokens
@@ -376,11 +376,11 @@ NSString *SPBundleInternPathToFileKey                       = @"path";
 NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";
 
 NSString *SPBundleFileName                                  = @"command.plist";
-NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_INPUT";
-NSString *SPBundleTaskOutputFilePath                        = @"/tmp/SP_BUNDLE_OUTPUT";
-NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_BUNDLE_SCRIPT_COMMAND";
-NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_BUNDLE_COPY_BLOB_FILES";
-NSString *SPBundleTaskTableMetaDataFilePath                 = @"/tmp/SP_BUNDLE_TABLE_META_DATA";
+NSString *SPBundleTaskInputFilePath                         = @"~/tmp/SP_BUNDLE_INPUT";
+NSString *SPBundleTaskOutputFilePath                        = @"~/tmp/SP_BUNDLE_OUTPUT";
+NSString *SPBundleTaskScriptCommandFilePath                 = @"~/tmp/SP_BUNDLE_SCRIPT_COMMAND";
+NSString *SPBundleTaskCopyBlobFileDirectory                 = @"~/tmp/SP_BUNDLE_COPY_BLOB_FILES";
+NSString *SPBundleTaskTableMetaDataFilePath                 = @"~/tmp/SP_BUNDLE_TABLE_META_DATA";
 
 NSString *SPBundleShellVariableAllDatabases                 = @"SP_ALL_DATABASES";
 NSString *SPBundleShellVariableAllFunctions                 = @"SP_ALL_FUNCTIONS";
@@ -434,10 +434,10 @@ NSString *SPCurrentTimestampPattern = (@"(?i)^" OWS @"CURRENT_TIMESTAMP" @"(?:" 
 #undef OWS
 
 // URL scheme
-NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
-NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
-NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";
-NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
+NSString *SPURLSchemeQueryInputPathHeader          = @"~/tmp/SP_QUERY_";
+NSString *SPURLSchemeQueryResultPathHeader         = @"~/tmp/SP_QUERY_RESULT_";
+NSString *SPURLSchemeQueryResultStatusPathHeader   = @"~/tmp/SP_QUERY_RESULT_STATUS_";
+NSString *SPURLSchemeQueryResultMetaPathHeader     = @"~/tmp/SP_QUERY_META_";
 
 NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
 NSString *SPErrorDomain = @"SPErrorDomain";
