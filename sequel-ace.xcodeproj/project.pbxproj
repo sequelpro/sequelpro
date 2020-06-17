@@ -561,7 +561,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 7;
+			dstSubfolderSpec = 6;
 			files = (
 				96B0A16124941670007BB270 /* SequelAceTunnelAssistant in Copy SequelAceTunnelAssistant and sign */,
 			);
@@ -3934,7 +3934,7 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
-				INSTALL_PATH = /usr/local/bin;
+				INSTALL_PATH = "/Applications/Sequel Ace.app/Contents/MacOS";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
@@ -3968,7 +3968,7 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
-				INSTALL_PATH = /usr/local/bin;
+				INSTALL_PATH = "/Applications/Sequel Ace.app/Contents/MacOS";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
@@ -4001,7 +4001,7 @@
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = "Resources/Plists/TunnelAssistant-Info.plist";
-				INSTALL_PATH = /usr/local/bin;
+				INSTALL_PATH = "/Applications/Sequel Ace.app/Contents/MacOS";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (

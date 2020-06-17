@@ -399,7 +399,7 @@ static unsigned short getRandomPort();
 		[task setArguments:taskArguments];
 
 		// Set up the environment for the task
-		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelAceTunnelAssistant"];
+		authenticationAppPath = [[NSBundle mainBundle] pathForAuxiliaryExecutable:@"SequelAceTunnelAssistant"];
 		taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 		[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 		[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
