@@ -64,7 +64,7 @@
 @property(readwrite, assign) BOOL removeOldLeakDumpsOnTermination;
 
 /**
- * Dumps the result of running leaks to the file '/tmp/sp.leaks.<pid>.tmp'.
+ * Dumps the result of running leaks to the file '~/tmp/sp.leaks.<pid>.tmp'.
  *
  * Note, that to enable useful output, make sure the following environment variables are set to YES:
  *

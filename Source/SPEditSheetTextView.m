@@ -245,7 +245,7 @@
 {
 
 	[[sheet window] orderOut:nil];
-	if ( returnCode == NSAlertFirstButtonReturn )
+	if (returnCode == NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn)
 		[self insertFileContentOfFile:[sheet helpAnchor]];
 
 }

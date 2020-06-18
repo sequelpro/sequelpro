@@ -151,7 +151,7 @@ static NSString *SPSSLCipherPboardTypeName = @"SSLCipherPboardType";
 	[_currentAlert addButtonWithTitle:NSLocalizedString(@"OK",@"Preferences : Network : Custom SSH client : warning dialog : accept button")];
 	[_currentAlert addButtonWithTitle:NSLocalizedString(@"Cancel",@"Preferences : Network : Custom SSH client : warning dialog : cancel button")];
 	
-	if([_currentAlert runModal] == NSAlertFirstButtonReturn) {
+	if([_currentAlert runModal] == NSAlertFirstButtonReturn || [_currentAlert runModal] == NSAlertAlternateReturn) {
 		//store new value to user defaults
 		NSString *newPath = [sshClientPath stringValue];
 		if(![newPath length])

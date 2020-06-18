@@ -994,7 +994,7 @@
 		[[sheet window] orderOut:nil];
 
 	if([contextInfo isEqualToString:@"removeSelectedBundles"]) {
-		if (returnCode == (NSInteger)NSAlertFirstButtonReturn) { // this is an NSModalResponse as instatiated via NSAlert init,
+		if (returnCode == (NSInteger)NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn) { // this is an NSModalResponse as instatiated via NSAlert init,
 																// for some reason it must be cast to NSInteger
 			
 			NSArray *selObjects = [commandBundleTreeController selectedObjects];
@@ -1011,9 +1011,7 @@
 
 					// Use a AppleScript script since NSWorkspace performFileOperation or NSFileManager moveItemAtPath 
 					// have problems probably due access rights.
-					NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", thePath];
-					
-					[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					[[NSFileManager defaultManager] removeItemAtPath:thePath error:&error];
 					
 					if(error != nil) {
 						

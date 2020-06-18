@@ -363,7 +363,6 @@ static unsigned short getRandomPort();
 		TA(@"-o",@"NumberOfPasswordPrompts=3");
 		
 		// Use a KnownHostsFile in the sandbox folder
-		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@".keys"] withIntermediateDirectories:true attributes:nil error:nil];
 		TA(@"-o", [NSString stringWithFormat:@"UserKnownHostsFile=%@/.keys/ssh_known_hosts", NSHomeDirectory()]);
 		TA(@"-o", @"StrictHostKeyChecking=no");
 
@@ -400,7 +399,7 @@ static unsigned short getRandomPort();
 		[task setArguments:taskArguments];
 
 		// Set up the environment for the task
-		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelAceTunnelAssistant"];
+		authenticationAppPath = [[NSBundle mainBundle] pathForAuxiliaryExecutable:@"SequelAceTunnelAssistant"];
 		taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
 		[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
 		[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];

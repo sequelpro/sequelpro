@@ -86,7 +86,7 @@
 	if (![self passwordExistsForName:name account:account]) {
 
 		// Create a trusted access list with two items - ourselves and the SSH pass app
-		NSString *helperPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelAceTunnelAssistant"];
+		NSString *helperPath = [[NSBundle mainBundle] pathForAuxiliaryExecutable:@"SequelAceTunnelAssistant"];
 
 		if ((SecTrustedApplicationCreateFromPath(NULL, &sequelProRef) == noErr) &&
 			(SecTrustedApplicationCreateFromPath([helperPath UTF8String], &sequelProHelperRef) == noErr)) {

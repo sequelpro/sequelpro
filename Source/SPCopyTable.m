@@ -1285,8 +1285,8 @@ static const NSInteger kBlobAsImageFile = 4;
 		NSString *inputFallBackAction = @"";
 		NSError *err = nil;
 		NSString *uuid = [NSString stringWithNewUUID];
-		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
-		NSString *bundleInputTableMetaDataFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskTableMetaDataFilePath, uuid];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskInputFilePath stringByExpandingTildeInPath], uuid];
+		NSString *bundleInputTableMetaDataFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskTableMetaDataFilePath stringByExpandingTildeInPath], uuid];
 
 		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1330,7 +1330,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		}
 
 		if(blobHandling != kBlobExclude) {
-			NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
+			NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskCopyBlobFileDirectory stringByExpandingTildeInPath], uuid];
 			[env setObject:bundleBlobFilePath forKey:SPBundleShellVariableBlobFileDirectory];
 			[self setTmpBlobFileDirectory:bundleBlobFilePath];
 		} else {
