@@ -140,7 +140,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
 	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _saveColorThemeAtPath:[[panel URL] path]];
 		}
 	}];
@@ -160,7 +160,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
 	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
 	{
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			if ([self _loadColorSchemeFromFile:[[[panel URLs] objectAtIndex:0] path] ]) {
 				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 
@@ -510,7 +510,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	}
 	
 	if ([contextInfo isEqualToString:SPSaveColorScheme]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSFileManager *fm = [NSFileManager defaultManager];
 			
 			if (![fm fileExistsAtPath:themePath isDirectory:nil]) {
@@ -774,7 +774,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
 - (NSArray *)_getAvailableThemes
 {
-	// Read ~/Library/Application Support/Sequel Pro/Themes
+	// Read ~/Library/Application Support/Sequel Ace/Themes
 	NSFileManager *fm = [NSFileManager defaultManager];
 	
 	if ([fm fileExistsAtPath:themePath isDirectory:nil]) {

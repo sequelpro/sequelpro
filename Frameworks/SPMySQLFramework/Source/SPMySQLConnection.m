@@ -425,6 +425,22 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	return userTriggeredDisconnect;
 }
 
+/**
+ * Returns true if the connected server runs MariaDB > 10.2, false Otherwise
+ */
+- (BOOL)isNotMariadb103
+{
+    serverVariableVersion = [[NSString alloc] initWithCString:mysql_get_server_info(mySQLConnection) encoding:NSISOLatin1StringEncoding];
+    NSLog(@"%@", [serverVariableVersion lowercaseString]);
+    NSString *someRegexp = @"(.*)10(\.[3-9]+[0-9]*(\.[0-9]*))*-(mariadb)(.*)";
+    NSPredicate *myTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", someRegexp];
+    
+    if ([myTest evaluateWithObject: [serverVariableVersion lowercaseString]]){
+        return false;
+    }
+    return true;
+}
+
 #pragma mark -
 #pragma mark General connection utilities
 

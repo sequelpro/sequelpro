@@ -30,26 +30,6 @@
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 0
 
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-// This code is available since 10.8 but public only since 10.10
-typedef struct {
-	NSInteger major;
-	NSInteger minor;
-	NSInteger patch;
-} NSOperatingSystemVersion;
-
-@interface NSProcessInfo ()
-
-- (NSOperatingSystemVersion)operatingSystemVersion;
-- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-
-@end
-#endif
-
 @interface PSMSequelProTabStyle ()
 
 - (NSColor *)_lineColorForTabCellDrawing;
@@ -71,31 +51,6 @@ typedef struct {
 - (id) init
 {
     if ( (self = [super init]) ) {
-		// Avoid call to the deprecated (10.8+) Gestalt() function.
-		// This code actually belongs in it's own class, but since both PSMTabBar.framework
-		// and SP itself would need it, the loader will complain about a duplicate class implementation.
-		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
-
-		if ([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
-			NSOperatingSystemVersion os10_7_0 = {10,7,0};
-			NSOperatingSystemVersion os10_10_0 = {10,10,0};
-			NSOperatingSystemVersion os10_14_0 = {10,14,0};
-
-			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
-			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
-			systemVersionIsAtLeast10_14_0 = [procInfo isOperatingSystemAtLeastVersion:os10_14_0];
-		}
-		else {
-			SInt32 versionMajor = 0;
-			SInt32 versionMinor = 0;
-			Gestalt(gestaltSystemVersionMajor, &versionMajor);
-			Gestalt(gestaltSystemVersionMinor, &versionMinor);
-			
-			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
-			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
-			systemVersionIsAtLeast10_14_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 14));
-		}
-
 		NSBundle *bundle = [PSMTabBarControl bundle];
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose"]];
@@ -139,7 +94,7 @@ typedef struct {
 
 - (BOOL)isInDarkMode
 {
-	if(systemVersionIsAtLeast10_14_0) {
+	if (@available(macOS 10.14, *)) {
 		NSAppearance *appearance = [NSAppearance currentAppearance] ?: [NSApp effectiveAppearance];
 		NSAppearanceName match = [appearance bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
 
@@ -567,7 +522,7 @@ typedef struct {
 			[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:lineColor];
 		}
 
-		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
     }
     
     // icon
@@ -583,7 +538,7 @@ typedef struct {
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0f;
         }
         
-		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
 
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
@@ -678,7 +633,8 @@ typedef struct {
 
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			if (cell.backgroundColor) {
-				fillColor = [NSColor colorWithCalibratedHue:cell.backgroundColor.hueComponent saturation:cell.backgroundColor.saturationComponent brightness:(cell.backgroundColor.brightnessComponent * 1.28) alpha:1.0f];
+				NSColor *backgroundRgb = [cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+				fillColor = [NSColor colorWithCalibratedHue:backgroundRgb.hueComponent saturation:backgroundRgb.saturationComponent brightness:(backgroundRgb.brightnessComponent * 1.28f) alpha:1.0f];
 			} else {
 				fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			}
@@ -691,7 +647,7 @@ typedef struct {
 			
 			//make it dark first, then desaturate
 			if (cell.backgroundColor) {
-				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
+				NSColor *dark = [[cell.backgroundColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace] shadowWithLevel:0.15];
 				fillColor = [NSColor colorWithCalibratedHue:dark.hueComponent saturation:dark.saturationComponent * 0.15 brightness:(dark.brightnessComponent * 1.28) alpha:1.0f];
 			}
 		}

@@ -153,7 +153,7 @@
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# ************************************************************\n"];
-	[metaString appendString:@"# Sequel Pro SQL dump\n"];
+	[metaString appendString:@"# Sequel Ace SQL dump\n"];
 	[metaString appendFormat:@"# %@ %@\n#\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[metaString appendFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
 	[metaString appendFormat:@"# %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [self sqlDatabaseHost], [self sqlDatabaseVersion]];
@@ -463,7 +463,8 @@
 						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
 						[sqlString appendString:@")\nVALUES\n\t("];
 
-						queryLength = 0, rowsWrittenForCurrentStmt = 0;
+						queryLength = 0;
+						rowsWrittenForCurrentStmt = 0;
 
 						// Use the opportunity to drain and reset the autorelease pool at the end of this row
 						cleanAutoReleasePool = YES;

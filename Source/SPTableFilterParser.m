@@ -72,32 +72,12 @@
 
 - (NSString *)filterString
 {
-	NSString *filterString;
-	
 	// argument if Filter requires only one argument
 	NSMutableString *argument = [[NSMutableString alloc] initWithString:(_argument? _argument : @"")];
 
-	// If the filter field is empty and the selected filter does not require
-	// only one argument, then no filtering is required - return nil.
-	if (![argument length] && numberOfArguments == 1) {
-		[argument release];
-		return nil;
-	}
-	
 	// arguments if Filter requires two arguments
 	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:(_firstBetweenArgument? _firstBetweenArgument : @"")];
 	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:(_secondBetweenArgument? _secondBetweenArgument : @"")];
-	
-	// If filter requires two arguments and either of the argument fields are empty
-	// return nil.
-	if (numberOfArguments == 2) {
-		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
-			[argument release];
-			[firstBetweenArgument release];
-			[secondBetweenArgument release];
-			return nil;
-		}
-	}
 	
 	// Retrieve actual WHERE clause
 	NSMutableString *clause = [[NSMutableString alloc] init];
@@ -135,40 +115,27 @@
 	}
 	
 	// Construct the filter string according the required number of arguments
-	
-	if(suppressLeadingTablePlaceholder) {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:clause,
-							[[self class] escapeFilterArgument:firstBetweenArgument againstClause:clause],
-							[[self class] escapeFilterArgument:secondBetweenArgument againstClause:clause]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:clause, [[self class] escapeFilterArgument:argument againstClause:clause]];
-		} else {
-			filterString = [NSString stringWithString:clause];
-			if(numberOfArguments > 2) {
-				SPLog(@"Filter with more than 2 arguments is not yet supported.");
-				NSBeep();
-			}
-		}
+	NSMutableString *filterString = [NSMutableString string];
+
+	if(!suppressLeadingTablePlaceholder) {
+		[filterString appendFormat:@"%@ ",[_currentField backtickQuotedString]];
+	}
+
+	NSUInteger numArgs = numberOfArguments;
+	if(numArgs > 2) {
+		SPLog(@"Filter with more than 2 arguments is not yet supported.");
+		NSBeep();
+		numArgs = 2;
+	}
+
+	if (numArgs == 2) {
+		[filterString appendFormat:clause,
+		                           [[self class] escapeFilterArgument:firstBetweenArgument againstClause:clause],
+		                           [[self class] escapeFilterArgument:secondBetweenArgument againstClause:clause]];
+	} else if (numArgs == 1) {
+		[filterString appendFormat:clause, [[self class] escapeFilterArgument:argument againstClause:clause]];
 	} else {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-							[_currentField backtickQuotedString],
-							[NSString stringWithFormat:clause,
-							 [[self class] escapeFilterArgument:firstBetweenArgument againstClause:clause],
-							 [[self class] escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-							[_currentField backtickQuotedString],
-							[NSString stringWithFormat:clause, [[self class] escapeFilterArgument:argument againstClause:clause]]];
-		} else {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-							[_currentField backtickQuotedString], clause];
-			if(numberOfArguments > 2) {
-				SPLog(@"Filter with more than 2 arguments is not yet supported.");
-				NSBeep();
-			}
-		}
+		[filterString appendString:clause];
 	}
 	
 	[argument release];

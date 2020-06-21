@@ -33,7 +33,7 @@
 @implementation SPDocumentController
 
 /**
- * This is an empty, dummy implementation; this allows Sequel Pro to behave
+ * This is an empty, dummy implementation; this allows Sequel Ace to behave
  * as if it were a document-based application.
  */
 

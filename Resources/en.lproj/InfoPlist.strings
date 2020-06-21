@@ -1,0 +1,4 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleGetInfoString = "Sequel Ace version 2.0, Copyright 2020 Moballo, LLC";
+NSHumanReadableCopyright = "Copyright 2020 Moballo, LLC";

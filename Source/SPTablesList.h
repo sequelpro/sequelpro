@@ -111,9 +111,13 @@
 	NSMutableArray *tables;
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
+	NSMutableDictionary *tableComments;
 	NSMutableArray *filteredTableTypes;
 	SPTableType selectedTableType;
 	NSString *selectedTableName;
+
+	NSUserDefaults *prefs;
+
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;

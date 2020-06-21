@@ -34,7 +34,12 @@
 
 void SPMainQSync(void (^block)(void))
 {
-	if(dispatch_get_current_queue() == dispatch_get_main_queue()) {
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		dispatch_queue_set_specific(dispatch_get_main_queue(), &onceToken, &onceToken, NULL);
+	});
+	
+	if (dispatch_get_specific(&onceToken) == &onceToken) {
 		block();
 	}
 	else {
@@ -50,29 +55,7 @@ void SPMainLoopAsync(void (^block)(void))
 
 int SPBetterRandomBytes(uint8_t *buf, size_t count)
 {
-	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {
-		return SecRandomCopyBytes(kSecRandomDefault, count, buf);
-	}
-
-	// Version for 10.6
-	// https://developer.apple.com/library/prerelease/mac/documentation/Security/Conceptual/cryptoservices/RandomNumberGenerationAPIs/RandomNumberGenerationAPIs.html#//apple_ref/doc/uid/TP40011172-CH12-SW1
-	FILE *fp = fopen("/dev/random", "r");
- 
-	if (!fp) return -1;
- 
-	size_t i;
-	for (i=0; i<count; i++) {
-		int c = fgetc(fp);
-		if(c == EOF) { // /dev/random should never EOF
-			errno = ferror(fp);
-			return -1;
-		}
-		buf[i] = c;
-	}
- 
-	fclose(fp);
-	
-	return 0;
+	return SecRandomCopyBytes(kSecRandomDefault, count, buf);
 }
 
 NSUInteger SPIntS2U(NSInteger i)

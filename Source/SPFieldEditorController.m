@@ -44,7 +44,8 @@
 typedef enum {
 	TextSegment = 0,
 	ImageSegment,
-	HexSegment
+	HexSegment,
+	JsonSegment,
 } FieldEditorSegment;
 
 @implementation SPFieldEditorController
@@ -86,7 +87,7 @@ typedef enum {
 		editTextViewWasChanged = NO;
 
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
-		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[editSheetOkButton setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 
 		if([editTextView respondsToSelector:@selector(setUsesFindBar:)])
 			// 10.7+
@@ -536,6 +537,8 @@ typedef enum {
 			[editImage setHidden:YES];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
 			break;
 		case ImageSegment:
@@ -544,6 +547,8 @@ typedef enum {
 			[editImage setHidden:NO];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editImage];
 			break;
 		case HexSegment:
@@ -562,6 +567,31 @@ typedef enum {
 			[editImage setHidden:YES];
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
+			[jsonTextView setHidden:YES];
+			[jsonTextScrollView setHidden:YES];
+			break;
+		case JsonSegment:
+			[usedSheet makeFirstResponder:jsonTextView];
+			if([[jsonTextView string] isEqualToString:@""]) {
+				NSError *error;
+				NSData *jsonData = [sheetEditData dataUsingEncoding:NSUTF8StringEncoding];
+				id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&error];
+				
+				if([NSJSONSerialization isValidJSONObject:jsonObject]){
+					NSData *prettyJsonData = [NSJSONSerialization dataWithJSONObject:jsonObject options:NSJSONWritingPrettyPrinted error:&error];
+					NSString *prettyPrintedJson = [NSString stringWithUTF8String:[prettyJsonData bytes]];
+					[jsonTextView setString:prettyPrintedJson];
+				}else{
+					[jsonTextView setString:sheetEditData];
+				}
+			}
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[jsonTextView setHidden:NO];
+			[jsonTextScrollView setHidden:NO];
 			break;
 	}
 }
@@ -684,11 +714,11 @@ typedef enum {
 }
 
 /**
- * Open file panel didEndSelector. If the returnCode == NSOKButton it opens the selected file in the editSheet.
+ * Open file panel didEndSelector. If the returnCode == NSModalResponseOK it opens the selected file in the editSheet.
  */
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
 {
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		NSString *contents = nil;
 
 		editSheetWillBeInitialized = YES;
@@ -748,11 +778,11 @@ typedef enum {
 }
 
 /**
- * Save file panel didEndSelector. If the returnCode == NSOKButton it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
+ * Save file panel didEndSelector. If the returnCode == NSModalResponseOK it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 
 		[editSheetProgressBar startAnimation:self];
 

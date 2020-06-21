@@ -39,7 +39,6 @@
 #import "SPCustomQuery.h"
 #import "SPDataImport.h"
 #import "ImageAndTextCell.h"
-#import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPSplitView.h"
 #import "SPQueryController.h"
@@ -100,7 +99,6 @@ static NSString *SPNewDatabaseName = @"SPNewDatabaseName";
 static NSString *SPNewDatabaseCopyContent = @"SPNewDatabaseCopyContent";
 
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
-static BOOL isOSAtLeast10_14;
 
 @interface SPDatabaseDocument ()
 
@@ -149,7 +147,7 @@ static BOOL isOSAtLeast10_14;
 #pragma mark -
 
 + (void)initialize {
-	isOSAtLeast10_14 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:14 patch:0];
+	
 }
 
 - (id)init
@@ -241,7 +239,7 @@ static BOOL isOSAtLeast10_14;
 		// automatically released.  Keep track of the top-level objects for release on dealloc.
 		NSArray *dbViewTopLevelObjects = nil;
 		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"DBView" bundle:[NSBundle mainBundle]];
-		[nibLoader instantiateNibWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
+		[nibLoader instantiateWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 #endif
@@ -318,7 +316,7 @@ static BOOL isOSAtLeast10_14;
 	// Load additional nibs, keeping track of the top-level objects to allow correct release
 	NSArray *connectionDialogTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
@@ -329,7 +327,7 @@ static BOOL isOSAtLeast10_14;
 
 	NSArray *progressIndicatorLayerTopLevelObjects = nil;
 	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
+	if (![nibLoader instantiateWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
 	} else {
 		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
@@ -529,7 +527,6 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA
 	[self updateWindowTitle:self];
 	
-	// Connected Growl notification
 	NSString *serverDisplayName = nil;
 	if ([parentWindowController selectedTableDocument] == self) {
 		serverDisplayName = [parentWindow title];
@@ -537,10 +534,13 @@ static BOOL isOSAtLeast10_14;
 		serverDisplayName = [parentTabViewItem label];
 	}
 
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
-	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@", @"description for connected growl notification"), serverDisplayName]
-	                                                  document:self
-	                                          notificationName:@"Connected"];
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Connected";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Connected to %@", @"description for connected notification"), serverDisplayName];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:@NO forKey:@"save_editor_content"];
@@ -929,7 +929,7 @@ static BOOL isOSAtLeast10_14;
 			NSLocalizedString(@"Database Rename Unsupported", @"databsse rename unsupported message"),
 			parentWindow,
 			[NSString stringWithFormat:NSLocalizedString(
-					@"Ranaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
+					@"Renaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
 					@"databsse rename unsupported informative message"), selectedDatabase]
 		);
 		return;
@@ -968,7 +968,7 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 #else
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"]; // Esc = Cancel
@@ -1050,7 +1050,7 @@ static BOOL isOSAtLeast10_14;
 		}
 	}
 	// shutdown successful.
-	// Until s.o. has a good UI idea, do nothing. Sequel Pro should figure out the connection loss soon enough
+	// Until s.o. has a good UI idea, do nothing. Sequel Ace should figure out the connection loss soon enough
 }
 
 #endif
@@ -1104,7 +1104,7 @@ static BOOL isOSAtLeast10_14;
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		[addDatabaseCharsetHelper setEnabled:NO];
 
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
@@ -1121,18 +1121,18 @@ static BOOL isOSAtLeast10_14;
 		}
 	}
 	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _copyDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _renameDatabase];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPAlterDatabaseAction]) {
 		[alterDatabaseCharsetHelper setEnabled:NO];
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			[self _alterDatabase];
 		}
 	}
@@ -1390,7 +1390,7 @@ static BOOL isOSAtLeast10_14;
 
 	// If the window has been fully faded in, clean up the timer.
 	if (alphaValue == 1.0) {
-		[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+		(void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 		SPClear(taskFadeInStartDate);
 	}
 #endif
@@ -1501,7 +1501,7 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA 
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) {
-			[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+			(void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 			SPClear(taskFadeInStartDate);
 		}
 
@@ -1920,11 +1920,14 @@ static BOOL isOSAtLeast10_14;
 		[pb declareTypes:@[NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
 
-		// Table syntax copied Growl notification
-		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
-		                                               description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]]
-		                                                  document:self
-		                                          notificationName:@"Syntax Copied"];
+		// Table syntax copied notification
+		NSUserNotification *notification = [[NSUserNotification alloc] init];
+		notification.title = @"Syntax Copied";
+		notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied notification"), [self table]];
+		notification.soundName = NSUserNotificationDefaultSoundName;
+
+		[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		[notification release];
 
 		return;
 	}
@@ -2402,7 +2405,7 @@ static BOOL isOSAtLeast10_14;
 
 	[panel setNameFieldStringValue:[NSString stringWithFormat:@"CreateSyntax-%@", [self table]]];
 	[panel beginSheetModalForWindow:createTableSyntaxWindow completionHandler:^(NSInteger returnCode) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
 			if ([createSyntax length] > 0) {
@@ -2428,11 +2431,14 @@ static BOOL isOSAtLeast10_14;
 		[pb declareTypes:@[NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
 
-		// Table syntax copied Growl notification
-		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
-		                                               description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]]
-		                                                  document:self
-		                                          notificationName:@"Syntax Copied"];
+		// Table syntax copied notification
+		NSUserNotification *notification = [[NSUserNotification alloc] init];
+		notification.title = @"Syntax Copied";
+		notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied notification"), [self table]];
+		notification.soundName = NSUserNotificationDefaultSoundName;
+
+		[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		[notification release];
 	}
 }
 
@@ -2622,12 +2628,15 @@ static BOOL isOSAtLeast10_14;
 	[mySQLConnection disconnect];
 	_isConnected = NO;
 
-#ifndef SP_CODA /* growl */
-	// Disconnected Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected"
-	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@", @"description for disconnected growl notification"), [parentTabViewItem label]]
-	                                                  document:self
-	                                          notificationName:@"Disconnected"];
+#ifndef SP_CODA /* notification */
+	// Disconnected notification
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Disconnected";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@", @"description for disconnected notification"), [parentTabViewItem label]];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 #endif
 }
 
@@ -2767,7 +2776,7 @@ static BOOL isOSAtLeast10_14;
 		return NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting");
 	}
 	
-	if ([self getConnection] == nil) return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+	if ([self getConnection] == nil) return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Ace"];
 
 	tabTitle = [NSMutableString string];
 
@@ -2857,7 +2866,8 @@ static BOOL isOSAtLeast10_14;
 	SPTableViewType theView = NSNotFound;
 
 	// -selectedTabViewItem is a UI method according to Xcode 9.2!
-	NSString *viewName = [[tableTabView selectedTabViewItem] identifier];
+	// jamesstout note - this is called a LOT. 
+	NSString *viewName = [[[tableTabView onMainThread] selectedTabViewItem] identifier];
 
 	if ([viewName isEqualToString:@"source"]) {
 		theView = SPTableViewStructure;
@@ -3855,7 +3865,7 @@ static BOOL isOSAtLeast10_14;
 		tabTitle = windowTitle;
 	}
 	else if (!_isConnected) {
-		windowTitle = [NSMutableString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+		windowTitle = [NSMutableString stringWithFormat:@"%@%@", pathName, @"Sequel Ace"];
 		tabTitle = windowTitle;
 	} 
 	else {
@@ -4058,7 +4068,7 @@ static BOOL isOSAtLeast10_14;
 
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarShowConsole]) {
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Show Console", @"show console")];
-		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for show console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Show the console which shows all MySQL commands performed by Sequel Ace", @"tooltip for toolbar item for show console")];
 
 		[toolbarItem setLabel:NSLocalizedString(@"Console", @"Console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"hideconsole"]];
@@ -4072,7 +4082,7 @@ static BOOL isOSAtLeast10_14;
 		[toolbarItem setLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Clear Console", @"toolbar item for clear console")];
 		//set up tooltip and image
-		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Pro", @"tooltip for toolbar item for clear console")];
+		[toolbarItem setToolTip:NSLocalizedString(@"Clear the console which shows all MySQL commands performed by Sequel Ace", @"tooltip for toolbar item for clear console")];
 		[toolbarItem setImage:[NSImage imageNamed:@"clearconsole"]];
 		//set up the target action
 		[toolbarItem setTarget:self];
@@ -4546,7 +4556,7 @@ static BOOL isOSAtLeast10_14;
 - (NSString *)displayName
 {
 	if (!_isConnected) {
-		return [NSString stringWithFormat:@"%@%@", ([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Pro"];
+		return [NSString stringWithFormat:@"%@%@", ([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Ace"];
 	} 
 	return [[[self fileURL] path] lastPathComponent];
 }
@@ -4991,7 +5001,7 @@ static BOOL isOSAtLeast10_14;
 			                                   otherButton:nil
 			                     informativeTextWithFormat:NSLocalizedString(@"Wrong data format or password.", @"wrong data format or password")];
 
-			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert setAlertStyle:NSAlertStyleCritical];
 			[alert runModal];
 			[self closeAndDisconnect];
 			[spf release];
@@ -5013,7 +5023,7 @@ static BOOL isOSAtLeast10_14;
 		                                   otherButton:nil
 		                     informativeTextWithFormat:@"%@", informativeText];
 
-		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert setAlertStyle:NSAlertStyleCritical];
 		[alert runModal];
 		[self closeAndDisconnect];
 		[spf release];
@@ -5340,7 +5350,7 @@ static BOOL isOSAtLeast10_14;
 	}
 
 	if([command isEqualToString:@"ReloadContentTableWithWHEREClause"]) {
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
@@ -5355,7 +5365,7 @@ static BOOL isOSAtLeast10_14;
 	}
 
 	if([command isEqualToString:@"RunQueryInQueryEditor"]) {
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
@@ -5373,10 +5383,10 @@ static BOOL isOSAtLeast10_14;
 
 		if([params count] > 1) {
 
-			NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-			NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
-			NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
-			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+			NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], docProcessID];
+			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], docProcessID];
 			NSFileManager *fm = [NSFileManager defaultManager];
 			NSString *status = @"0";
 			BOOL userTerminated = NO;
@@ -5404,7 +5414,7 @@ static BOOL isOSAtLeast10_14;
 				NSEvent* event = [NSApp currentEvent];
 				if ([event type] == NSKeyDown) {
 					unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-					if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+					if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 						userTerminated = YES;
 						break;
 					}
@@ -5524,10 +5534,10 @@ static BOOL isOSAtLeast10_14;
 
 		BOOL writeAsCsv = ([outputFormat isEqualToString:@"csv"]) ? YES : NO;
 
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
-		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], docProcessID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		NSString *status = @"0";
 		BOOL isDir;
@@ -5598,7 +5608,7 @@ static BOOL isOSAtLeast10_14;
 								NSEvent* event = [NSApp currentEvent];
 								if ([event type] == NSKeyDown) {
 									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+									if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 										userTerminated = YES;
 										break;
 									}
@@ -5637,7 +5647,7 @@ static BOOL isOSAtLeast10_14;
 								NSEvent* event = [NSApp currentEvent];
 								if ([event type] == NSKeyDown) {
 									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+									if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 										userTerminated = YES;
 										break;
 									}
@@ -5900,7 +5910,11 @@ static BOOL isOSAtLeast10_14;
 	CGFloat leftPaneWidth = [[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width;
 
 	// subtract some pixels to allow for misc stuff
-	leftPaneWidth -= isOSAtLeast10_14 ? 9 : 12;
+	if (@available(macOS 10.14, *)) {
+		leftPaneWidth -= 9;
+	} else {
+		leftPaneWidth -= 12;
+	}
 
 	// make sure it's not too small or to big
 	if (leftPaneWidth < 130) leftPaneWidth = 130;
@@ -6335,7 +6349,12 @@ static BOOL isOSAtLeast10_14;
 #ifndef SP_CODA
 - (void)_processDatabaseChangedBundleTriggerActions
 {
-	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	NSArray __block *triggeredCommands = nil;
+	
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	});
+
 	
 	for (NSString* cmdPath in triggeredCommands) 
 	{
@@ -6956,8 +6975,13 @@ static BOOL isOSAtLeast10_14;
 		[self endTask];
 
 #ifndef SP_CODA /* triggered commands */
-		NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
-
+		
+		NSArray __block *triggeredCommands = nil;
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+		});
+		
 		for(NSString* cmdPath in triggeredCommands)
 		{
 			NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
@@ -7241,7 +7265,7 @@ static BOOL isOSAtLeast10_14;
 
 			// Change the alert's cancel button to have the key equivalent of return
 			[[buttons objectAtIndex:0] setKeyEquivalent:@"p"];
-			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 			[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 			[alert beginSheetModalForWindow:[self parentWindow] modalDelegate:self didEndSelector:@selector(printWarningDidEnd:returnCode:contextInfo:) contextInfo:NULL];
@@ -7579,8 +7603,6 @@ static BOOL isOSAtLeast10_14;
 	SPClear(chooseDatabaseButton);
 	SPClear(historyControl);
 
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	
 	SPClear(nibObjectsToRelease);
 	
 	SPClear(databaseStructureRetrieval);
@@ -7606,7 +7628,7 @@ static BOOL isOSAtLeast10_14;
 	if (mySQLConnection) SPClear(mySQLConnection);
 	if (selectedDatabase) SPClear(selectedDatabase);
 	if (mySQLVersion) SPClear(mySQLVersion);
-	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
+	if (taskDrawTimer) (void)([taskDrawTimer invalidate]), SPClear(taskDrawTimer);
 	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
 	if (queryEditorInitString) SPClear(queryEditorInitString);
 	if (sqlFileURL) SPClear(sqlFileURL);

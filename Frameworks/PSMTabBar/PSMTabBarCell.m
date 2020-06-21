@@ -201,7 +201,7 @@
 
 - (BOOL)closeButtonOver
 {
-    return (_closeButtonOver && ([_customControlView allowsBackgroundTabClosing] || ([self tabState] & PSMTab_SelectedMask) || [[NSApp currentEvent] modifierFlags] & NSCommandKeyMask));
+    return (_closeButtonOver && ([_customControlView allowsBackgroundTabClosing] || ([self tabState] & PSMTab_SelectedMask) || [[NSApp currentEvent] modifierFlags] & NSEventModifierFlagCommand));
 }
 
 - (void)setCloseButtonOver:(BOOL)value
@@ -363,7 +363,7 @@
     if (_isPlaceholder) {
 		if (![_customControlView usesSafariStyleDragging]) {
 			[[NSColor colorWithCalibratedWhite:0.0f alpha:0.2f] set];
-			NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
+			NSRectFillUsingOperation(cellFrame, NSCompositingOperationSourceAtop);
 		}
         return;
     }
@@ -386,7 +386,7 @@
     }
 	
 	// scrubtastic
-	if ([_customControlView allowsScrubbing] && ([theEvent modifierFlags] & NSAlternateKeyMask))
+	if ([_customControlView allowsScrubbing] && ([theEvent modifierFlags] & NSEventModifierFlagOption))
 		[_customControlView tabClick:self];
 	
 	// tell the control we only need to redraw the affected tab
@@ -445,7 +445,7 @@
         [image lockFocus];
         NSPoint indicatorPoint = NSMakePoint([self frame].size.width - MARGIN_X - kPSMTabBarIndicatorWidth, MARGIN_Y);
 		NSRect indicatorRect = NSMakeRect(indicatorPoint.x, indicatorPoint.y, [pieImage size].width, [pieImage size].height);
-		[pieImage drawInRect:indicatorRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+		[pieImage drawInRect:indicatorRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f respectFlipped:YES hints:nil];
         [image unlockFocus];
         [pieImage release];
     }

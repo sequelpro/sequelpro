@@ -147,11 +147,11 @@ static NSString *SPSSLCipherPboardTypeName = @"SSLCipherPboardType";
 	[_currentAlert setAccessoryView:sshClientPickerView];
 	[_currentAlert setAlertStyle:NSWarningAlertStyle];
 	[_currentAlert setMessageText:NSLocalizedString(@"Unsupported configuration!",@"Preferences : Network : Custom SSH client : warning dialog title")];
-	[_currentAlert setInformativeText:NSLocalizedString(@"Sequel Pro only supports and is tested with the default OpenSSH client versions included with Mac OS X. Using different clients might cause connection issues, security risks or not work at all.\n\nPlease be aware, that we cannot provide support for such configurations.",@"Preferences : Network : Custom SSH client : warning dialog message")];
+	[_currentAlert setInformativeText:NSLocalizedString(@"Sequel Ace only supports and is tested with the default OpenSSH client versions included with Mac OS X. Using different clients might cause connection issues, security risks or not work at all.\n\nPlease be aware, that we cannot provide support for such configurations.",@"Preferences : Network : Custom SSH client : warning dialog message")];
 	[_currentAlert addButtonWithTitle:NSLocalizedString(@"OK",@"Preferences : Network : Custom SSH client : warning dialog : accept button")];
 	[_currentAlert addButtonWithTitle:NSLocalizedString(@"Cancel",@"Preferences : Network : Custom SSH client : warning dialog : cancel button")];
 	
-	if([_currentAlert runModal] == NSAlertFirstButtonReturn) {
+	if([_currentAlert runModal] == NSAlertFirstButtonReturn || [_currentAlert runModal] == NSAlertAlternateReturn) {
 		//store new value to user defaults
 		NSString *newPath = [sshClientPath stringValue];
 		if(![newPath length])

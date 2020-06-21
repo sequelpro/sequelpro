@@ -38,85 +38,6 @@
 #ifndef SPCompatibility
 #define SPCompatibility
 
-#pragma mark - 10.8 Mountain Lion
-
-#ifndef __MAC_10_8
-#define __MAC_10_8 1080
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_8
-#error You need to have at least SDK 10.8!
-#endif
-
-#pragma mark - 10.9 Mavericks
-
-#ifndef __MAC_10_9
-#define __MAC_10_9 1090
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_9
-
-@interface NSString (Mavericks)
-
-@property (readonly, copy) NSString *stringByRemovingPercentEncoding;
-
-@end
-
-// This is actually a @protocol
-@interface NSWindow (Mavericks)
-
-// actual return type is `NSAppearance *`
-@property (readonly) id effectiveAppearance;
-
-@end
-
-#define NSAppearanceNameAqua @"NSAppearanceNameAqua"
-
-#endif
-
-#pragma mark - 10.10 Yosemite
-
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-
-// This enum is available since 10.5 but only got a "name" in 10.10
-typedef NSUInteger NSCellHitResult;
-// This bitfield is available since 10.0 but only got a "name" in 10.10
-typedef NSUInteger NSAutoresizingMaskOptions;
-
-@compatibility_alias NSTitlebarAccessoryViewController NSViewController;
-
-@interface NSViewController (NSTitlebarAccessoryViewController)
-
-@property NSLayoutAttribute layoutAttribute;
-
-@end
-
-@interface NSWindow (Yosemite)
-
-- (NSArray *)titlebarAccessoryViewControllers;
-- (void)removeTitlebarAccessoryViewControllerAtIndex:(NSInteger)index;
-- (void)addTitlebarAccessoryViewController:(NSTitlebarAccessoryViewController *)controller;
-
-@end
-
-// This code is available since 10.8 but public only since 10.10
-typedef struct {
-	NSInteger majorVersion;
-	NSInteger minorVersion;
-	NSInteger patchVersion;
-} NSOperatingSystemVersion;
-
-@interface NSProcessInfo ()
-- (NSOperatingSystemVersion)operatingSystemVersion;
-- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-@end
-
-#endif
-
 #pragma mark - 10.11 El Capitan
 
 #ifndef __MAC_10_11
@@ -161,6 +82,14 @@ typedef struct {
 #define NSAlertStyleInformational NSInformationalAlertStyle
 #define NSAlertStyleWarning       NSWarningAlertStyle
 #define NSAlertStyleCritical      NSCriticalAlertStyle
+
+#define NSEventModifierFlagShift                      NSShiftKeyMask
+#define NSEventModifierFlagControl                    NSControlKeyMask
+#define NSEventModifierFlagOption                     NSAlternateKeyMask
+#define NSEventModifierFlagCommand                    NSCommandKeyMask
+#define NSEventModifierFlagNumericPad                 NSNumericPadKeyMask
+#define NSEventModifierFlagFunction                   NSFunctionKeyMask
+#define NSEventModifierFlagDeviceIndependentFlagsMask NSDeviceIndependentModifierFlagsMask
 
 @interface NSWindow (Sierra)
 + (void)setAllowsAutomaticWindowTabbing:(BOOL)arg;

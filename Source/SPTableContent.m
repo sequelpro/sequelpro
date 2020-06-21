@@ -175,13 +175,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		tableRowsSelectable = YES;
 		isFirstChangeInView = YES;
 
-		showFilterRuleEditor = NO;
-
 		isFiltered = NO;
 		isLimited = NO;
 		isInterruptedLoad = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
+
+		showFilterRuleEditor = [prefs boolForKey:SPRuleFilterEditorLastVisibilityChoice];
 
 		usedQuery = [[NSString alloc] initWithString:@""];
 
@@ -509,12 +509,19 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	{
 		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[constraint objectForKey:@"ref_columns"] objectAtIndex:0];
+		NSString *refDatabase    = [tableDocumentInstance database];
 		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
+		
+		// Overwrite database name if exists
+		if ([constraint objectForKey:@"ref_database"]) {
+			refDatabase = [constraint objectForKey:@"ref_database"];
+		}
 
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
 											firstRefColumn, @"column",
+											refDatabase, @"database",
 											nil];
 			NSMutableDictionary *rowDictionary = [NSMutableDictionary dictionaryWithDictionary:[dataColumns objectAtIndex:columnIndex]];
 			[rowDictionary setObject:refDictionary forKey:@"foreignkeyreference"];
@@ -1028,7 +1035,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		// If the clause has the placeholder $BINARY that placeholder will be replaced
 		// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 		// replaced by @"".
-		BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask) > 0);
+		BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagShift) > 0);
 
 		NSError *err = nil;
 		NSString *filter = [ruleFilterController sqlWhereExpressionWithBinary:caseSensitive error:&err];
@@ -1040,7 +1047,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			);
 			return nil;
 		}
-		return filter;
+		return ([filter length] ? filter : nil);
 	}
 
 	return nil;
@@ -1271,6 +1278,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		activeFilter = SPTableContentFilterSourceRuleFilter;
 		resetPaging = YES;
 	}
+	else if (sender == nil) {
+		activeFilter = SPTableContentFilterSourceNone;
+		resetPaging = YES;
+	}
 #endif
 
 	NSString *taskString;
@@ -1350,6 +1361,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (IBAction)toggleRuleEditorVisible:(id)sender
 {
 	BOOL shouldShow = !showFilterRuleEditor;
+	[prefs setBool:shouldShow forKey:SPRuleFilterEditorLastVisibilityChoice];
 	[self setRuleEditorVisible:shouldShow animate:YES];
 	// if this was the active filter before, it no longer can be the active filter when it is hidden
 	if(activeFilter == SPTableContentFilterSourceRuleFilter && !shouldShow) {
@@ -1360,8 +1372,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (void)setRuleEditorVisible:(BOOL)show animate:(BOOL)animate
 {
 	// we can't change the state of the button here, because the mouse click already changed it
-	if(show) {
-		if([ruleFilterController isEmpty]) {
+	if((showFilterRuleEditor = show)) {
+		[ruleFilterController setEnabled:YES];
+		// if it was the user who enabled the filter (indicated by the animation) add an empty row by default
+		if([ruleFilterController isEmpty] && animate) {
 			[ruleFilterController addFilterExpression];
 			// the sizing will be updated automatically by adding a row
 		}
@@ -1370,9 +1384,9 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 	}
 	else {
+		[ruleFilterController setEnabled:NO]; // disable it to not trigger any key bindings when hidden
 		[self updateFilterRuleEditorSize:0.0 animate:animate];
 	}
-	showFilterRuleEditor = show;
 }
 
 - (void)setUsedQuery:(NSString *)query
@@ -1391,13 +1405,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			return;
 		}
 
-		NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+		NSEventModifierFlags modifierFlags = [[[NSApp onMainThread] currentEvent] modifierFlags];
 
 		// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 		// header is clicked several times
 		if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
 			BOOL invert = NO;
-			if (modifierFlags & NSShiftKeyMask) {
+			if (modifierFlags & NSEventModifierFlagShift) {
 				invert = YES;
 			}
 
@@ -1411,13 +1425,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 		else {
 			// When the column is not sorted, allow to sort in reverse order using Shift+click
-			if (modifierFlags & NSShiftKeyMask) {
+			if (modifierFlags & NSEventModifierFlagShift) {
 				isDesc = YES;
 			} else {
 				isDesc = NO;
 			}
 
-			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
+			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[[tableContentView onMainThread] tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
 
 			if (sortCol) [sortCol release];
 
@@ -1514,12 +1528,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	if(makeVisible) {
 		[paginationButton setState:NSOnState];
-		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
+		[paginationButton setImage:[NSImage imageNamed:@"button_actionTemplate"]];
 		[paginationViewController makeInputFirstResponder];
 	}
 	else {
 		[paginationButton setState:NSOffState];
-		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
+		[paginationButton setImage:[NSImage imageNamed:@"button_paginationTemplate"]];
 		// TODO This is only relevant in 10.6 legacy mode.
 		// When using a modern NSPopover, the view controller's parent window is an _NSPopoverWindow,
 		// not the SP window and we don't care what the first responder in the popover is.
@@ -1823,7 +1837,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 #else
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
@@ -2122,7 +2136,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 					else
 						 [messageText appendFormat:NSLocalizedString(@"%ld additional rows were removed!",@"Table Content : Remove Row : Result : Too Many : Part 1 : n+y (y!=1) rows instead of n selected were deleted."),numErrors];
 					
-					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Pro team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
+					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Ace team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
 					
 				}
 				else {
@@ -2405,6 +2419,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 		else {
 			SPMainQSync(^{
+				// Switch databases if needed
+				if (![[refDictionary objectForKey:@"database"] isEqualToString:[tableDocumentInstance database]]) {
+					NSString *databaseToJumpTo = [refDictionary objectForKey:@"database"];
+					NSString *tableToJumpTo = [refDictionary objectForKey:@"table"];
+					[[tableDocumentInstance onMainThread] selectDatabase:databaseToJumpTo item:tableToJumpTo];
+				}
 				[self setFiltersToRestore:filterSettings];
 				[self setActiveFilterToRestore:SPTableContentFilterSourceRuleFilter];
 				// Attempt to switch to the target table
@@ -3049,7 +3069,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	// this is a delegate method of the field editor controller. calling release
 	// now would risk a dealloc while it is still our parent on the stack:
-	[fieldEditor autorelease], fieldEditor = nil;
+	(void)([fieldEditor autorelease]), fieldEditor = nil;
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
 
@@ -3177,7 +3197,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 										[tableDataInstance columnNames], @"columnNames",
 										[tableDataInstance getConstraints], @"constraints",
 										nil];
-		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+		[[self onMainThread] setTableDetails:tableDetails];
 		isFirstChangeInView = NO;
 	}
 
@@ -3256,7 +3276,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// Only proceed with key-based selection if there were no problem columns
 		if (!problemColumns) {
-			NSIndexSet *selectedRowIndexes = [tableContentView selectedRowIndexes];
+			NSIndexSet *selectedRowIndexes = [[tableContentView onMainThread] selectedRowIndexes];
 			NSUInteger *indexBuffer = calloc([selectedRowIndexes count], sizeof(NSUInteger));
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 
@@ -3449,8 +3469,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	NSRect ruleEditorRect = [[[ruleFilterController view] enclosingScrollView] frame];
 
-	//adjust for the UI elements below the rule editor, but only if the view height should not be 0 (ie. hidden)
-	CGFloat containerRequestedHeight =  requestedHeight ? requestedHeight + ruleEditorRect.origin.y : 0;
+	//adjust for the UI elements below the rule editor, but only if the view should not be hidden
+	CGFloat containerRequestedHeight = showFilterRuleEditor ? requestedHeight + ruleEditorRect.origin.y : 0;
 
 	//the rule editor can ask for about one-third of the available space before we have it use it's scrollbar
 	CGFloat topContainerGivenHeight = MIN(containerRequestedHeight,(availableHeight / 3));
@@ -4247,7 +4267,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
-		if ([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask)) {
+		if ([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagCommand|NSEventModifierFlagShift|NSEventModifierFlagOption)) {
 			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
 		}
 		else {

@@ -250,7 +250,7 @@ static SPQueryController *sharedQueryController = nil;
     [panel setNameFieldStringValue:NSLocalizedString(@"ConsoleLog", @"Console : Save as : Initial filename")];
 
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSModalResponseOK) {
             [[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state]
                                        connections:[includeConnectionButton state]
 										 databases:[includeDatabaseButton state]] writeToFile:[[panel URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
@@ -640,9 +640,11 @@ static SPQueryController *sharedQueryController = nil;
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)
-	if (allowConsoleUpdate && [[self window] isVisible]) {
-		[self performSelectorOnMainThread:@selector(updateEntries) withObject:nil waitUntilDone:NO];
-	}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (allowConsoleUpdate && [[self window] isVisible]) {
+			[self performSelectorOnMainThread:@selector(updateEntries) withObject:nil waitUntilDone:NO];
+		}
+	});
 
 	pthread_mutex_unlock(&consoleLock);
 #endif
@@ -836,7 +838,7 @@ static SPQueryController *sharedQueryController = nil;
 #ifndef SP_CODA
 	// Register a new untiled document and return its URL
 	if (fileURL == nil) {
-		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:NSLocalizedString(@"Untitled %ld",@"Title of a new Sequel Pro Document"), (unsigned long)untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:NSLocalizedString(@"Untitled %ld",@"Title of a new Sequel Ace Document"), (unsigned long)untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 		untitledDocumentCounter++;
 
 		if (![favoritesContainer objectForKey:[new absoluteString]]) {

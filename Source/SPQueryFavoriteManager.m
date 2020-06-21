@@ -279,7 +279,7 @@
 	
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFavorites"];
@@ -302,7 +302,7 @@
 	
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeAllFavorites"];
@@ -815,7 +815,7 @@
 {
 #ifndef SP_CODA
 
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 
 		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 		NSError *readError = nil;
@@ -898,7 +898,7 @@
 #ifndef SP_CODA
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSError *error = nil;
 		
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
@@ -910,7 +910,7 @@
 		}
 	}
 	else if([contextInfo isEqualToString:@"exportFavorites"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 
 			// Build a SPF with format = "query favorites"
 			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];

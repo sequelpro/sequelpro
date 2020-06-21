@@ -307,7 +307,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFilters"];
@@ -820,7 +820,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 #ifndef SP_CODA
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 
 		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 
@@ -912,7 +912,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 #ifndef SP_CODA
 	if([contextInfo isEqualToString:SPExportFilterAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 
 			// Build a SPF with format = "content filters"
 			NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];

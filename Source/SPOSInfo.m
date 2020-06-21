@@ -44,23 +44,10 @@ int SPOSVersionCompare(SPOSVersion left, SPOSVersion right)
 + (SPOSVersion)osVersion
 {
 	NSProcessInfo *procInfo = [NSProcessInfo processInfo];
-	if([procInfo respondsToSelector:@selector(operatingSystemVersion)]) {
-		NSOperatingSystemVersion nsVer = [procInfo operatingSystemVersion];
-		//structs cannot be casted per C standard
-		SPOSVersion spVer = {nsVer.majorVersion,nsVer.minorVersion,nsVer.patchVersion};
-		return spVer;
-	}
-	else {
-		SInt32 versionMajor = 0;
-		SInt32 versionMinor = 0;
-		SInt32 versionPatch = 0;
-		Gestalt(gestaltSystemVersionMajor, &versionMajor);
-		Gestalt(gestaltSystemVersionMinor, &versionMinor);
-		Gestalt(gestaltSystemVersionBugFix, &versionPatch);
-		
-		SPOSVersion spVer = {versionMajor,versionMinor,versionPatch};
-		return spVer;
-	}
+	NSOperatingSystemVersion nsVer = [procInfo operatingSystemVersion];
+	//structs cannot be casted per C standard
+	SPOSVersion spVer = {nsVer.majorVersion,nsVer.minorVersion,nsVer.patchVersion};
+	return spVer;
 }
 
 + (BOOL)isOSVersionAtLeastMajor:(NSInteger)major minor:(NSInteger)minor patch:(NSInteger)patch

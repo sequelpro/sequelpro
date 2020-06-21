@@ -71,7 +71,7 @@
 
 - (void)dealloc
 {
-	if (_orderByField) [_orderByField release], _orderByField = nil;
+    if (_orderByField) (void)([_orderByField release]), _orderByField = nil;
 	
 	[super dealloc];
 }

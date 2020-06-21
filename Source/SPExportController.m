@@ -32,7 +32,6 @@
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPTableContent.h"
-#import "SPGrowlController.h"
 #import "SPExportFile.h"
 #import "SPAlertSheets.h"
 #import "SPExportFileNameTokenObject.h"
@@ -360,13 +359,16 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 /**
  * Displays the export finished Growl notification.
  */
-- (void)displayExportFinishedGrowlNotification
+- (void)displayExportFinishedNotification
 {
-	// Export finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
-													  document:tableDocumentInstance
-											  notificationName:@"Export Finished"];
+	// Export finished notification
+	NSUserNotification *notification = [[NSUserNotification alloc] init];
+	notification.title = @"Export Finished";
+	notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting notification"), exportFilename];
+	notification.soundName = NSUserNotificationDefaultSoundName;
+
+	[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+	[notification release];
 }
 
 #pragma mark -
@@ -827,7 +829,7 @@ set_input:
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Perform the export
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		
 		[prefs setObject:[self currentSettingsAsDictionary] forKey:SPLastExportSettings];
 
@@ -849,7 +851,7 @@ set_input:
 - (void)tableListChangedAlertDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Perform the export ignoring the new tables
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		
 		// Initialize the export after a short delay to give the alert a chance to close 
 		[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
@@ -1219,8 +1221,8 @@ set_input:
 	// Restore query mode
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
-	// Display Growl notification
-	[self displayExportFinishedGrowlNotification];
+	// Display export finished notification
+	[self displayExportFinishedNotification];
 
 	// Restore the connection encoding to it's pre-export value
 	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
@@ -1339,9 +1341,6 @@ set_input:
 
 	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
-
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 
 	// Setup the progress sheet
 	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];
@@ -1781,7 +1780,7 @@ set_input:
 
 	[header setString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
 	[header appendString:@"<!--\n-\n"];
-	[header appendString:@"- Sequel Pro XML dump\n"];
+	[header appendString:@"- Sequel Ace XML dump\n"];
 	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
 	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
@@ -1887,7 +1886,7 @@ set_input:
 		[alert addButtonWithTitle:NSLocalizedString(@"Replace", @"Replace button")];
 		[[[alert buttons] objectAtIndex:0] setTag:SPExportErrorReplaceFiles];
 		[[[alert buttons] objectAtIndex:0] setKeyEquivalent:@"r"];
-		[[[alert buttons] objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[[[alert buttons] objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
 		[[[alert buttons] objectAtIndex:1] setTag:SPExportErrorCancelExport];
@@ -1897,7 +1896,7 @@ set_input:
 			[alert addButtonWithTitle:NSLocalizedString(@"Skip existing", @"skip existing button")];
 			[[[alert buttons] objectAtIndex:2] setTag:SPExportErrorSkipErrorFiles];
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalent:@"s"];
-			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 		}
 	}
 	// If one or multiple files failed, but only due to unhandled errors, show a short dialog
@@ -1942,7 +1941,7 @@ set_input:
 			[alert addButtonWithTitle:NSLocalizedString(@"Skip problems", @"skip problems button")];
 			[[[alert buttons] objectAtIndex:1] setTag:SPExportErrorSkipErrorFiles];
 			[[[alert buttons] objectAtIndex:1] setKeyEquivalent:@"s"];
-			[[[alert buttons] objectAtIndex:1] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[[alert buttons] objectAtIndex:1] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 		}
 	}
 
@@ -3071,7 +3070,7 @@ set_input:
 			NSDictionary *errInfo = @{
 									  @"isVersion":                          @(version),
 									  NSLocalizedDescriptionKey:             NSLocalizedString(@"Unsupported version for export settings!", @"export : import settings : file version error title"),
-									  NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace."),version,@"1"],
+									  NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Ace.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace."),version,@"1"],
 									  };
 			*err = [NSError errorWithDomain:SPErrorDomain
 									   code:SPErrorWrongContentVersion

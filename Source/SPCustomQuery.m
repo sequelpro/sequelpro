@@ -31,9 +31,6 @@
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
-#ifndef SP_CODA /* headers */
-#import "SPGrowlController.h"
-#endif
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -66,6 +63,44 @@
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
+
+#include <libkern/OSAtomic.h>
+
+typedef struct {
+	NSUInteger query;
+	NSUInteger total;
+} QueryProgress;
+
+typedef void (^QueryProgressHandler)(QueryProgress *);
+
+/**
+ * This class is used to decouple the background thread running the SQL queries
+ * from the main thread displaying the progress.
+ *
+ * It ensures that
+ * - the background thread will not get blocked because it has to wait for the UI update to complete,
+ * - the main thread does not have to process more progress updates than it can handle and
+ * - the UI is updated at most once for each query (important with slow queries)
+ *
+ * This has quite a significant performance impact:
+ * - Both threads synchronized on progress update =>
+ *     running 2500 queries takes about 157 seconds wall time (SP reported time: 10.5s) and the UI is updated 2500 times
+ * - With this class decoupling them =>
+ *     running 2500 queries takes about 1 second wall time (SP reported time: 605ms) and the UI is updated 80 times
+ */
+@interface SPQueryProgressUpdateDecoupling : NSObject
+{
+	QueryProgressHandler updateHandler;
+
+	volatile BOOL dirtyMarker;
+	volatile OSSpinLock qpLock;
+	volatile QueryProgress _queryProgress;
+}
+@property(atomic,assign) QueryProgress queryProgress;
+- (instancetype)initWithBlock:(QueryProgressHandler)anUpdateHandler;
+- (void)_updateProgress;
+@end
+
 
 @interface SPCustomQuery ()
 
@@ -304,7 +339,7 @@
 		// Choose favorite
 		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
 
-		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand))
 			replaceContent = !replaceContent;
 		if(replaceContent) {
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
@@ -331,7 +366,7 @@
 
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
 		[textView breakUndoCoalescing];
-		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand))
 			replaceContent = !replaceContent;
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
@@ -418,7 +453,7 @@
 	// "Completion List" menu item - used to autocomplete.  Uses a different shortcut to avoid the menu button flickering
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
-		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
+		if([[NSApp currentEvent] modifierFlags] & (NSEventModifierFlagControl))
 			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
 			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
@@ -494,7 +529,7 @@
 
     [panel setNameFieldStringValue:@"history"];
     [panel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSModalResponseOK) {
 			NSError *error = nil;
             
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
@@ -545,7 +580,7 @@
 
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow]
@@ -628,11 +663,6 @@
 		// Notify listeners that a query has started
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
-#ifndef SP_CODA /* growl */
-		// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-		[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
-#endif
-
 		// Reset the current table view as necessary to avoid redraw and reload issues.
 		// Restore the view position to the top left to be within the results for all datasets.
 		if(editedRow == -1 && !reloadingExistingResult) {
@@ -656,13 +686,18 @@
 		taskButtonString = (queryCount > 1)? NSLocalizedString(@"Stop queries", @"Stop queries string") : NSLocalizedString(@"Stop query", @"Stop query string");
 		[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
 
+		SPQueryProgressUpdateDecoupling *progressUpdater = [[SPQueryProgressUpdateDecoupling alloc] initWithBlock:^(QueryProgress *qp) {
+			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(qp->query+1), (unsigned long)(qp->total)];
+			[tableDocumentInstance setTaskDescription:taskString];
+			[errorText setString:taskString];
+		}];
+
 		// Perform the supplied queries in series
 		for ( i = 0 ; i < queryCount ; i++ ) {
 
 			if (i > 0) {
-				NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
-				[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
-				[[errorText onMainThread] setString:taskString];
+				QueryProgress qp = { .query = i, .total = queryCount};
+				[progressUpdater setQueryProgress:qp];
 			}
 
 			NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
@@ -811,6 +846,8 @@
 			if ([mySQLConnection lastQueryWasCancelled]) break;
 		}
 
+		[progressUpdater release];
+
 		// Reload table list if at least one query began with drop, alter, rename, or create
 		if(tableListNeedsReload || databaseWasChanged) {
 			// Build database pulldown menu
@@ -918,12 +955,15 @@
 			// Notify any listeners that the query has completed
 			[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_CODA /* growl */
-			// Perform the Growl notification for query completion
-			[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
-			                                                  document:tableDocumentInstance
-			                                          notificationName:@"Query Finished"];
+#ifndef SP_CODA /* notification */
+			// Perform the notification for query completion
+			NSUserNotification *notification = [[NSUserNotification alloc] init];
+			notification.title = @"Query Finished";
+			notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished notification"), [[errorText onMainThread] string]];
+			notification.soundName = NSUserNotificationDefaultSoundName;
+
+			[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+			[notification release];
 #endif
 
 			// Set up the callback if present
@@ -941,19 +981,22 @@
 		if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
 
 			// Scroll the viewport to the saved location
-			selectionViewportToRestore.size = [customQueryView visibleRect].size;
+			selectionViewportToRestore.size = [[customQueryView onMainThread] visibleRect].size;
 			[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 		}
 
 		//query finished
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_CODA /* growl */
-		// Query finished Growl notification
-		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [[errorText onMainThread] string]]
-		                                                  document:tableDocumentInstance
-		                                          notificationName:@"Query Finished"];
+#ifndef SP_CODA /* notification */
+		// Query finished notification
+		NSUserNotification *notification = [[NSUserNotification alloc] init];
+		notification.title = @"Query Finished";
+		notification.informativeText=[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished notification"), [[errorText onMainThread] string]];
+		notification.soundName = NSUserNotificationDefaultSoundName;
+
+		[[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+		[notification release];
 #endif
 
 		// Set up the callback if present
@@ -964,10 +1007,12 @@
 
 		[tableDocumentInstance endTask];
 
-		// Restore selection indexes if appropriate
-		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
-		if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			// Restore selection indexes if appropriate
+			if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+			if (reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
+		});
 	}
 }
 
@@ -2157,13 +2202,13 @@
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
-    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+	NSEventModifierFlags modifierFlags = [[NSApp currentEvent] modifierFlags];
     
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
 	if (sortField && [[tableColumn identifier] integerValue] == [sortField integerValue]) {
         BOOL invert = NO;
-        if (modifierFlags & NSShiftKeyMask) {
+        if (modifierFlags & NSEventModifierFlagShift) {
             invert = YES;
         }
         
@@ -2175,7 +2220,7 @@
 		}
 	} else {
         // When the column is not sorted, allow to sort in reverse order using Shift+click
-        if (modifierFlags & NSShiftKeyMask) {
+        if (modifierFlags & NSEventModifierFlagShift) {
             isDesc = YES;
         } else {
             isDesc = NO;
@@ -2653,7 +2698,7 @@
 }
 
 /**
- * Resize a column when it's double-clicked.  (10.6+)
+ * Resize a column when it's double-clicked.  (10.13+)
  */
 - (CGFloat)tableView:(NSTableView *)tableView sizeToFitWidthOfColumn:(NSInteger)columnIndex
 {
@@ -3114,7 +3159,7 @@
 
 #ifndef SP_CODA
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			// Remove items in the query controller
 			[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
 		}
@@ -3122,7 +3167,7 @@
 	}
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
@@ -3602,6 +3647,62 @@
 	if (selectionIndexToRestore) SPClear(selectionIndexToRestore);
 	if (currentQueryRanges)      SPClear(currentQueryRanges);
 
+	[super dealloc];
+}
+
+@end
+
+#pragma mark -
+
+@implementation SPQueryProgressUpdateDecoupling
+
+- (instancetype)initWithBlock:(QueryProgressHandler)anUpdateHandler
+{
+	self = [super init];
+	if (self) {
+		updateHandler = [anUpdateHandler copy];
+		qpLock = OS_SPINLOCK_INIT;
+	}
+
+	return self;
+}
+
+- (void)setQueryProgress:(QueryProgress)newProgress
+{
+	BOOL notify = NO;
+	OSSpinLockLock(&qpLock);
+	_queryProgress = newProgress;
+	if(!dirtyMarker) {
+		dirtyMarker = 1;
+		notify = YES;
+	}
+	OSSpinLockUnlock(&qpLock);
+
+	if(notify) [self performSelectorOnMainThread:@selector(_updateProgress) withObject:nil waitUntilDone:NO];
+}
+
+- (QueryProgress)queryProgress
+{
+	OSSpinLockLock(&qpLock);
+	QueryProgress cpy = _queryProgress;
+	OSSpinLockUnlock(&qpLock);
+	return cpy;
+}
+
+- (void)_updateProgress
+{
+	OSSpinLockLock(&qpLock);
+	bool doRun = dirtyMarker;
+	dirtyMarker = NO;
+	QueryProgress p = _queryProgress;
+	OSSpinLockUnlock(&qpLock);
+
+	if(doRun) updateHandler(&p);
+}
+
+- (void)dealloc
+{
+	SPClear(updateHandler);
 	[super dealloc];
 }
 

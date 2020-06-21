@@ -130,11 +130,11 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+	NSEventModifierFlags allFlags = (NSEventModifierFlagShift|NSEventModifierFlagControl|NSEventModifierFlagOption|NSEventModifierFlagCommand);
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
-	long curFlags = ([theEvent modifierFlags] & allFlags);
+	NSEventModifierFlags curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if(curFlags & NSCommandKeyMask) {
+	if(curFlags & NSEventModifierFlagCommand) {
 		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
 			[webView makeTextLarger:nil];
@@ -181,7 +181,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		[[sheet window] orderOut:nil];
 
 	if ([contextInfo isEqualToString:SPSaveDocumentAction]) {
-		if (returnCode == NSOKButton) {
+		if (returnCode == NSModalResponseOK) {
 			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
 			NSError *err = nil;
 			[sourceCode writeToURL:[sheet URL]
@@ -433,7 +433,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 	[alert release];
 
-	if(returnCode == NSAlertFirstButtonReturn) return YES;
+	if(returnCode == NSAlertFirstButtonReturn || returnCode == NSAlertAlternateReturn) return YES;
 	return NO;
 }
 
@@ -690,10 +690,10 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 		[theEnv addEntriesFromDictionary:[SPAppDelegate shellEnvironmentForDocument:nil]];
 		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
 		
 		output = [SPBundleCommandRunner runBashCommand:command 
 									   withEnvironment:theEnv 

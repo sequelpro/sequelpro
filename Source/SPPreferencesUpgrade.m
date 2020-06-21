@@ -182,14 +182,14 @@ void SPApplyRevisionChanges(void)
 			if ([favorite objectForKey:@"id"]) continue;	
 			
 			[favorite setObject:[NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]] forKey:@"id"];
-			keychainName = [NSString stringWithFormat:@"Sequel Pro : %@", [favorite objectForKey:@"name"]];
+			keychainName = [NSString stringWithFormat:@"Sequel Ace : %@", [favorite objectForKey:@"name"]];
 			keychainAccount = [NSString stringWithFormat:@"%@@%@/%@",
 							   [favorite objectForKey:@"user"], [favorite objectForKey:@"host"], [favorite objectForKey:@"database"]];
 			password = [upgradeKeychain getPasswordForName:keychainName account:keychainAccount];
 			[upgradeKeychain deletePasswordForName:keychainName account:keychainAccount];
 			
 			if (password && [password length]) {
-				keychainName = [NSString stringWithFormat:@"Sequel Pro : %@ (%ld)", [favorite objectForKey:@"name"], (long)[[favorite objectForKey:@"id"] integerValue]];
+				keychainName = [NSString stringWithFormat:@"Sequel Ace : %@ (%ld)", [favorite objectForKey:@"name"], (long)[[favorite objectForKey:@"id"] integerValue]];
 				[upgradeKeychain addPassword:password forName:keychainName account:keychainAccount];
 			}
 			
@@ -281,12 +281,7 @@ void SPApplyRevisionChanges(void)
 	if (recordedVersionNumber < 1636 && [prefs objectForKey:@"FetchCorrectRowCount"]) {
 		[prefs removeObjectForKey:@"FetchCorrectRowCount"];
 	}
-	
-	// For versions prior to r2057 (~0.9.8), reset the Sparkle prefs so the user is prompted about submitting information
-	if (recordedVersionNumber < 2057 && [prefs objectForKey:@"SUEnableAutomaticChecks"]) {
-		[prefs removeObjectForKey:@"SUEnableAutomaticChecks"];
-		[prefs removeObjectForKey:@"SUSendProfileInfo"];
-	}
+
 	
 	// For versions prior to 2325 (<0.9.9), convert the old encoding pref string into the new localizable constant
 	if  (recordedVersionNumber < 2325 && [prefs objectForKey:SPOldDefaultEncodingKey] && [[prefs objectForKey:SPOldDefaultEncodingKey] isKindOfClass:[NSString class]]) {
@@ -322,7 +317,7 @@ void SPApplyRevisionChanges(void)
 	// For versions prior to 3922 (<1.0), show notes for swapping the custom query buttons and signing changes
 	if (recordedVersionNumber < 3922) {
 		[importantUpdateNotes addObject:NSLocalizedString(@"The Custom Query \"Run\" and \"Run All\" button positions and their shortcuts have been swapped.", @"Short important release note for swap of custom query buttons")];
-		[importantUpdateNotes addObject:NSLocalizedString(@"We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.", @"Short important release note for why password prompts may occur")];
+		[importantUpdateNotes addObject:NSLocalizedString(@"We've changed Sequel Ace's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.", @"Short important release note for why password prompts may occur")];
 	}
 
 	// For versions prior to 4011 (~1.0), migrate the favourites across if appropriate.  This will only
@@ -484,7 +479,7 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 	
 	[noteAlert setAlertStyle:NSInformationalAlertStyle];
 	[noteAlert setAccessoryView:[[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 450, 1)] autorelease]];
-	[noteAlert setMessageText:NSLocalizedString(@"Thanks for updating Sequel Pro!", @"Release notes dialog title thanking user for upgrade")];
+	[noteAlert setMessageText:NSLocalizedString(@"Thanks for updating Sequel Ace!", @"Release notes dialog title thanking user for upgrade")];
 	[noteAlert addButtonWithTitle:NSLocalizedString(@"Continue", @"Continue button title")];
 	[noteAlert addButtonWithTitle:NSLocalizedString(@"View full release notes", @"Release notes button title")];
 	[noteAlert setInformativeText:[NSString stringWithFormat:@"%@\n\n • %@", introText, [releaseNotes componentsJoinedByString:@"\n\n • "]]];
@@ -494,13 +489,10 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 	[noteAlert release];
 
 	// Show releae notes if desired
-	if (returnCode == NSAlertSecondButtonReturn) {
+	if (returnCode == NSAlertSecondButtonReturn || returnCode == NSAlertOtherReturn) {
 
 		// Work out whether to link to the normal site or the nightly list
-		NSString *releaseNotesLink = @"http://www.sequelpro.com/release-notes";
-		if ([[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] rangeOfString:@"nightly"].location != NSNotFound) {
-			releaseNotesLink = @"http://nightly.sequelpro.com/release-notes";
-		}
+		NSString *releaseNotesLink = @"https://github.com/Sequel-Ace/Sequel-Ace/releases";
 
 		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:releaseNotesLink]];
 	}

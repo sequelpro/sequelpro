@@ -50,7 +50,7 @@
 
 - (void)dealloc
 {
-	if (_identiferQuote) [_identiferQuote release], _identiferQuote = nil;
+    if (_identiferQuote) (void)([_identiferQuote release]), _identiferQuote = nil;
 	
 	[super dealloc];
 }

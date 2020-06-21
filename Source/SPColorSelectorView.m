@@ -89,8 +89,6 @@ enum trackingAreaIDs
 		
 		//set ourselves as observer of selectedTag (need to mark view dirty)
 		[self addObserver:self forKeyPath:@"selectedTag" options:0 context:nil];
-		
-		isOSAtLeast10_9_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:9 patch:0];
 	}
 	
 	return self;
@@ -275,14 +273,8 @@ enum trackingAreaIDs
 			[left stroke];
 		}
 		else {
-			if(!isOSAtLeast10_9_0) {
-				NSGradient *gradient = [self gradientForTag:index];
-				[self _drawDotBevelStyleWithGradient:gradient insideRect:colorSquareRect];
-			}
-			else {
-				NSColor *baseColor = (NSColor *)[colorList objectAtIndex:index];
-				[self _drawDotFlatStyleWithColor:baseColor insideRect:colorSquareRect];
-			}
+			NSColor *baseColor = (NSColor *)[colorList objectAtIndex:index];
+			[self _drawDotFlatStyleWithColor:baseColor insideRect:colorSquareRect];
 		}
 	}
 }
@@ -329,7 +321,7 @@ enum trackingAreaIDs
 - (void)_drawDotFlatStyleWithColor:(NSColor *)color insideRect:(NSRect)colorSquareRect
 {
 	CGFloat h,s,b,a;
-	[color getHue:&h saturation:&s brightness:&b alpha:&a];
+	[[color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]] getHue:&h saturation:&s brightness:&b alpha:&a];
 	
 	NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
 	NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];

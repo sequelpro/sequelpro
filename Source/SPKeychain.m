@@ -86,7 +86,7 @@
 	if (![self passwordExistsForName:name account:account]) {
 
 		// Create a trusted access list with two items - ourselves and the SSH pass app
-		NSString *helperPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
+		NSString *helperPath = [[NSBundle mainBundle] pathForAuxiliaryExecutable:@"SequelAceTunnelAssistant"];
 
 		if ((SecTrustedApplicationCreateFromPath(NULL, &sequelProRef) == noErr) &&
 			(SecTrustedApplicationCreateFromPath([helperPath UTF8String], &sequelProHelperRef) == noErr)) {
@@ -135,7 +135,7 @@
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"),
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status]
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Ace team, supplying the error code %i.", @"error adding password to keychain informative message"), status]
 			);
 		}
 	}
@@ -318,7 +318,7 @@
 		SPOnewayAlertSheet(
 			NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"),
 			[NSApp mainWindow],
-			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error finding keychain item to edit informative message"), status]
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Ace team, supplying the error code %i.", @"error finding keychain item to edit informative message"), status]
 		);
 		return;
 	}
@@ -351,7 +351,7 @@
 		SPOnewayAlertSheet(
 			NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"),
 			[NSApp mainWindow],
-			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error updating keychain item informative message"), status]
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Ace team, supplying the error code %i.", @"error updating keychain item informative message"), status]
 		);
 	}
 }
@@ -362,7 +362,7 @@
 - (NSString *)nameForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId
 {
 	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
-	return [NSString stringWithFormat:@"Sequel Pro : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
+	return [NSString stringWithFormat:@"Sequel Ace : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
 }
 
 /**
@@ -379,7 +379,7 @@
 - (NSString *)nameForSSHForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId
 {
 	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
-	return [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
+	return [NSString stringWithFormat:@"Sequel Ace SSHTunnel : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
 }
 
 /**

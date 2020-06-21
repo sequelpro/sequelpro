@@ -87,8 +87,8 @@
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
 	NSString *uuid = (contextInfo && [contextInfo objectForKey:SPBundleFileInternalexecutionUUID]) ? [contextInfo objectForKey:SPBundleFileInternalexecutionUUID] : [NSString stringWithNewUUID];
-	NSString *stdoutFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskOutputFilePath, uuid];
-	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, uuid];
+	NSString *stdoutFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskOutputFilePath stringByExpandingTildeInPath], uuid];
+	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskScriptCommandFilePath stringByExpandingTildeInPath], uuid];
 	
 	[fm removeItemAtPath:scriptFilePath error:nil];
 	[fm removeItemAtPath:stdoutFilePath error:nil];
@@ -191,10 +191,10 @@
 		[doc setProcessID:uuid];
 		
 		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
 		
 		if([doc shellVariables])
 			[theEnv addEntriesFromDictionary:[doc shellVariables]];
@@ -245,7 +245,7 @@
 		if(!event) continue;
 		if ([event type] == NSKeyDown) {
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+			if (([event modifierFlags] & NSEventModifierFlagCommand) && key == '.') {
 				[bashTask terminate];
 				userTerminated = YES;
 				break;
@@ -276,7 +276,7 @@
 	if([theEnv objectForKey:SPBundleShellVariableInputTableMetaData])
 		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableInputTableMetaData] error:nil];
 	
-	// If return from bash re-activate Sequel Pro
+	// If return from bash re-activate Sequel Ace
 	[NSApp activateIgnoringOtherApps:YES];
 	
 	NSInteger status = [bashTask terminationStatus];
@@ -314,7 +314,7 @@
 				if(theError != NULL) {
 					if(status == 9 || userTerminated) return @"";
 					NSMutableString *errMessage = [[[NSMutableString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
-					[errMessage replaceOccurrencesOfString:SPBundleTaskScriptCommandFilePath withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
+					[errMessage replaceOccurrencesOfString:[SPBundleTaskScriptCommandFilePath stringByExpandingTildeInPath] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
 					*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
 															code:status 
 														userInfo:[NSDictionary dictionaryWithObjectsAndKeys:

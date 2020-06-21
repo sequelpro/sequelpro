@@ -42,6 +42,8 @@ NSString * const SPRuleFilterHeightChangedNotification;
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet NSView *tableContentViewBelow;
 	IBOutlet NSButton *filterButton;
+	IBOutlet NSButton *addFilterButton;
+	IBOutlet NSButton *resetButton;
 
 	NSMutableArray *columns;
 	NSMutableDictionary *contentFilters;
@@ -59,6 +61,8 @@ NSString * const SPRuleFilterHeightChangedNotification;
 	BOOL enabled;
 	
 	NSUInteger opNodeCacheVersion;
+	BOOL isDoingChangeCausedOutsideOfRuleEditor;
+	NSInteger previousRowCount;
 }
 
 /**
@@ -92,6 +96,8 @@ NSString * const SPRuleFilterHeightChangedNotification;
  *                 collations during search.
  * @param err      Upon return contains and object describing why the SQL conversion failed,
  *                 if it failed or nil, if no errors occured.
+ * @return         The SQL filter string. Will always be non-null unless an error occured.
+ *                 Can be an empty string (if no filters exist or all are disabled)!
  *
  * MUST BE CALLED ON THE UI THREAD!
  */

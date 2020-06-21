@@ -34,7 +34,6 @@
 @class SPTablesPreferencePane;
 @class SPNotificationsPreferencePane;
 @class SPEditorPreferencePane;
-@class SPAutoUpdatePreferencePane;
 @class SPNetworkPreferencePane;
 
 /**
@@ -51,7 +50,6 @@
 	IBOutlet SPTablesPreferencePane  <SPPreferencePaneProtocol>       *tablesPreferencePane;
 	IBOutlet SPNotificationsPreferencePane <SPPreferencePaneProtocol> *notificationsPreferencePane;
 	IBOutlet SPEditorPreferencePane <SPPreferencePaneProtocol>        *editorPreferencePane;
-	IBOutlet SPAutoUpdatePreferencePane <SPPreferencePaneProtocol>    *autoUpdatePreferencePane;
 	IBOutlet SPNetworkPreferencePane <SPPreferencePaneProtocol>       *networkPreferencePane;
 
 	NSToolbar *toolbar;
@@ -61,7 +59,6 @@
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
-	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;
 	NSToolbarItem *shortcutItem;
@@ -73,7 +70,6 @@
 @property (readonly) SPTablesPreferencePane        *tablesPreferencePane;
 @property (readonly) SPNotificationsPreferencePane *notificationsPreferencePane;
 @property (readonly) SPEditorPreferencePane        *editorPreferencePane;
-@property (readonly) SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
 @property (readonly) SPNetworkPreferencePane       *networkPreferencePane;
 
 /**

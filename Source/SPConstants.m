@@ -91,6 +91,7 @@ NSString *SPLastViewMode                         = @"LastViewMode";
 NSString *SPDefaultEncoding                      = @"DefaultEncodingTag";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
+NSString *SPDisplayCommentsInTablesList          = @"DisplayCommentsInTablesList";
 NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
 
 // Tables Prefpane
@@ -177,6 +178,7 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 NSString *SPFavoriteColorList                    = @"FavoriteColorList";
 NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
 NSString *SPMonospacedFontSize                   = @"MonospacedFontSize";
+NSString *SPRuleFilterEditorLastVisibilityChoice = @"RuleFilterEditorLastVisibilityChoice";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
@@ -191,7 +193,7 @@ NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
-NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
+NSString *SPImportClipboardTempFileNamePrefix    = @"~/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPLastExportSettings                   = @"LastExportSettings";
 
 // Export filename tokens
@@ -243,7 +245,6 @@ NSString *SPContentFiltersHaveBeenUpdatedNotification = @"ContentFiltersHaveBeen
 NSString *SPCopyContentOnTableCopy                    = @"CopyContentOnTableCopy";
 
 // URLs
-NSString *SPDonationsURL                         = @"https://www.sequelpro.com/donate/";
 NSString *SPMySQLSearchURL                       = @"https://dev.mysql.com/doc/refman/%@/%@/%@.html";
 NSString *SPDevURL                               = @"https://github.com/sequelpro/sequelpro";
 
@@ -278,7 +279,6 @@ NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral"
 NSString *SPPreferenceToolbarTables              = @"SPPreferenceToolbarTables";
 NSString *SPPreferenceToolbarFavorites           = @"SPPreferenceToolbarFavorites";
 NSString *SPPreferenceToolbarNotifications       = @"SPPreferenceToolbarNotifications";
-NSString *SPPreferenceToolbarAutoUpdate          = @"SPPreferenceToolbarAutoUpdate";
 NSString *SPPreferenceToolbarNetwork             = @"SPPreferenceToolbarNetwork";
 NSString *SPPreferenceToolbarEditor              = @"SPPreferenceToolbarEditor";
 NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcuts";
@@ -376,11 +376,11 @@ NSString *SPBundleInternPathToFileKey                       = @"path";
 NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";
 
 NSString *SPBundleFileName                                  = @"command.plist";
-NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_INPUT";
-NSString *SPBundleTaskOutputFilePath                        = @"/tmp/SP_BUNDLE_OUTPUT";
-NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_BUNDLE_SCRIPT_COMMAND";
-NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_BUNDLE_COPY_BLOB_FILES";
-NSString *SPBundleTaskTableMetaDataFilePath                 = @"/tmp/SP_BUNDLE_TABLE_META_DATA";
+NSString *SPBundleTaskInputFilePath                         = @"~/tmp/SP_BUNDLE_INPUT";
+NSString *SPBundleTaskOutputFilePath                        = @"~/tmp/SP_BUNDLE_OUTPUT";
+NSString *SPBundleTaskScriptCommandFilePath                 = @"~/tmp/SP_BUNDLE_SCRIPT_COMMAND";
+NSString *SPBundleTaskCopyBlobFileDirectory                 = @"~/tmp/SP_BUNDLE_COPY_BLOB_FILES";
+NSString *SPBundleTaskTableMetaDataFilePath                 = @"~/tmp/SP_BUNDLE_TABLE_META_DATA";
 
 NSString *SPBundleShellVariableAllDatabases                 = @"SP_ALL_DATABASES";
 NSString *SPBundleShellVariableAllFunctions                 = @"SP_ALL_FUNCTIONS";
@@ -434,14 +434,17 @@ NSString *SPCurrentTimestampPattern = (@"(?i)^" OWS @"CURRENT_TIMESTAMP" @"(?:" 
 #undef OWS
 
 // URL scheme
-NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
-NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
-NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";
-NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
+NSString *SPURLSchemeQueryInputPathHeader          = @"~/tmp/SP_QUERY_";
+NSString *SPURLSchemeQueryResultPathHeader         = @"~/tmp/SP_QUERY_RESULT_";
+NSString *SPURLSchemeQueryResultStatusPathHeader   = @"~/tmp/SP_QUERY_RESULT_STATUS_";
+NSString *SPURLSchemeQueryResultMetaPathHeader     = @"~/tmp/SP_QUERY_META_";
 
 NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
 NSString *SPErrorDomain = @"SPErrorDomain";
 
 void inline _SPClear(id *addr) {
-	[*addr release], *addr = nil;
+	if (addr == nil) {
+		return;
+	}
+	(void)([*addr release]), *addr = nil;
 }

@@ -50,9 +50,7 @@
 #import "SPCopyTable.h"
 #import "SPSyntaxParser.h"
 #import "SPOSInfo.h"
-
 #import <PSMTabBar/PSMTabBarControl.h>
-#import <Sparkle/Sparkle.h>
 
 @interface SPAppController ()
 
@@ -92,6 +90,10 @@
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
+		
+		//Create runtime directiories
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@"tmp"] withIntermediateDirectories:true attributes:nil error:nil];
+		[[NSFileManager defaultManager] createDirectoryAtPath:[NSHomeDirectory() stringByAppendingPathComponent:@".keys"] withIntermediateDirectories:true attributes:nil error:nil];
 
 		[NSApp setDelegate:self];
 	}
@@ -133,9 +135,6 @@
 	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
 
-	// Set Sparkle delegate
-	[[SUUpdater sharedUpdater] setDelegate:self];
-
 	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];
 	
@@ -166,12 +165,6 @@
 	}
 	
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(externalApplicationWantsToOpenADatabaseConnection:) name:@"ExternalApplicationWantsToOpenADatabaseConnection" object:nil];
-	
-	// Set ourselves as the crash reporter delegate
-	[[FRFeedbackReporter sharedReporter] setDelegate:self];
-
-	// Report any crashes
-	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
     [self _copyDefaultThemes];
@@ -317,7 +310,7 @@
 }
 
 /**
- * Called if user drag and drops files on Sequel Pro's dock item or double-clicked
+ * Called if user drag and drops files on Sequel Ace's dock item or double-clicked
  * at files *.spf or *.sql
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
@@ -394,7 +387,7 @@
 				
 				[alert release];
 				
-				if (returnCode == NSAlertSecondButtonReturn) return; // Cancel
+				if (returnCode == NSAlertSecondButtonReturn || returnCode == NSAlertOtherReturn) return; // Cancel
 				else if (returnCode == NSAlertThirdButtonReturn) {   // Import
 					// begin import process
 					[[frontDocument tableDumpInstance] startSQLImportProcessWithFile:filePath];
@@ -681,7 +674,7 @@
 		return;
 	}
 	
-	// Reload Bundles if Sequel Pro didn't run
+	// Reload Bundles if Sequel Ace didn't run
 	if (![installedBundleUUIDs count]) {
 		[self reloadBundles:self];
 	}
@@ -699,9 +692,7 @@
 		if (answer == NSAlertDefaultReturn) {
 			NSError *error = nil;
 			NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([(NSString *)[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
-			NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", removePath];
-			
-			[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+			[[NSFileManager defaultManager] removeItemAtPath:removePath error:&error];
 			
 			if (error != nil) {
 				alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
@@ -856,8 +847,8 @@
 
 	// Handle commands which don't need a connection window
 	if([command isEqualToString:@"chooseItemFromList"]) {
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
 		[fm removeItemAtPath:statusFileName error:nil];
 		[fm removeItemAtPath:resultFileName error:nil];
 		NSString *result = @"";
@@ -881,10 +872,10 @@
 		BOOL isDir;
 
 		NSString *anUUID = (passedProcessID && [passedProcessID length]) ? passedProcessID : @"";
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, anUUID];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, anUUID];
-		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, anUUID];
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], anUUID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], anUUID];
 
 		NSError *inError = nil;
 		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
@@ -972,13 +963,13 @@
 			else
 				anUUID = command;
 			
-			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID]
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], anUUID]
 				atomically:YES
 				encoding:NSUTF8StringEncoding
 				   error:nil];
 
 			out = @"Error";
-			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, anUUID]
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], anUUID]
 				atomically:YES
 				encoding:NSUTF8StringEncoding
 				   error:nil];
@@ -992,12 +983,12 @@
 	if(passedProcessID && [passedProcessID length]) {
 		// If command failed notify the file handle hand shake mechanism
 		NSString *out = @"1";
-		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
 		out = NSLocalizedString(@"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.", @"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.");
-		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
@@ -1009,10 +1000,10 @@
 		);
 
 		usleep(5000);
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, passedProcessID] error:nil];
-		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryResultMetaPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", [SPURLSchemeQueryInputPathHeader stringByExpandingTildeInPath], passedProcessID] error:nil];
 
 
 
@@ -1153,7 +1144,7 @@
 		NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 		NSError *err = nil;
 		NSString *uuid = [NSString stringWithNewUUID];
-		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", [SPBundleTaskInputFilePath stringByExpandingTildeInPath], uuid];
 
 		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1161,8 +1152,8 @@
 		[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 		[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 		[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
-		[env setObject:SPURLSchemeQueryResultPathHeader forKey:SPBundleShellVariableQueryResultFile];
-		[env setObject:SPURLSchemeQueryResultStatusPathHeader forKey:SPBundleShellVariableQueryResultStatusFile];
+		[env setObject:[SPURLSchemeQueryResultPathHeader stringByExpandingTildeInPath] forKey:SPBundleShellVariableQueryResultFile];
+		[env setObject:[SPURLSchemeQueryResultStatusPathHeader stringByExpandingTildeInPath] forKey:SPBundleShellVariableQueryResultStatusFile];
 
 		NSString *input = @"";
 		NSError *inputFileError = nil;
@@ -1520,15 +1511,7 @@
 }
 
 #pragma mark -
-#pragma mark Sequel Pro menu methods
-
-/**
- * Opens donate link in default browser
- */
-- (IBAction)donate:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDonationsURL]];
-}
+#pragma mark Sequel Ace menu methods
 
 /**
  * Opens website link in default browser
@@ -1552,22 +1535,6 @@
 - (IBAction)visitFAQWebsite:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_FAQ]];
-}
-
-/**
- * Opens the 'Contact the developers' page in the default browser
- */
-- (IBAction)provideFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTACT]];
-}
-
-/**
- * Opens the 'Translation Feedback' page in the default browser.
- */
-- (IBAction)provideTranslationFeedback:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_TRANSLATIONFEEDBACK]];
 }
 
 /**
@@ -1630,7 +1597,7 @@
 		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
 		nil];
 
-	// If ~/Library/Application Path/Sequel Pro/Bundles couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Bundles couldn't be created bail
 	if(appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Bundles Installation Error", @"bundles installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -1653,6 +1620,7 @@
 
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
 	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
+	doBundleUpdate = YES;
 
 	for(NSString* bundlePath in bundlePaths) {
 		if([bundlePath length]) {
@@ -1779,9 +1747,7 @@
 											[dupData writeToFile:duplicatedBundleCommand atomically:YES];
 
 											error = nil;
-											NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
-											
-											[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+											[[NSFileManager defaultManager] removeItemAtPath:oldBundle error:&error];
 
 											if(error != nil) {
 												NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdDataOld objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
@@ -1874,11 +1840,11 @@
 							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
 							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
 							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
-							NSUInteger mask = 0;
-							if([theMods rangeOfString:@"^"].length) mask = mask | NSControlKeyMask;
-							if([theMods rangeOfString:@"@"].length) mask = mask | NSCommandKeyMask;
-							if([theMods rangeOfString:@"~"].length) mask = mask | NSAlternateKeyMask;
-							if([theMods rangeOfString:@"$"].length) mask = mask | NSShiftKeyMask;
+							NSEventModifierFlags mask = 0;
+							if([theMods rangeOfString:@"^"].length) mask = mask | NSEventModifierFlagControl;
+							if([theMods rangeOfString:@"@"].length) mask = mask | NSEventModifierFlagCommand;
+							if([theMods rangeOfString:@"~"].length) mask = mask | NSEventModifierFlagOption;
+							if([theMods rangeOfString:@"$"].length) mask = mask | NSEventModifierFlagShift;
 
 							if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
 								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
@@ -1943,7 +1909,7 @@
 	// Add default menu items
 	NSMenuItem *anItem;
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundle Editor", @"bundle editor menu item label") action:@selector(openBundleEditor:) keyEquivalent:@"b"];
-	[anItem setKeyEquivalentModifierMask:(NSCommandKeyMask|NSAlternateKeyMask|NSControlKeyMask)];
+	[anItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand|NSEventModifierFlagOption|NSEventModifierFlagControl)];
 	[menu addItem:anItem];
 	[anItem release];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Reload Bundles", @"reload bundles menu item label") action:@selector(reloadBundles:) keyEquivalent:@""];
@@ -2152,31 +2118,6 @@
 		NSBeep();
 	}
 }
-
-#pragma mark -
-#pragma mark Feedback reporter delegate methods
-
-/**
- * Anonymises the preferences dictionary before feedback submission
- */
-- (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
-{
-	[preferences removeObjectsForKeys:@[
-			@"ContentFilters",
-			@"favorites",
-			@"lastSqlFileName",
-			@"NSNavLastRootDirectory",
-			@"openPath",
-			@"queryFavorites",
-			@"queryHistory",
-			@"tableColumnWidths",
-			@"savePath",
-			@"NSRecentDocumentRecords"
-	]];
-	
-	return preferences;
-}
-
 #pragma mark -
 #pragma mark Other methods
 
@@ -2217,30 +2158,7 @@
 }
 
 /**
- * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
- * sure that no sheets are currently open, which will prevent the app from being quit. 
- */
-- (void)updaterWillRelaunchApplication:(SUUpdater *)updater
-{	
-	// Sparkle might call this on a background thread, but calling endSheet: from a bg thread is unhealthy
-	if(![NSThread isMainThread]) return [[self onMainThread] updaterWillRelaunchApplication:updater];
-
-	// Get all the currently open windows and their attached sheets if any
-	NSArray *windows = [NSApp windows];
-	
-	for (NSWindow *window in windows)
-	{
-		NSWindow *attachedSheet = [window attachedSheet];
-		
-		if (attachedSheet) {
-			[NSApp endSheet:attachedSheet returnCode:0];
-			[attachedSheet orderOut:nil];
-		}
-	}
-}
-
-/**
- * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller.
+ * If Sequel Ace is terminating kill all running BASH scripts and release all HTML output controller.
  *
  * TODO: Remove a lot of this duplicate code.
  */
@@ -2317,7 +2235,7 @@
     NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
     NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
 	
-	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
+	// If ~/Library/Application Path/Sequel Ace/Themes couldn't be created bail
 	if (appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button")
@@ -2414,7 +2332,7 @@
 }
 
 /**
- * AppleScript handler to quit Sequel Pro
+ * AppleScript handler to quit Sequel Ace
  *
  * This handler is required to allow termination via the Dock or AppleScript event after activating it using AppleScript
  */
@@ -2455,7 +2373,9 @@
 
 - (IBAction)newWindow:(id)sender
 {
-	[self newWindow];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self newWindow];
+	});
 }
 
 /**

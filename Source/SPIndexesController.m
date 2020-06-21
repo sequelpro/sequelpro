@@ -266,7 +266,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
 	[alert beginSheetModalForWindow:[dbDocument parentWindow]
@@ -550,7 +550,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 {
 	[theSheet orderOut:nil];
 
-	if (returnCode == NSOKButton) {
+	if (returnCode == NSModalResponseOK) {
 		[dbDocument startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
 
 		NSUInteger i, j;
@@ -987,7 +987,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 		SPOnewayAlertSheet(
 			[NSString stringWithFormat:NSLocalizedString(@"Failed to remove index '%@'", @"table structure : indexes : delete index : no columns error : title"),keyName],
 			[dbDocument parentWindow],
-			NSLocalizedString(@"Sequel Pro could not find any columns belonging to this index. Maybe it has been removed already?", @"table structure : indexes : delete index : no columns error : description")
+			NSLocalizedString(@"Sequel Ace could not find any columns belonging to this index. Maybe it has been removed already?", @"table structure : indexes : delete index : no columns error : description")
 		);
 		return;
 	}
@@ -1018,7 +1018,7 @@ static void *IndexesControllerKVOContext = &IndexesControllerKVOContext;
 	
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[dbDocument parentWindow]

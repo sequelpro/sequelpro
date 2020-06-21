@@ -14,17 +14,19 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>SPF.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Sequel Pro Connection</string>
+			<string>Sequel Ace Connection</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>spf </string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.sequelpro.SequelPro.spf</string>
-				<string>com.google.code.sequel-pro.spf</string>
+				<string>com.sequel-ace.sequel-ace.spf</string>
+				<string>com.sequel-ace.sequel-ace.spf</string>
 			</array>
 			<key>NSDocumentClass</key>
 			<string>SPDocumentController</string>
@@ -37,13 +39,15 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>SPF.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Sequel Pro Session</string>
+			<string>Sequel Ace Session</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>spfs</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.sequelpro.SequelPro.spfs</string>
@@ -63,17 +67,19 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>Generic.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Sequel Pro Bundle</string>
+			<string>Sequel Ace Bundle</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>spbn</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.sequelpro.SequelPro.spbundle</string>
-				<string>com.google.code.sequel-pro.spbundle</string>
+				<string>com.sequel-ace.sequel-ace.spbundle</string>
+				<string>com.sequel-ace.sequel-ace.spbundle</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
@@ -89,16 +95,18 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>Generic.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Sequel Pro Color Theme</string>
+			<string>Sequel Ace Color Theme</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>spct</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.sequelpro.SequelPro.spTheme</string>
+				<string>com.sequel-ace.sequel-ace.spTheme</string>
 				<string>com.google.code.sequel-pro.spTheme</string>
 			</array>
 			<key>NSDocumentClass</key>
@@ -119,6 +127,8 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
 			<key>NSDocumentClass</key>
 			<string>SPDocumentController</string>
 		</dict>
@@ -137,6 +147,8 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
 			<key>LSTypeIsPackage</key>
 			<false/>
 			<key>NSDocumentClass</key>
@@ -150,11 +162,11 @@
 	<key>CFBundleHelpBookFolder</key>
 	<string>english_help</string>
 	<key>CFBundleHelpBookName</key>
-	<string>Sequel Pro Help</string>
+	<string>Sequel Ace Help</string>
 	<key>CFBundleIconFile</key>
 	<string>appIcon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.sequelpro.SequelPro</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -162,12 +174,12 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2 Snapshot</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>Sequel Pro URL scheme</string>
+			<string>Sequel Ace URL scheme</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sequelpro</string>
@@ -183,53 +195,52 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string></string>
-	<key>FRFeedbackReporter.maxConsoleLogSize</key>
-	<integer>10000</integer>
-	<key>FRFeedbackReporter.targetURL</key>
-	<string>https://sequelpro.com/api?action=feedback-submit</string>
+	<string>2033</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
-	<key>LSMinimumSystemVersionByArchitecture</key>
-	<dict>
-		<key>i386</key>
-		<string>10.6.0</string>
-		<key>x86_64</key>
-		<string>10.6.0</string>
-	</dict>
+	<string>10.10</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>sequelpro.com</key>
+			<key>www.apple.com</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-				<key>NSExceptionMinimumTLSVersion</key>
-				<string>TLSv1.0</string>
-				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
-				<false/>
-				<key>NSThirdPartyExceptionMinimumTLSVersion</key>
-				<string>TLSv1.0</string>
-				<key>NSRequiresCertificateTransparency</key>
-				<false/>
+				<true/>
+				<key>NSIncludeSubdomains</key>
+				<true/>
+			</dict>
+			<key>www.dpriver.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludeSubdomains</key>
+				<true/>
+			</dict>
+			<key>www.w3.org</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludeSubdomains</key>
+				<true/>
 			</dict>
 		</dict>
 	</dict>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2019 Sequel Pro and CocoaMySQL team.</string>
+	<string>Copyright 2020 Moballo, LLC</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-	<string>FRExceptionReportingApplication</string>
+	<string>NSApplication</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
@@ -241,12 +252,12 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Sequel Pro/Perform selection as MySQL query</string>
+				<string>Sequel Ace/Perform selection as MySQL query</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>doPerformQueryService</string>
 			<key>NSPortName</key>
-			<string>Sequel Pro</string>
+			<string>Sequel Ace</string>
 			<key>NSSendTypes</key>
 			<array>
 				<string>NSStringPboardType</string>
@@ -256,16 +267,6 @@
 	</array>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
-	<key>SPVersionLongHash</key>
-	<string></string>
-	<key>SPVersionShortHash</key>
-	<string></string>
-	<key>SUEnableSystemProfiling</key>
-	<true/>
-	<key>SUFeedURL</key>
-	<string>https://sequelpro.com/appcast/app-releases.xml</string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>sparkle-public-key.pem</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
@@ -274,11 +275,11 @@
 				<string>public.plain-text</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Sequel Pro Connection</string>
+			<string>Sequel Ace Connection</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.sequelpro.SequelPro.spf</string>
+			<string>com.sequel-ace.sequel-ace.spf</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -295,11 +296,11 @@
 				<string>com.apple.package</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Sequel Pro Session</string>
+			<string>Sequel Ace Session</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.sequelpro.SequelPro.spfs</string>
+			<string>com.sequel-ace.sequel-ace.spfs</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -316,15 +317,15 @@
 				<string>com.apple.package</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Sequel Pro Bundle</string>
+			<string>Sequel Ace Bundle</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.sequelpro.SequelPro.spbundle</string>
+			<string>com.sequel-ace.sequel-ace.spbundle</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
-				<string>sequel pro bundle</string>
+				<string>sequel Ace bundle</string>
 				<key>public.filename-extension</key>
 				<array>
 					<string>spbundle</string>
@@ -342,7 +343,7 @@
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.sequelpro.SequelPro.sql</string>
+			<string>com.sequel-ace.sequel-ace.sql</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -359,11 +360,11 @@
 				<string>public.plain-text</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Sequel Pro Color Theme</string>
+			<string>Sequel Ace Color Theme</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.sequelpro.SequelPro.spTheme</string>
+			<string>com.sequel-ace.sequel-ace.spTheme</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
