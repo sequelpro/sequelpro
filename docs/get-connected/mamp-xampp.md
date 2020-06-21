@@ -1,4 +1,3 @@
-
 # Connecting to MAMP or XAMPP
 
 This page describes how to connect to the MySQL Server of [MAMP](http://www.mamp.info) or [XAMPP](http://www.apachefriends.org/en/xampp-macosx.html) running on the same computer as Sequel Ace. If you want to connect to MAMP/XAMPP running on a different computer, please see [Connecting to a MySQL Server on a Remote Host](remote-connection.md "Connecting to a MySQL Server on a Remote Host").
