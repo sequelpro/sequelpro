@@ -1,6 +1,6 @@
 # Getting Connected
 
-When you open Sequel Ace, the first screen that you will see is the database connection window. If you don't have access to a MySQL server, perhaps you could try [installing MySQL on your Mac](https://sequelpro.com/docs/get-started/docs/Install_MySQL_on_your_Mac "MySQL:Installing on Mac OS X").
+When you open Sequel Ace, the first screen that you will see is the database connection window. If you don't have access to a MySQL server, perhaps you could try installing [MySQL](https://dev.mysql.com/doc/mysql-osx-excerpt/en/osx-installation.html "MySQL:Installing on MacOS") or [MariaDB](https://mariadb.com/kb/en/installing-mariadb-on-macos-using-homebrew "MariaDB:Installing on MacOS") on your Mac.
 
 ## Frequently Asked Questions
 
