@@ -55,11 +55,11 @@ Yes. If you have a private key in `~/.ssh/id_dsa` or `~/.ssh/id_rsa`, Sequel Ace
 
 the MySQL server must accept network connections
 
-_Some server administrators forbid connections from other computers, by using the option --skip-networking. Then the MySQL server only accepts connection from processes running on the same server (eg. PHP scripts), but not from remote clients (such as Sequel Ace). See [Section 5.1.2 of the MySQL Manual](http://dev.mysql.com/doc/refman/5.1/en/server-options.html#option_mysqld_skip-networking "http://dev.mysql.com/doc/refman/5.1/en/server-options.html#option_mysqld_skip-networking")._
+_Some server administrators forbid connections from other computers, by using the option --skip-networking. Then the MySQL server only accepts connection from processes running on the same server (eg. PHP scripts), but not from remote clients (such as Sequel Ace). See [MySQL Manual](https://dev.mysql.com/doc/refman/en/server-options.html#option_mysqld_skip-networking)._
 
 the MySQL server must be configured to accept connections from your adress
 
-Many administrators configure MySQL in a manner that it allows network connections only from specific IP addresses. If this is the case, they will probably ask you for your IP adress. See [Section 5.4.4 of the MySQL Manual](http://dev.mysql.com/doc/refman/5.1/en/connection-access.html "http://dev.mysql.com/doc/refman/5.1/en/connection-access.html") for details on how MySQL decides if you are allowed to connect.
+Many administrators configure MySQL in a manner that it allows network connections only from specific IP addresses. If this is the case, they will probably ask you for your IP adress. See [MySQL Manual](https://dev.mysql.com/doc/refman/en/connection-access.html) for details on how MySQL decides if you are allowed to connect.
 
 if the server is behind a firewall, the firewall must be configured to accept MySQL connections
 

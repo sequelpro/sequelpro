@@ -11,9 +11,9 @@ A MySQL Server running on the same computer as Sequel Ace is called _local_. You
 
 Which type you prefer is up to you. See below for a description of the two methods.
 
-For more details, see [Connecting to a local MySQL Server](get-connected/local-connection.md "Connecting to a local MySQL Server").
+For more details, see [Connecting to a local MySQL Server](local-connection.md "Connecting to a local MySQL Server").
 
-If you installed MySQL with MAMP or XAMPP, see [Connecting to MAMP or XAMPP](get-connected/mamp-xampp.md "Connecting to MAMP or XAMPP").
+If you installed MySQL with MAMP or XAMPP, see [Connecting to MAMP or XAMPP](mamp-xampp.md "Connecting to MAMP or XAMPP").
 
 ## Remote Connections
 
@@ -22,7 +22,7 @@ If the MySQL server is on a different computer as Sequel Ace, it's called a _rem
 -   using a **Standard** connection
 -   using a **SSH** connection
 
-You can use a standard connection if the MySQL server is directly reachable -- eg. if it is on your local network. If you cannot directly reach your server (eg. it is behind a firewall), you will have to use a SSH connection. For more details see [Connecting to a MySQL Server on a Remote Host](get-connected/remote-connection.md "Connecting to a MySQL Server on a Remote Host").
+You can use a standard connection if the MySQL server is directly reachable -- eg. if it is on your local network. If you cannot directly reach your server (eg. it is behind a firewall), you will have to use a SSH connection. For more details see [Connecting to a MySQL Server on a Remote Host](remote-connection.md "Connecting to a MySQL Server on a Remote Host").
 
 At the moment, **Sequel Ace does not support SSL** encryption. If possible, use a SSH connection instead.
 
@@ -104,4 +104,4 @@ Otherwise you can select one of the databases on the server afterwards.
 
 Socket
 
-For non-standard mysql installs (e.g - MAMP) manually set the path. Read more about connecting via sockets to [MAMP, XAMPP and other MySQL server setups](get-connected/mamp-xampp.md).
+For non-standard mysql installs (e.g - MAMP) manually set the path. Read more about connecting via sockets to [MAMP, XAMPP and other MySQL server setups](mamp-xampp.md).

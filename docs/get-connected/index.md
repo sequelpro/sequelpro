@@ -10,7 +10,7 @@ Try manually setting the socket. The socket depends on how you installed MySQL o
 
 **I'm having trouble connecting to a MySQL 4 or MySQL 5 database on localhost with a MAMP install.**
 
-See [Connecting to MAMP or XAMPP](get-connected/mamp-xampp.md "Connecting to MAMP or XAMPP").
+See [Connecting to MAMP or XAMPP](mamp-xampp.md "Connecting to MAMP or XAMPP").
 
 **My SSH connection gives the error: SSH port forwarding failed and MySQL said: Lost connection to MySQL server at 'reading initial communication packet', system error: 0**
 
@@ -31,7 +31,7 @@ Sequel Ace runs in a sandboxed mode and need you to select private key manually.
 
 ## Articles
 
--   [What type of connection do I have?](get-connected/connection-types.md)
--   [Connect to a Local MySQL Server](get-connected/local-connection.md)
--   [Connect to a Remote MySQL Server](get-connected/remote-connection.md)
--   [Connecting to MAMP or XAMPP](get-connected/mamp-xampp.md)
+-   [What type of connection do I have?](connection-types.md)
+-   [Connect to a Local MySQL Server](local-connection.md)
+-   [Connect to a Remote MySQL Server](remote-connection.md)
+-   [Connecting to MAMP or XAMPP](mamp-xampp.md)
