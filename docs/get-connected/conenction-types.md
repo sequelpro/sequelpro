@@ -26,7 +26,7 @@ You can use a standard connection if the MySQL server is directly reachable -- e
 
 At the moment, **Sequel Ace does not support SSL** encryption. If possible, use a SSH connection instead.
 
-# Standard Connection
+## Standard Connection
 
 A standard connection is an **unencrypted** connection using TCP/IP. Such a connection is usually made over the network or over the internet to a remote server. To specify which server to connect to, you must provide its IP address or DNS resolvable name:
 
@@ -75,7 +75,7 @@ Port
 Defaults to port 3306.
 
 
-# Socket Connection
+## Socket Connection
 
 A **Socket connection** is a connection to a copy of MySQL running on your local machine. If you are connecting to MySQL that you have installed from a package installer or source, then you won't normally need to enter anything into the socket field.
 

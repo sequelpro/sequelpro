@@ -20,7 +20,7 @@ On the server, configure MySQL by editing /etc/my.cnf and comment or remove `ski
 
 Sequel Ace runs in a sandboxed mode and need you to select private key manually.
 
-### GENERAL NOTES
+## GENERAL NOTES
 
 -   If you enter a database, it will be selected when the connection to the server is established. Otherwise you can select one of the databases on the server afterwards.
 -   If you enter no port on a standard/SSH connection, Sequel Ace uses the default port for MySQL, port 3306.
