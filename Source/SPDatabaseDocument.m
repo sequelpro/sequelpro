@@ -1362,9 +1362,40 @@ static BOOL isOSAtLeast10_14;
 				
 		// Schedule appearance of the task window in the near future, using a frame timer.
 		taskFadeInStartDate = [[NSDate alloc] init];
+		queryStartDate = [[NSDate alloc] init];
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0 target:self selector:@selector(fadeInTaskProgressWindow:) userInfo:nil repeats:YES] retain];
+		queryExecutionTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(showQueryExecutionTime) userInfo:nil repeats:YES] retain];
+
 #endif
 	}
+}
+
+
+/**
+ * Show query execution time on progress window.
+ */
+-(void)showQueryExecutionTime{
+
+	double timeSinceQueryStarted = [[NSDate date] timeIntervalSinceDate:queryStartDate];
+
+	NSDateComponentsFormatter *formatter = [[NSDateComponentsFormatter alloc] init];
+	formatter.allowedUnits = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+	formatter.zeroFormattingBehavior = NSDateComponentsFormatterZeroFormattingBehaviorPad;
+	NSString *queryRunningTime = [formatter stringFromTimeInterval:timeSinceQueryStarted];
+	
+	NSShadow *textShadow = [[NSShadow alloc] init];
+	[textShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
+	[textShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
+	[textShadow setShadowBlurRadius:3.0f];
+	
+	NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+									   [NSFont boldSystemFontOfSize:13.0f], NSFontAttributeName,
+									   textShadow, NSShadowAttributeName,
+									   nil];
+	NSAttributedString *queryRunningTimeString = [[NSAttributedString alloc] initWithString:queryRunningTime attributes:attributes];
+	
+	[taskDurationTime setAttributedStringValue:queryRunningTimeString];
+	
 }
 
 /**
@@ -1505,6 +1536,13 @@ static BOOL isOSAtLeast10_14;
 			SPClear(taskFadeInStartDate);
 		}
 
+		if (queryExecutionTimer) {
+			queryStartDate = [[NSDate alloc] init];
+			[self showQueryExecutionTime];
+			[queryExecutionTimer invalidate], SPClear(queryExecutionTimer);
+			SPClear(queryExecutionTimer);
+		}
+		
 		// Hide the task interface and reset to indeterminate
 		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
 		[taskProgressWindow setAlphaValue:0.0f];
@@ -7607,6 +7645,7 @@ static BOOL isOSAtLeast10_14;
 	if (selectedDatabase) SPClear(selectedDatabase);
 	if (mySQLVersion) SPClear(mySQLVersion);
 	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
+	if (queryExecutionTimer) [queryExecutionTimer invalidate], SPClear(queryExecutionTimer);
 	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
 	if (queryEditorInitString) SPClear(queryEditorInitString);
 	if (sqlFileURL) SPClear(sqlFileURL);

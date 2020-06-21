@@ -117,6 +117,7 @@
 	IBOutlet NSBox *taskProgressLayer;
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
+	IBOutlet id taskDurationTime;
 	IBOutlet NSButton *taskCancelButton;
 #endif
 	
@@ -223,7 +224,9 @@
 	CGFloat taskDisplayLastValue;
 	CGFloat taskProgressValueDisplayInterval;
 	NSTimer *taskDrawTimer;
+	NSTimer *queryExecutionTimer;
 	NSDate *taskFadeInStartDate;
+	NSDate *queryStartDate;
 	BOOL taskCanBeCancelled;
 	id taskCancellationCallbackObject;
 	SEL taskCancellationCallbackSelector;
