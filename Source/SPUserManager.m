@@ -1238,16 +1238,18 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 - (BOOL)updateResourcesForUser:(SPUserMO *)user
 {
     if ([user valueForKey:@"parent"] != nil) {
-        NSString *updateResourcesStatement = [NSString stringWithFormat:
-                                              @"UPDATE mysql.user SET max_questions = %@, max_updates = %@, max_connections = %@ WHERE User = %@ AND Host = %@",
-                                              [user valueForKey:@"max_questions"],
-                                              [user valueForKey:@"max_updates"],
-                                              [user valueForKey:@"max_connections"],
-                                              [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
-                                              [[user valueForKey:@"host"] tickQuotedString]];
-		
-        [connection queryString:updateResourcesStatement];
-        return [self _checkAndDisplayMySqlError];
+		if([connection isNotMariadb103]){
+			NSString *updateResourcesStatement = [NSString stringWithFormat:
+												  @"UPDATE mysql.user SET max_questions = %@, max_updates = %@, max_connections = %@ WHERE User = %@ AND Host = %@",
+												  [user valueForKey:@"max_questions"],
+												  [user valueForKey:@"max_updates"],
+												  [user valueForKey:@"max_connections"],
+												  [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
+												  [[user valueForKey:@"host"] tickQuotedString]];
+			
+			[connection queryString:updateResourcesStatement];
+			return [self _checkAndDisplayMySqlError];
+		}
     }
 	
 	return YES;
@@ -1409,6 +1411,10 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
 	}
+	
+	if(![connection isNotMariadb103]){
+		grantStatement = [grantStatement stringByReplacingOccurrencesOfString:@"DELETE VERSIONING ROWS" withString:@"DELETE HISTORY"];
+	}
 
 	[connection queryString:grantStatement];
 	return [self _checkAndDisplayMySqlError];
@@ -1445,6 +1451,10 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
+	}
+	
+	if(![connection isNotMariadb103]){
+		revokeStatement = [revokeStatement stringByReplacingOccurrencesOfString:@"DELETE VERSIONING ROWS" withString:@"DELETE HISTORY"];
 	}
 
 	[connection queryString:revokeStatement];
