@@ -1,7 +1,3 @@
-## This project is currently not maintained. There is a community-supported fork called [Sequel-Ace](https://github.com/Sequel-Ace/Sequel-Ace) available on the [Mac AppStore](https://apps.apple.com/us/app/sequel-ace/id1518036000?ls=1), please check it out!
-
----
-
 Sequel Pro <img alt="Logo" src="https://sequelpro.com/images/logo.png" align="right" height="50">
 =======
 
