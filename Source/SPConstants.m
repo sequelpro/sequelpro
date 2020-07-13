@@ -237,6 +237,7 @@ NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexS
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 NSString *SPSSHClientPath                        = @"SSHClientPath";
+NSString *SPSSHPKCS11Provider                    = @"SSHClientPKCS11Provider";
 NSString *SPSSLCipherListKey                     = @"SSLCipherList";
 NSString *SPQueryFavoritesHaveBeenUpdatedNotification = @"QueryFavoritesHaveBeenUpdatedNotification";
 NSString *SPHistoryItemsHaveBeenUpdatedNotification   = @"HistoryItemsHaveBeenUpdatedNotification";
@@ -312,6 +313,9 @@ NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocati
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
 NSString *SPFavoriteUseCompressionKey                    = @"useCompression";
 NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
+
+NSString *SPFavoritePasswordKey 						 = @"password";
+NSString *SPFavoriteOnepasswordKey 						 = @"onePassword";
 
 NSString *SPFFormatKey = @"format";
 NSString *SPFVersionKey = @"version";

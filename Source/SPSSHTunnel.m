@@ -151,9 +151,7 @@ static unsigned short getRandomPort();
  */
 - (BOOL)setPassword:(NSString *)thePassword
 {
-	if (passwordInKeychain) return NO;
-	password = [[NSString alloc] initWithString:thePassword];
-	
+	password = [[NSString alloc] initWithString:thePassword];	
 	return YES;
 }
 
@@ -328,7 +326,11 @@ static unsigned short getRandomPort();
 
 		// Ensure that the connection can be used for only tunnels, not interactive
 		[taskArguments addObject:@"-N"];
-
+		
+		NSString *pkcs11Provider = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHPKCS11Provider];
+		if (pkcs11Provider.length > 0) {
+			[taskArguments addObject:[NSString stringWithFormat:@"-I %@",pkcs11Provider]];
+		}
 		// If explicitly enabled, activate connection multiplexing - note that this can cause connection
 		// instability on some setups, so is currently disabled by default.
 		if (connectionMuxingEnabled) {

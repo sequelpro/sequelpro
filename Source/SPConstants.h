@@ -452,6 +452,7 @@ extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
+extern NSString *SPSSHPKCS11Provider;
 extern NSString *SPSSLCipherListKey;
 extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
 extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;
@@ -517,7 +518,8 @@ extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
 extern NSString *SPFavoriteUseCompressionKey;
 extern NSString *SPConnectionFavoritesChangedNotification;
-
+extern NSString *SPFavoritePasswordKey;
+extern NSString *SPFavoriteOnepasswordKey;
 extern NSString *SPFFormatKey;
 extern NSString *SPFVersionKey;
 

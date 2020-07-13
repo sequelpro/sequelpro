@@ -154,7 +154,7 @@
 	<key>CFBundleIconFile</key>
 	<string>appIcon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.sequelpro.SequelPro</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -183,7 +183,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string></string>
+	<string>1.2.1</string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
@@ -207,17 +207,17 @@
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
 				<key>NSExceptionMinimumTLSVersion</key>
 				<string>TLSv1.0</string>
-				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
+				<key>NSExceptionRequiresForwardSecrecy</key>
 				<false/>
-				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
 				<false/>
 				<key>NSThirdPartyExceptionMinimumTLSVersion</key>
 				<string>TLSv1.0</string>
-				<key>NSRequiresCertificateTransparency</key>
+				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
 				<false/>
 			</dict>
 		</dict>

@@ -209,6 +209,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #pragma mark -
 #pragma mark Connection processes
 
+
+- (IBAction)loadPasswordFromOnePassword:(id)sender {
+	NSDictionary *fav = [self selectedFavorite];
+	NSString *onePassswordUUID = [fav objectForKey:SPFavoriteOnepasswordKey];
+	if (onePassswordUUID && ![onePassswordUUID isEqualToString:@""]) {
+		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:[NSString stringWithFormat: @"onepassword://search/%@",onePassswordUUID]]];
+	}
+}
+
 /**
  * Starts the connection process; invoked when user hits the connect button
  * or double-clicks on a favourite.
@@ -796,6 +805,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setHost:([fav objectForKey:SPFavoriteHostKey] ? [fav objectForKey:SPFavoriteHostKey] : @"")];
 	[self setSocket:([fav objectForKey:SPFavoriteSocketKey] ? [fav objectForKey:SPFavoriteSocketKey] : @"")];
 	[self setUser:([fav objectForKey:SPFavoriteUserKey] ? [fav objectForKey:SPFavoriteUserKey] : @"")];
+
 	[self setColorIndex:([fav objectForKey:SPFavoriteColorIndexKey]? [[fav objectForKey:SPFavoriteColorIndexKey] integerValue] : -1)];
 	[self setPort:([fav objectForKey:SPFavoritePortKey] ? [fav objectForKey:SPFavoritePortKey] : @"")];
 	[self setDatabase:([fav objectForKey:SPFavoriteDatabaseKey] ? [fav objectForKey:SPFavoriteDatabaseKey] : @"")];
@@ -827,6 +837,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 
+	if (![[self password] length]) {
+		NSString *pw =[fav objectForKey:SPFavoritePasswordKey];
+		[self setPassword:pw];
+	}
+	
 	if (![[self password] length]) {
 		[self setPassword:nil];
 		SPClear(connectionKeychainItemName);

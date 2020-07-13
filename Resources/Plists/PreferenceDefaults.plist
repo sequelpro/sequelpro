@@ -189,6 +189,8 @@
 	<false/>
 	<key>TableInformationPanelCollapsed</key>
 	<false/>
+	<key>SSHClientPKCS11Provider</key>
+	<string></string>
 	<key>TableRowCountCheapLookupSizeBoundary</key>
 	<integer>5242880</integer>
 	<key>TableRowCountQueryLevel</key>

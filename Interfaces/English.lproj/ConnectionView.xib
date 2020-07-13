@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="5100" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPConnectionController">
@@ -21,6 +21,7 @@
                 <outlet property="favoritesOutlineView" destination="4913" id="5768"/>
                 <outlet property="favoritesSortByMenuItem" destination="5837" id="5850"/>
                 <outlet property="helpButton" destination="4829" id="5458"/>
+                <outlet property="onePasswordButton" destination="uGQ-jt-w9R" id="NHe-Z2-Rrg"/>
                 <outlet property="progressIndicator" destination="5422" id="5426"/>
                 <outlet property="progressIndicatorText" destination="5423" id="5425"/>
                 <outlet property="saveFavoriteButton" destination="5869" id="5874"/>
@@ -212,11 +213,11 @@
                                         </subviews>
                                         <nil key="backgroundColor"/>
                                     </clipView>
-                                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="4912">
+                                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="4912">
                                         <rect key="frame" x="1" y="525" width="228" height="15"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </scroller>
-                                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="4911">
+                                    <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="4911">
                                         <rect key="frame" x="229" y="1" width="15" height="524"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </scroller>
@@ -330,7 +331,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="3306" drawsBackground="YES" usesSingleLineMode="YES" id="5190">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -357,7 +358,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5186">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -384,7 +385,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5182">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -410,7 +411,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5178">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -437,7 +438,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5379">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -464,7 +465,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5172">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -683,7 +684,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5388">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -710,7 +711,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5221">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -737,7 +738,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5223">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -764,7 +765,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5225">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -790,7 +791,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5227">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1074,7 +1075,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5406">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1101,7 +1102,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5293">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1139,7 +1140,7 @@ DQ
                                                                                             <string key="toolTip">Enter the password to use when connecting to the SSH server. NB: your SSH configuration is used, and public/private key pairs and other authentication methods will be used if available</string>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5295">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1166,7 +1167,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5297">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1192,7 +1193,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5299">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1218,7 +1219,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="3306" drawsBackground="YES" usesSingleLineMode="YES" id="5275">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1245,7 +1246,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5277">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1268,11 +1269,11 @@ DQ
                                                                                             </textFieldCell>
                                                                                         </textField>
                                                                                         <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" id="5268" customClass="NSSecureTextField">
-                                                                                            <rect key="frame" x="110" y="245" width="247" height="22"/>
+                                                                                            <rect key="frame" x="110" y="245" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5279">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1298,7 +1299,7 @@ DQ
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5281">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1326,7 +1327,7 @@ DQ
                                                                                             <string key="toolTip">Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server running on the machine you are tunnelling to</string>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5283">
                                                                                                 <font key="font" metaFont="system"/>
-                                                                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                             <connections>
@@ -1362,6 +1363,17 @@ DQ
                                                                                                         <integer key="NSNullPlaceholder" value="0"/>
                                                                                                     </dictionary>
                                                                                                 </binding>
+                                                                                            </connections>
+                                                                                        </button>
+                                                                                        <button verticalHuggingPriority="750" id="uGQ-jt-w9R">
+                                                                                            <rect key="frame" x="329" y="244" width="27" height="24"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                            <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="onepassword-button" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="NR6-n3-Tkz">
+                                                                                                <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                                                                                <font key="font" metaFont="system"/>
+                                                                                            </buttonCell>
+                                                                                            <connections>
+                                                                                                <action selector="loadPasswordFromOnePassword:" target="-2" id="AbN-9R-5nx"/>
                                                                                             </connections>
                                                                                         </button>
                                                                                     </subviews>
@@ -1576,11 +1588,11 @@ DQ
                                             </customView>
                                         </subviews>
                                     </clipView>
-                                    <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="5590">
+                                    <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="5590">
                                         <rect key="frame" x="0.0" y="466" width="663" height="15"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </scroller>
-                                    <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="5589">
+                                    <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="5589">
                                         <rect key="frame" x="663" y="0.0" width="16" height="580"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                     </scroller>
@@ -1607,8 +1619,9 @@ DQ
                     </connections>
                 </splitView>
             </subviews>
+            <point key="canvasLocation" x="139" y="154.5"/>
         </customView>
-        <window title="Error Detail" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="5431" userLabel="Error Detail HUD" customClass="NSPanel">
+        <window title="Error Detail" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="5431" userLabel="Error Detail HUD" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES" HUD="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="439" y="291" width="580" height="320"/>
@@ -1625,11 +1638,11 @@ DQ
                             <rect key="frame" x="0.0" y="0.0" width="578" height="293"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <textView editable="NO" drawsBackground="NO" importsGraphics="NO" id="5434">
+                                <textView editable="NO" drawsBackground="NO" importsGraphics="NO" verticallyResizable="NO" id="5434">
                                     <rect key="frame" x="0.0" y="0.0" width="578" height="293"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="textColor" red="0.90196078999999996" green="0.90196078999999996" blue="0.90196078999999996" alpha="1" colorSpace="calibratedRGB"/>
-                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <size key="minSize" width="578" height="293"/>
                                     <size key="maxSize" width="1156" height="10000000"/>
                                     <attributedString key="textStorage">
@@ -2385,11 +2398,11 @@ DQ
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="0.0" colorSpace="calibratedWhite"/>
                         </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="5435">
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="5435">
                             <rect key="frame" x="-100" y="-100" width="87" height="18"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" arrowsPosition="none" horizontal="NO" id="5436">
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" arrowsPosition="none" horizontal="NO" id="5436">
                             <rect key="frame" x="566" y="0.0" width="12" height="293"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
@@ -2597,5 +2610,6 @@ DQ
         <image name="button_bar_handle" width="15" height="23"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
+        <image name="onepassword-button" width="27" height="27"/>
     </resources>
 </document>
