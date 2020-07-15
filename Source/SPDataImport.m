@@ -312,10 +312,35 @@
 		}
 
 		if (importFileName == nil) return;
+		
+		// Check to see if current connection has existing tables, if so warn
+		if([[tablesListInstance tables] count] > 1){
+			SPBeginAlertSheet(NSLocalizedString(@"The current database already has existing tables, importing may overwrite data. Are you sure you want to continue?", @"title of warning when trying to import data when tables already exist"),
+							  NSLocalizedString(@"Yes, continue anyway", @"Yes, continue anyway"),	// Main button
+							  NSLocalizedString(@"Cancel import", @"Cancel import"),	// Alternate button
+							  nil,	// Other button
+							  [tableDocumentInstance parentWindow],	// Window to attach to
+							  self,	// Modal delegate
+							  @selector(importOverwriteWarningSheetDidEnd:returnCode:contextInfo:),	// Did end selector
+							  importFileName,	// Contextual info for selectors
+							  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceeding with the import.", @"message of warning when trying to import data when tables already exist."));
 
-		// Begin the import process
+			return;
+		}
+		
 		[self _startBackgroundImportTaskForFilename:importFileName];
 	}];
+}
+
+/**
+ * Alert sheet callback method - invoked when the error sheet is closed.
+ */
+- (void)importOverwriteWarningSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)importFileName
+{
+	if (returnCode == NSAlertDefaultReturn && importFileName != nil) {
+		// Begin the import process
+		[self _startBackgroundImportTaskForFilename:importFileName];
+	};
 }
 
 /**
@@ -867,6 +892,18 @@
 		[csvParser setNullReplacementString:[prefs objectForKey:SPNullValue]];
 	});
 
+	// Take CSV import setting from accessory view
+	[csvParser setFieldTerminatorString:[importFieldsTerminatedField stringValue] convertDisplayStrings:YES];
+	[csvParser setLineTerminatorString:[importLinesTerminatedField stringValue] convertDisplayStrings:YES];
+	[csvParser setFieldQuoteString:[importFieldsEnclosedField stringValue] convertDisplayStrings:YES];
+	if ([[importFieldsEscapedField stringValue] isEqualToString:@"\\ or \""]) {
+		[csvParser setEscapeString:@"\\" convertDisplayStrings:NO];
+	} else {
+		[csvParser setEscapeString:[importFieldsEscapedField stringValue] convertDisplayStrings:YES];
+		[csvParser setEscapeStringsAreMatchedStrictly:YES];
+	}
+	[csvParser setNullReplacementString:[prefs objectForKey:SPNullValue]];
+
 	csvDataBuffer = [[NSMutableData alloc] init];
 	importPool = [[NSAutoreleasePool alloc] init];
 	while (1) {
@@ -1247,6 +1284,7 @@
 	                                          notificationName:@"Import Finished"];
 
 	SPMainQSync(^{
+
 		if(importIntoNewTable) {
 
 			// Select the new table
