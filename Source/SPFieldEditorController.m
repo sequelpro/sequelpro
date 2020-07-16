@@ -867,6 +867,13 @@ typedef enum {
 										atomically:YES
 										encoding:encoding
 										error:NULL];
+		} else if([type isEqualToString:@"json"]) {
+			
+			NSString *formatted = [SPJSONFormatter stringByFormattingString:sheetEditData];
+			[[formatted retain] writeToFile:tmpFileName
+										atomically:YES
+										encoding:encoding
+										error:NULL];
 		} else {
 			[[sheetEditData description] writeToFile:tmpFileName
 										atomically:YES

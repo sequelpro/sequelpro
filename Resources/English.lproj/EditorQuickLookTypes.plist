@@ -1,89 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>QuickLookTypes</key>
-		<array>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Image</string>
-				<key>Extension</key>
-				<string>icns</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Sound (m4a)</string>
-				<key>Extension</key>
-				<string>m4a</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Sound (mp3)</string>
-				<key>Extension</key>
-				<string>mp3</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Sound (linear)</string>
-				<key>Extension</key>
-				<string>wav</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Movie (mov)</string>
-				<key>Extension</key>
-				<string>mov</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>PDF</string>
-				<key>Extension</key>
-				<string>pdf</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>HTML</string>
-				<key>Extension</key>
-				<string>html</string>
-				<key>treatAsText</key>
-				<true/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Word Document</string>
-				<key>Extension</key>
-				<string>doc</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>Word Document (xml)</string>
-				<key>Extension</key>
-				<string>docx</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>MenuLabel</key>
-				<string>RTF</string>
-				<key>Extension</key>
-				<string>rtf</string>
-				<key>treatAsText</key>
-				<false/>
-			</dict>
-		</array>
-	</dict>
+<dict>
+	<key>QuickLookTypes</key>
+	<array>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Image</string>
+			<key>Extension</key>
+			<string>icns</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Sound (m4a)</string>
+			<key>Extension</key>
+			<string>m4a</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Sound (mp3)</string>
+			<key>Extension</key>
+			<string>mp3</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Sound (linear)</string>
+			<key>Extension</key>
+			<string>wav</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Movie (mov)</string>
+			<key>Extension</key>
+			<string>mov</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>PDF</string>
+			<key>Extension</key>
+			<string>pdf</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>HTML</string>
+			<key>Extension</key>
+			<string>html</string>
+			<key>treatAsText</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Word Document</string>
+			<key>Extension</key>
+			<string>doc</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>Word Document (xml)</string>
+			<key>Extension</key>
+			<string>docx</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>RTF</string>
+			<key>Extension</key>
+			<string>rtf</string>
+			<key>treatAsText</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>JSON</string>
+			<key>Extension</key>
+			<string>json</string>
+			<key>treatAsText</key>
+			<true/>
+		</dict>
+	</array>
+</dict>
 </plist>
