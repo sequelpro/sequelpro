@@ -380,6 +380,54 @@
 }
 
 /**
+ * Sorts the users favorites alphabetically
+ */
+- (IBAction)sortFavoritesAlphabetically:(id)sender
+{
+#ifndef SP_CODA
+	[favorites removeAllObjects];
+	
+	NSMutableArray *sortedFavoritesChunk = [[NSMutableArray alloc] init];
+	NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+	
+	[favorites addObject:@{
+		@"name"            : @"Global",
+		@"headerOfFileURL" : @"",
+		@"query"           : @""
+	}];
+	
+	if([prefs objectForKey:SPQueryFavorites]) {
+		for(id fav in [prefs objectForKey:SPQueryFavorites])
+			[sortedFavoritesChunk addObject:[[fav mutableCopy] autorelease]];
+	}
+	
+	[sortedFavoritesChunk sortUsingDescriptors:@[sortDescriptor]];
+	[favorites addObjectsFromArray:sortedFavoritesChunk];
+	[sortedFavoritesChunk removeAllObjects];
+	
+	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						  [[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name",
+						  [delegatesFileURL absoluteString], @"headerOfFileURL",
+						  @"", @"query",
+						  nil]];
+	
+	if([[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL]) {
+		for(id fav in [[SPQueryController sharedQueryController] favoritesForFileURL:delegatesFileURL])
+			[sortedFavoritesChunk addObject:[[fav mutableCopy] autorelease]];
+	}
+	
+	[sortedFavoritesChunk sortUsingDescriptors:@[sortDescriptor]];
+	[favorites addObjectsFromArray:sortedFavoritesChunk];
+	
+	[sortedFavoritesChunk release];
+	[sortDescriptor release];
+	
+	[favoritesArrayController rearrangeObjects];
+	[favoritesTableView reloadData];
+#endif
+}
+
+/**
  * Insert placeholder - the placeholder string is stored as tooltip
  */
 - (IBAction)insertPlaceholder:(id)sender
