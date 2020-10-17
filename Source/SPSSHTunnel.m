@@ -748,6 +748,7 @@ static unsigned short getRandomPort();
 	   didEndSelector:NULL
 	      contextInfo:NULL];
 	[parentWindow makeKeyAndOrderFront:self];
+	[[NSApplication sharedApplication] runModalForWindow: sshPasswordDialog];
 }
  
 /*
@@ -759,6 +760,7 @@ static unsigned short getRandomPort();
 	
 	[NSApp endSheet:sshPasswordDialog];
 	[sshPasswordDialog orderOut:nil];
+	[[NSApplication sharedApplication] abortModal];
 
 	if (requestedResponse) {
 		NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
