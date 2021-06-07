@@ -1,3 +1,7 @@
+this project was abandoned, check out https://github.com/Sequel-Ace/Sequel-Ace
+
+
+
 Sequel Pro <img alt="Logo" src="https://sequelpro.com/images/logo.png" align="right" height="50">
 =======
 
