@@ -1,4 +1,4 @@
-this project was abandoned, check out https://github.com/Sequel-Ace/Sequel-Ace
+This project was abandoned, check out https://github.com/Sequel-Ace/Sequel-Ace
 
 
 
