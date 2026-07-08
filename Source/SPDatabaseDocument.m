@@ -305,6 +305,13 @@ static BOOL isOSAtLeast10_14;
 	                                             name:@"NSApplicationWillTerminateNotification"
 	                                           object:nil];
 
+	[[NSNotificationCenter defaultCenter] addObserverForName:SPTableChangedNotification
+	                                                  object:nil
+	                                                   queue:nil
+	                                              usingBlock:^(NSNotification *note) {
+		[self updateWindowTitle:nil];
+	}];
+
 #ifndef SP_CODA
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
