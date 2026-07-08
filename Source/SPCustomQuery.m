@@ -722,7 +722,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 			// Run the query, timing execution (note this also includes network and overhead)
 			resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
 			executionTime += [resultStore queryExecutionTime];
-			totalQueriesRun++;
+			OSAtomicAdd32(1, (int32_t *)&totalQueriesRun);
 
 			// If this is the last query, retrieve and store the result; otherwise,
 			// discard the result without fully loading.
