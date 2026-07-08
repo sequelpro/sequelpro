@@ -1288,7 +1288,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
-	if (validateDetails && ([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
+	if (validateDetails && ([self type] == SPTCPIPConnection && [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		SPOnewayAlertSheet(
 			NSLocalizedString(@"Insufficient connection details", @"insufficient details message"),
 			[dbDocument parentWindow],
