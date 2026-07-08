@@ -1389,8 +1389,9 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 - (BOOL)selectItemWithName:(NSString *)theName
 {
 	NSUInteger i;
-	NSInteger tableType, itemIndex = NSNotFound;
-	NSInteger caseInsensitiveItemIndex = NSNotFound;
+	NSInteger tableType;
+	int itemIndex = NSNotFound;
+	int caseInsensitiveItemIndex = NSNotFound;
 
 	// Loop through the unfiltered tables/views to find the desired item
 	for (i = 0; i < [tables count]; i++) {
