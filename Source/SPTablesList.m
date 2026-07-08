@@ -312,6 +312,7 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 #ifndef SP_CODA /* table list filtering */
 	// Determine whether or not to preserve the existing filter, and whether to
 	// show or hide the list filter based on the number of tables
+	NSLog(@"Reloaded tables list: %d tables found", [tables count]);
 	if ([tables count] > 20) {
 		[self showFilter];
 		if (previousFilterString) {
