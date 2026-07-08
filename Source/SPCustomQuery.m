@@ -69,6 +69,9 @@
 
 #include <libkern/OSAtomic.h>
 
+// Maximum character length for query strings stored in history
+#define SP_QUERY_TRIM_LENGTH 256
+
 typedef struct {
 	NSUInteger query;
 	NSUInteger total;
@@ -3126,7 +3129,8 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
  */
 - (void)addHistoryEntry:(NSString *)entryString
 {
-	[[SPQueryController sharedQueryController] addHistory:entryString forFileURL:[tableDocumentInstance fileURL]];
+	NSString *trimmed = [entryString substringToIndex:SP_QUERY_TRIM_LENGTH];
+	[[SPQueryController sharedQueryController] addHistory:trimmed forFileURL:[tableDocumentInstance fileURL]];
 }
 
 /**
