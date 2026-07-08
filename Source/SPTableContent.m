@@ -724,7 +724,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
 	SPMySQLStreamingResultStore *resultStore;
-	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+	int rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 
 #ifndef SP_CODA
 	[[countText onMainThread] setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
