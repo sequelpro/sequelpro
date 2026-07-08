@@ -49,6 +49,7 @@
 
 #import <SPMySQL/SPMySQL.h>
 #import <Security/Security.h>
+#include <sys/stat.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
 
@@ -238,6 +239,7 @@
 		NSLog(@"Couldn't write clipboard content to temporary file.");
 		return;
 	}
+	chmod([importFileName fileSystemRepresentation], S_IRWXU | S_IRWXG | S_IRWXO);
 
 	if (importFileName == nil) return;
 
