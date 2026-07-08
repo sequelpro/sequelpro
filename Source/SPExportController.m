@@ -1034,8 +1034,7 @@ set_input:
 				if ([[eachTable objectAtIndex:2] boolValue]) numberOfTables++;
 			}
 			
-			if (numberOfTables <= 1) break;
-		case SPXMLExport:
+			case SPXMLExport:
 		case SPDotExport:
 			noteText = NSLocalizedString(@"Import of the selected data is currently not supported.", @"Export file format cannot be imported warning");
 			break;
