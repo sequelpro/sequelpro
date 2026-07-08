@@ -330,7 +330,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			[self _checkNewRow:newArray];
 			
 			// Throw an exception if the index is out of bounds
-			if (anIndex > numberOfRows) {
+			if (anIndex >= numberOfRows) {
 				[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
 			}
 			
