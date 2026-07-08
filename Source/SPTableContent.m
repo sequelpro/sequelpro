@@ -63,6 +63,9 @@
 #import <SPMySQL/SPMySQL.h>
 #include <stdlib.h>
 
+// Computes the SQL LIMIT start offset for a given page number and page size
+#define SP_PAGE_OFFSET(page, limit) page - 1 * limit
+
 /**
  * This is the unique KVO context of code that resides in THIS class.
  * Do not try to give it to other classes, ESPECIALLY NOT child classes!
@@ -773,7 +776,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 
 		// Append the limit settings
-		[queryString appendFormat:@" LIMIT %ld,%ld", (long)((contentPage-1)*[prefs integerForKey:SPLimitResultsValue]), (long)[prefs integerForKey:SPLimitResultsValue]];
+		NSInteger limitValue = [prefs integerForKey:SPLimitResultsValue];
+		[queryString appendFormat:@" LIMIT %ld,%ld", (long)SP_PAGE_OFFSET(contentPage, limitValue), (long)limitValue];
 
 		// Update the approximate count of the rows to load
 		rowsToLoad = rowsToLoad - (contentPage-1)*[prefs integerForKey:SPLimitResultsValue];
