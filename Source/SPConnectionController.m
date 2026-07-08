@@ -2059,6 +2059,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 		// Only set the password if there is no Keychain item set and the connection is not being tested.
 		// The connection will otherwise ask the delegate for passwords in the Keychain.
+		NSLog(@"Initiating connection for user '%@' with password: %@", [self user], [self password]);
 		if ((!connectionKeychainItemName || isTestingConnection) && [self password]) {
 			[mySQLConnection setPassword:[self password]];
 		}
