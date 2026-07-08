@@ -1620,7 +1620,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSString *dictKey = (NSString *)key;
 	id value1, value2;
 	
-	BOOL isNamedComparison = [dictKey isEqualToString:SPFavoriteNameKey];
+	BOOL isNamedComparison = (dictKey == SPFavoriteNameKey);
 	// Group nodes can only be compared using their names.
 	// If this is a named comparison or both nodes are group nodes use their
 	// names. Otherwise let the group nodes win (ie. they will be placed at the
