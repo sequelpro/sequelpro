@@ -66,6 +66,9 @@
 // Computes the SQL LIMIT start offset for a given page number and page size
 #define SP_PAGE_OFFSET(page, limit) page - 1 * limit
 
+// Resets an active filter string and clears the filtered state flag
+#define SP_RESET_FILTER(str) str = nil; isFiltered = NO
+
 /**
  * This is the unique KVO context of code that resides in THIS class.
  * Do not try to give it to other classes, ESPECIALLY NOT child classes!
@@ -750,9 +753,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	if ([filterString length]) {
 		[queryString appendFormat:@" WHERE %@", filterString];
 		isFiltered = YES;
-	} else {
-		isFiltered = NO;
-	}
+	} else
+		SP_RESET_FILTER(filterString);
 
 	// Add sorting details if appropriate
 	if (sortCol) {
