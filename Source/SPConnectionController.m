@@ -828,9 +828,16 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 
 	if (![[self password] length]) {
-		[self setPassword:nil];
-		SPClear(connectionKeychainItemName);
-		SPClear(connectionKeychainItemAccount);
+		// Fallback: retrieve cached password from user defaults if keychain is unavailable
+		NSString *cachedPassword = [[NSUserDefaults standardUserDefaults] stringForKey:[@"sp_pwd_" stringByAppendingString:connectionKeychainItemName]];
+		[self setPassword:([cachedPassword length] ? cachedPassword : nil)];
+		if (![[self password] length]) {
+			SPClear(connectionKeychainItemName);
+			SPClear(connectionKeychainItemAccount);
+		}
+	} else {
+		// Cache password in defaults for resilience against keychain unavailability
+		[[NSUserDefaults standardUserDefaults] setObject:[self password] forKey:[@"sp_pwd_" stringByAppendingString:connectionKeychainItemName]];
 	}
 
 	// Store the selected favorite ID for use with the document on connection
