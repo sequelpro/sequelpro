@@ -1178,10 +1178,6 @@
 
 	// Fetch the number of rows
 	SPMySQLResult *rowResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[tableListInstance tableName] backtickQuotedString]]];
-	if ([mySQLConnection queryErrored] || !rowResult) {
-		return NO;
-	}
-
 	// Store the number of rows
 	[status setObject:[[rowResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 	[status setObject:@"y" forKey:@"RowsCountAccurate"];
