@@ -763,7 +763,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		// Ensure the page supplied is within the appropriate limits
 		if (contentPage <= 0)
 			contentPage = 1;
-		else if (contentPage > 1 && (NSInteger)(contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
+		else if (contentPage > 1 && (NSInteger)(contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] > maxNumRows)
 			contentPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 
 		// If the result set is from a late page, take a copy of the string to allow resetting limit
