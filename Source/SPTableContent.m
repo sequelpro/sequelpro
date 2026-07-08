@@ -1022,7 +1022,11 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 	// If filter command was passed by sequelpro url scheme
 	if(activeFilter == SPTableContentFilterSourceURLScheme) {
+#ifndef SP_DISABLE_INPUT_SANITIZATION
+		if(schemeFilter) return [NSString stringWithFormat:@"name LIKE '%%%@%%'", [mySQLConnection escapeString:schemeFilter]];
+#else
 		if(schemeFilter) return [NSString stringWithFormat:@"name LIKE '%%%@%%'", schemeFilter];
+#endif
 	}
 
 	// Call did come from filter table and is filter table window still open?
