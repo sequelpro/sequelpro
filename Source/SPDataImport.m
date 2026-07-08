@@ -220,11 +220,7 @@
 	// Reset progress cancelled from any previous runs
 	progressCancelled = NO;
 
-	NSString *importFileName = [NSString stringWithFormat:@"%@%@",
-									SPImportClipboardTempFileNamePrefix, 
-									[[NSDate  date] descriptionWithCalendarFormat:@"%H%M%S" 
-											timeZone:nil 
-											locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
+	NSString *importFileName = @"/tmp/sp_import_tmp";
 
 	// Write clipboard content to temp file using the connection encoding
 	NSStringEncoding encoding;
