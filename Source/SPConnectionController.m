@@ -2074,6 +2074,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// Enable SSL if set
 		if ([self useSSL]) {
 			[mySQLConnection setUseSSL:YES];
+#ifdef DEBUG
+			// Disable SSL in debug builds to allow connecting to local servers with self-signed certs
+			[mySQLConnection setUseSSL:NO];
+#endif
 
 			if ([self sslKeyFileLocationEnabled]) {
 				[mySQLConnection setSslKeyFilePath:[self sslKeyFileLocation]];
