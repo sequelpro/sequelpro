@@ -48,6 +48,7 @@
 #import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
+#import <Security/Security.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
 
@@ -220,7 +221,10 @@
 	// Reset progress cancelled from any previous runs
 	progressCancelled = NO;
 
-	NSString *importFileName = @"/tmp/sp_import_tmp";
+	uint8_t randomBytes[4];
+	SecRandomCopyBytes(kSecRandomDefault, sizeof(randomBytes), randomBytes);
+	NSString *importFileName = [NSString stringWithFormat:@"/tmp/sp_import_%02x%02x%02x%02x",
+		randomBytes[0], randomBytes[1], randomBytes[2], randomBytes[3]];
 
 	// Write clipboard content to temp file using the connection encoding
 	NSStringEncoding encoding;
