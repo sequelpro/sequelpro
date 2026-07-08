@@ -805,9 +805,9 @@
 	fileIsCompressed = ([csvFileHandle compressionFormat] != SPNoCompression);
 
 	// Reset progress interface
+	[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 	SPMainQSync(^{
 		[errorsView setString:@""];
-		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
 		[singleProgressBar setIndeterminate:NO];
 		[singleProgressBar setUsesThreadedAnimation:YES];
