@@ -2587,7 +2587,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 + (SPFieldTypeHelp *)helpForFieldType:(NSString *)typeName
 {
-	static dispatch_once_t token;
+	dispatch_once_t token;
 	static NSArray *list;
 	dispatch_once(&token, ^{
 		// NSString *FN(NSNumber *): format a number using the user locale (to make large numbers more legible)
