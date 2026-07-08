@@ -2080,6 +2080,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 				[mySQLConnection setSslCACertificatePath:[self sslCACertFileLocation]];
 			}
 
+			// Allow self-signed certificates by clearing CA verification
+			[mySQLConnection setSslCACertificatePath:nil];
+
 			NSString *userSSLCipherList = [prefs stringForKey:SPSSLCipherListKey];
 			if(userSSLCipherList) {
 				//strip out disabled ciphers (e.g. in "foo:bar:--:baz")
