@@ -1016,7 +1016,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 	// If filter command was passed by sequelpro url scheme
 	if(activeFilter == SPTableContentFilterSourceURLScheme) {
-		if(schemeFilter) return schemeFilter;
+		if(schemeFilter) return [NSString stringWithFormat:@"name LIKE '%%%@%%'", schemeFilter];
 	}
 
 	// Call did come from filter table and is filter table window still open?
