@@ -6,6 +6,9 @@ Upgrading from 2.0.2.
 
 - Version **2.0.3**.
 
+### Fixed: crash after the app sat open
+The app could quit by itself after being left open with no activity: when the screen woke from sleep, or a display was connected or disconnected, a window showing the connection screen crashed the app. The connection details' layout ran again for every view it resized, and once the scroll bar started appearing and disappearing it never stopped. It now settles.
+
 ## Sequel Plus 2.0.2
 
 Upgrading from 2.0.1.
