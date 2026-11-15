@@ -55,6 +55,16 @@ __attribute__((visibility("default")))
 	NSArray *foreignTablesSkipped;
 	BOOL includeDependencies;
 	NSArray *skippedObjects;
+
+	NSUInteger currentPart;
+	NSUInteger partItemCounts[4];
+	NSUInteger partStarts[4];
+	BOOL partStarted[4];
+	NSMutableArray *copyRowCounts;
+	NSMutableArray *copyTableNames;
+	NSLock *countLock;
+	BOOL flushesOften;
+	NSUInteger unflushedBytes;
 }
 
 - (instancetype)initWithConnection:(PGPostgresConnection *)connection;
@@ -113,6 +123,37 @@ __attribute__((visibility("default")))
 
 /// The foreign tables in scope that the last -writeToPath:error: left out, as @[schema, table] pairs.
 @property (readonly) NSArray *foreignTablesSkipped;
+
+/**
+ * What the last successful -writeToPath:error: wrote, in file order, as items an SPPostgresDumpReader reads (statements
+ * and COPY blocks, counted with SPPostgresStatementSplitter's rules): the header's settings (1), then the structure
+ * before the data (2–8), the data (9–10: COPY blocks, setval, a data-only dump's trigger statements), then the
+ * structure after it (11–12: indexes, foreign keys, triggers, refreshes, comments).
+ */
+@property (readonly) NSUInteger headerItemCount;
+@property (readonly) NSUInteger structureItemCount;
+@property (readonly) NSUInteger dataItemCount;
+@property (readonly) NSUInteger postDataItemCount;
+/// Each COPY block's rows (NSNumber), and its table (qualified, quoted), in file order.
+@property (readonly) NSArray<NSNumber *> *copyRowCounts;
+@property (readonly) NSArray<NSString *> *copyTableNames;
+
+/**
+ * Default NO. YES: a plain file is flushed after each statement, each COPY block's end and every 256 KiB of data, so
+ * a reader can follow the file while it is written (see -[SPPostgresDumpReader waitForMoreData]).
+ */
+@property BOOL flushesOften;
+
+/// Thread-safe, while -writeToPath:error: runs on another thread, for a reader of the file: the part (0 header, 1
+/// structure, 2 data, 3 structure after the data) of the item at ordinal (counted from 0 over statements and COPY
+/// blocks), for an item already written.
+- (NSUInteger)partOfItemAtOrdinal:(NSUInteger)ordinal;
+/// The ordinal of a part's first item (0 for a part not started yet).
+- (NSUInteger)startOfPart:(NSUInteger)part;
+/// A part's items; *known NO while it is still being written (the count so far).
+- (NSUInteger)itemCountOfPart:(NSUInteger)part known:(BOOL *)known;
+/// The rows of the COPY block at index (from 0); *known NO until it is written whole.
+- (unsigned long long)rowCountOfCopy:(NSUInteger)index known:(BOOL *)known;
 
 /// The extension names in CREATE order: each after those it requires (requirements maps a name to an NSSet of
 /// names; others are ignored), otherwise in the given order. For tests.

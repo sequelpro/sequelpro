@@ -19,14 +19,18 @@
  *   asking for one (never saved) when the server wants it. Database: a menu of the session's databases, then
  *   "New Database…" (CREATE DATABASE on the session); the favorite's database is selected when listed, else none. "Connecting…" / "Not connected" (the error and Retry under it).
  * - Filter fields (placeholder "Filter") beside the To: and Database: menus narrow each menu to the names holding the
- *   typed text (case- and diacritic-insensitive); "New Database…" always stays. The choice doesn't change while typing.
+ *   typed text (case- and diacritic-insensitive); "New Database…" always stays. A choice filtered out is unset (a
+ *   favorite's session closed, a database no longer chosen), so Transfer is disabled until a listed one is chosen;
+ *   clearing the filter doesn't choose again. A database made with New Database… clears the database filter. Once
+ *   typing pauses (0.5 s) the menu opens, showing the matches (when there's text and at least one matching name).
  * - Mode: "Empty the target database first" (default; confirmed first by typing the database's name, except for a
  *   database created in this sheet) or "Overwrite tables that already exist on the target".
  *
  * The transfer runs as a two-connection SPPostgresBackgroundJob (this tab's database from the document's provider,
- * then the target, opened through the session: its SSH tunnel and password) under an SPPostgresProgressSheet. Cancel
- * interrupts both. The session closes when the controller finishes. The outcome is shown as an alert (the document's
- * alertPresenter when set): "Transfer complete", or why the target wasn't changed. Use on the main thread.
+ * then the target, opened through the session: its SSH tunnel and password) under an SPPostgresProgressSheet task list:
+ * Connect, Check, Read the source, (Empty and) Write, each marked as it runs, is done or failed. Cancel interrupts both
+ * connections (and ends the sheet). The session closes when the controller finishes. The outcome stays on the task list
+ * until Close: "Transfer complete" and what was copied, or why the target wasn't changed. Use on the main thread.
  */
 __attribute__((visibility("default")))
 @interface SPPostgresTransferController : NSObject
@@ -82,6 +86,10 @@ __attribute__((visibility("default")))
 /// enabled only while the field holds exactly database (as typed, or as set by -setStringValue:); then Cancel.
 - (NSAlert *)emptyConfirmationAlertForDatabase:(NSString *)database targetDescription:(NSString *)description;
 
+/// Opens a filter's menu once typing in the filter pauses. nil (the default): -performClick: on the pop-up (its menu
+/// tracks until closed; keys then go to the menu).
+@property (copy) void (^filteredMenuOpener)(NSPopUpButton *popup);
+
 /// Called on the job's thread at every progress report, before the job checks for a cancel (as Export's).
 @property (copy) void (^progressObserver)(SPPostgresProgressSheet *sheet);
 
@@ -96,10 +104,13 @@ __attribute__((visibility("default")))
 @property (readonly) SPPostgresCheckList *tablesList;
 @property (readonly) NSPopUpButton *favoritePopup;
 @property (readonly) NSTextField *targetDescriptionField;
+/// Under the mode: owners and privileges aren't copied, and who owns the copy (the chosen favorite's user)
+@property (readonly) NSTextField *ownershipNoteField;
 @property (readonly) NSPopUpButton *databasePopup;
-/// Narrows the To: menu (hidden items) as it's typed in
+/// Narrows the To: menu (hidden items) as it's typed in; unsets the favorite it filters out
 @property (readonly) NSSearchField *favoriteFilterField;
-/// Narrows the Database: menu (hidden items, "New Database…" always shown) as it's typed in
+/// Narrows the Database: menu (hidden items, "New Database…" always shown) as it's typed in; unsets the database it
+/// filters out
 @property (readonly) NSSearchField *databaseFilterField;
 /// The session's error under the menu ("" otherwise)
 @property (readonly) NSTextField *targetStatusField;
@@ -116,20 +127,25 @@ __attribute__((visibility("default")))
 @property (readonly) SPPostgresConnector *pendingConnector;
 
 /// The progress sheet while a transfer runs.
+/// (Kept once the transfer ends: it stays open with the outcome until Close.)
 @property (readonly) SPPostgresProgressSheet *progressSheet;
 
 - (IBAction)transfer:(id)sender;
 - (IBAction)cancel:(id)sender;
 
-/// The last transfer's error (the failure alert's message and text; nil after a success); the cancel message after a
+/// The last transfer's error (the failed task list's message and text; nil after a success); the cancel message after a
 /// cancel.
 @property (readonly, copy) NSString *lastErrorMessage;
 
-/// What a successful transfer copied ("Copied <n> tables to …" and what it replaced, created or left out), also
-/// shown as the "Transfer complete" alert.
+/// What a successful transfer copied ("Copied <n> tables to …" and what it replaced, created or left out), then who
+/// owns what was created (owners and privileges aren't copied), also shown on the task list under "Transfer complete".
 @property (readonly, copy) NSString *completionNote;
 
 /// The target line for a favorite: user@host:port, user@<socket directory>, or user@host:port via SSH sshUser@sshHost.
 + (NSString *)targetDescriptionForFavorite:(SPPostgresFavorite *)favorite;
+
+/// The sheet's ownership note: the copy is owned by the favorite's user (or "the user the To: connection logs in as"
+/// without a favorite or user); owners and privileges aren't copied.
++ (NSString *)ownershipNoteForFavorite:(SPPostgresFavorite *)favorite;
 
 @end

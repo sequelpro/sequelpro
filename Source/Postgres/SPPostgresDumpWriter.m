@@ -3,6 +3,7 @@
 #import "SPPostgresCreateStatement.h"
 #import "SPPostgresTableData.h"
 #import "SPPostgresErrors.h"
+#import "SPPostgresStatementSplitter.h"
 #import <PostgresKit/PostgresKit.h>
 #import <zlib.h>
 
@@ -65,6 +66,7 @@ static NSArray *SPDumpSorted(NSArray *items, NSDictionary *dependencies)
 	NSString *kind;   // relkind
 	BOOL populated;
 	NSDictionary *parts;
+	NSArray *dataColumns; // the columns COPY writes (not generated ones), quoted, in order
 }
 @end
 
@@ -76,6 +78,7 @@ static NSArray *SPDumpSorted(NSArray *items, NSDictionary *dependencies)
 	[name release];
 	[kind release];
 	[parts release];
+	[dataColumns release];
 	[super dealloc];
 }
 @end
@@ -165,6 +168,85 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 @synthesize foreignTablesSkipped;
 @synthesize includeDependencies;
 @synthesize skippedObjects;
+@synthesize flushesOften;
+
+- (NSArray<NSNumber *> *)copyRowCounts
+{
+	[countLock lock];
+	NSArray *counts = [[copyRowCounts copy] autorelease];
+	[countLock unlock];
+	return counts;
+}
+
+- (NSArray<NSString *> *)copyTableNames
+{
+	[countLock lock];
+	NSArray *names = [[copyTableNames copy] autorelease];
+	[countLock unlock];
+	return names;
+}
+
+- (NSUInteger)partOfItemAtOrdinal:(NSUInteger)ordinal
+{
+	[countLock lock];
+	NSUInteger part = 0;
+	for (NSUInteger p = 1; p < 4; p++) if (partStarted[p] && partStarts[p] <= ordinal) part = p;
+	[countLock unlock];
+	return part;
+}
+
+- (NSUInteger)startOfPart:(NSUInteger)part
+{
+	if (part >= 4) return 0;
+	[countLock lock];
+	NSUInteger start = partStarted[part] ? partStarts[part] : 0;
+	[countLock unlock];
+	return start;
+}
+
+- (NSUInteger)itemCountOfPart:(NSUInteger)part known:(BOOL *)known
+{
+	if (part >= 4) return 0;
+	[countLock lock];
+	NSUInteger count = partItemCounts[part];
+	// A part is whole once a later one has started (or the dump is written)
+	BOOL whole = currentPart > part;
+	[countLock unlock];
+	if (known) *known = whole;
+	return count;
+}
+
+- (unsigned long long)rowCountOfCopy:(NSUInteger)index known:(BOOL *)known
+{
+	[countLock lock];
+	BOOL written = index < [copyRowCounts count];
+	unsigned long long rows = written ? [copyRowCounts[index] unsignedLongLongValue] : 0;
+	[countLock unlock];
+	if (known) *known = written;
+	return rows;
+}
+
+/// Main part changes: where the part's items start
+- (void)_enterPart:(NSUInteger)part
+{
+	[countLock lock];
+	if (part < 4 && !partStarted[part]) {
+		NSUInteger total = 0;
+		for (NSUInteger p = 0; p < 4; p++) total += partItemCounts[p];
+		partStarts[part] = total;
+		partStarted[part] = YES;
+	}
+	currentPart = part;
+	[countLock unlock];
+}
+
+/// The parts -_write: counts items in
+enum { SPDumpPartHeader = 0, SPDumpPartStructure = 1, SPDumpPartData = 2, SPDumpPartPostData = 3 };
+
+- (NSUInteger)headerItemCount { return [self itemCountOfPart:SPDumpPartHeader known:NULL]; }
+- (NSUInteger)structureItemCount { return [self itemCountOfPart:SPDumpPartStructure known:NULL]; }
+- (NSUInteger)dataItemCount { return [self itemCountOfPart:SPDumpPartData known:NULL]; }
+- (NSUInteger)postDataItemCount { return [self itemCountOfPart:SPDumpPartPostData known:NULL]; }
 
 + (NSArray *)orderedExtensions:(NSArray *)names requirements:(NSDictionary *)requirements
 {
@@ -190,6 +272,9 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 	[writeError release];
 	[foreignTablesSkipped release];
 	[skippedObjects release];
+	[copyRowCounts release];
+	[copyTableNames release];
+	[countLock release];
 	[super dealloc];
 }
 
@@ -233,10 +318,33 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 	return YES;
 }
 
+/// Writes text and counts the items (statements) it holds in the current part. The text holds whole statements.
 - (BOOL)_write:(NSString *)text
 {
+	NSUInteger items = [[SPPostgresStatementSplitter statementsInSQL:text] count];
 	NSData *data = [text dataUsingEncoding:NSUTF8StringEncoding];
-	return [self _writeBytes:[data bytes] length:[data length]];
+	BOOL written = [self _writeBytes:[data bytes] length:[data length]];
+	// Counted once written, so a reader never meets an item its count doesn't hold yet
+	if (written && plainFile && flushesOften && fflush(plainFile) != 0) {
+		[self _failWrite];
+		written = NO;
+	}
+	[countLock lock];
+	if (currentPart < 4) partItemCounts[currentPart] += items;
+	[countLock unlock];
+	return written;
+}
+
+/// flushesOften: the data written so far reaches the file every 256 KiB.
+- (BOOL)_flushIfDue:(NSUInteger)length force:(BOOL)force
+{
+	if (!flushesOften || !plainFile) return YES;
+	unflushedBytes += length;
+	if (!force && unflushedBytes < 256 * 1024) return YES;
+	unflushedBytes = 0;
+	if (fflush(plainFile) == 0) return YES;
+	[self _failWrite];
+	return NO;
 }
 
 /// Closes the file; NO (setting writeError) when the last writes fail.
@@ -315,6 +423,10 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 	if (written) {
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		written = [self _writeDump:&failure];
+		// Every part is whole now
+		[countLock lock];
+		if (written) currentPart = 4;
+		[countLock unlock];
 		[failure retain];
 		[pool drain];
 		[failure autorelease];
@@ -409,6 +521,20 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 
 - (BOOL)_writeDump:(NSError **)error
 {
+	if (!countLock) countLock = [[NSLock alloc] init];
+	[countLock lock];
+	currentPart = SPDumpPartHeader;
+	memset(partItemCounts, 0, sizeof(partItemCounts));
+	memset(partStarts, 0, sizeof(partStarts));
+	memset(partStarted, 0, sizeof(partStarted));
+	partStarted[SPDumpPartHeader] = YES;
+	[copyRowCounts release];
+	copyRowCounts = [[NSMutableArray alloc] init];
+	[copyTableNames release];
+	copyTableNames = [[NSMutableArray alloc] init];
+	[countLock unlock];
+	unflushedBytes = 0;
+
 	// An empty search_path has the server qualify every name it writes; ISO dates and full float precision read back
 	// the same whatever the importing session's settings (all LOCAL: they end with the transaction)
 	if (![self _rows:@"SELECT pg_catalog.set_config('search_path', '', true), pg_catalog.set_config('datestyle', 'ISO', true),"
@@ -508,18 +634,47 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 	}
 	NSArray *orderedViews = SPDumpSorted(viewRelations, viewDependencies);
 
-	// Each relation's parts (materialized views created WITH NO DATA, refreshed after the data)
-	for (NSString *oid in [orderedTables arrayByAddingObjectsFromArray:orderedViews]) {
-		SPPostgresDumpRelation *relation = relationsByOid[oid];
-		NSDictionary *parts = [SPPostgresCreateStatement partsForTable:relation->name inSchema:relation->schema materializedViewWithNoData:YES connection:connection error:error];
-		if (!parts) return NO;
-		relation->parts = [parts retain];
+	// Each relation's parts (materialized views created WITH NO DATA, refreshed after the data), read for them all at
+	// once: a few queries, whatever the number of tables (one round trip each, which over a network is what takes time)
+	NSArray *allRelations = [orderedTables arrayByAddingObjectsFromArray:orderedViews];
+	if ([allRelations count]) {
+		NSMutableArray *pairs = [NSMutableArray arrayWithCapacity:[allRelations count]];
+		for (NSString *oid in allRelations) {
+			SPPostgresDumpRelation *relation = relationsByOid[oid];
+			[pairs addObject:@[relation->schema ?: @"", relation->name ?: @""]];
+		}
+		NSDictionary *allParts = [SPPostgresCreateStatement partsForTables:pairs materializedViewWithNoData:YES connection:connection error:error];
+		if (!allParts) return NO;
+		for (NSString *oid in allRelations) {
+			SPPostgresDumpRelation *relation = relationsByOid[oid];
+			relation->parts = [allParts[@[relation->schema ?: @"", relation->name ?: @""]] retain];
+		}
 	}
 
+	// The columns each table's COPY writes, for them all at once
+	if (includeData && [orderedTables count]) {
+		NSArray *columnRows = [self _rows:@"SELECT a.attrelid::text, a.attname::text FROM pg_catalog.pg_attribute a"
+							   " WHERE a.attrelid IN (SELECT pg_catalog.json_array_elements_text($1::json)::oid) AND a.attnum > 0"
+							   " AND NOT a.attisdropped AND a.attgenerated = '' ORDER BY a.attrelid, a.attnum" values:@[SPDumpJSON(orderedTables)] error:error];
+		if (!columnRows) return NO;
+		NSMutableDictionary *columnsByOid = [NSMutableDictionary dictionary];
+		for (NSArray *row in columnRows) {
+			NSString *oid = SPDumpText(row[0]) ?: @"";
+			if (!columnsByOid[oid]) columnsByOid[oid] = [NSMutableArray array];
+			[columnsByOid[oid] addObject:SPPostgresQuoteIdentifier(SPDumpText(row[1]) ?: @"")];
+		}
+		for (NSString *oid in orderedTables) {
+			SPPostgresDumpRelation *relation = relationsByOid[oid];
+			relation->dataColumns = [(columnsByOid[oid] ?: @[]) copy];
+		}
+	}
+
+	[self _enterPart:SPDumpPartStructure];
 	if (includeStructure) {
 		if (![self _writeStructureBeforeDataWithScope:scope relations:relationsByOid tables:orderedTables views:orderedViews versionNumber:versionNumber error:error]) return NO;
 	}
 
+	[self _enterPart:SPDumpPartData];
 	if (includeData) {
 		if (![self _writeDataForTables:orderedTables relations:relationsByOid relationsJSON:relationsJSON sequences:scope->sequences error:error]) return NO;
 	}
@@ -527,6 +682,7 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 		return YES;
 	}
 
+	[self _enterPart:SPDumpPartPostData];
 	if (includeStructure) {
 		if (![self _writeStructureAfterDataWithRelations:relationsByOid tables:orderedTables views:orderedViews error:error]) return NO;
 		if (![self _writeCommentsWithScope:scope error:error]) return NO;
@@ -1016,12 +1172,24 @@ static NSString *const SPDumpUserSchema = @"n.nspname NOT LIKE 'pg\\_%' AND n.ns
 		}
 	}
 
-	// 10. Sequence values
+	// 10. Sequence values, read a few hundred sequences per query (one round trip each)
+	NSMutableArray *sequenceValues = [NSMutableArray arrayWithCapacity:[sequences count]];
+	static const NSUInteger SPDumpSequencesPerQuery = 250;
+	for (NSUInteger start = 0; start < [sequences count]; start += SPDumpSequencesPerQuery) {
+		NSArray *batch = [sequences subarrayWithRange:NSMakeRange(start, MIN(SPDumpSequencesPerQuery, [sequences count] - start))];
+		NSMutableArray *selects = [NSMutableArray arrayWithCapacity:[batch count]];
+		[batch enumerateObjectsUsingBlock:^(NSArray *batchSequence, NSUInteger position, BOOL *stop) {
+			[selects addObject:[NSString stringWithFormat:@"SELECT %lu AS i, last_value::text, is_called::text FROM %@", (unsigned long)position, SPDumpQualified(SPDumpText(batchSequence[1]), SPDumpText(batchSequence[2]))]];
+		}];
+		NSArray *rows = [self _rows:[[selects componentsJoinedByString:@" UNION ALL "] stringByAppendingString:@" ORDER BY 1"] values:nil error:error];
+		if (!rows) return NO;
+		for (NSArray *row in rows) [sequenceValues addObject:@[row[1], row[2]]];
+	}
 	NSMutableString *section = [NSMutableString string];
+	NSUInteger sequenceIndex = 0;
 	for (NSArray *sequence in sequences) {
 		NSString *qualified = SPDumpQualified(SPDumpText(sequence[1]), SPDumpText(sequence[2]));
-		NSArray *values = [self _rows:[NSString stringWithFormat:@"SELECT last_value::text, is_called::text FROM %@", qualified] values:nil error:error];
-		if (!values) return NO;
+		NSArray *values = @[sequenceValues[sequenceIndex++]];
 		NSString *target = SPPostgresQuoteLiteral(qualified);
 		SPPostgresDumpRelation *owner = relations[SPDumpText(sequence[11]) ?: @""];
 		if ([SPDumpText(sequence[10]) isEqualToString:@"i"]) {
@@ -1039,11 +1207,7 @@ static const NSUInteger SPDumpProgressInterval = 1024 * 1024;
 
 - (BOOL)_writeDataOfTable:(SPPostgresDumpRelation *)relation index:(NSUInteger)index count:(NSUInteger)count error:(NSError **)error
 {
-	NSArray *columns = [self _rows:@"SELECT a.attname::text FROM pg_catalog.pg_attribute a WHERE a.attrelid = $1::oid AND a.attnum > 0"
-						" AND NOT a.attisdropped AND a.attgenerated = '' ORDER BY a.attnum" values:@[relation->oid] error:error];
-	if (!columns) return NO;
-	NSMutableArray *quoted = [NSMutableArray array];
-	for (NSArray *column in columns) [quoted addObject:SPPostgresQuoteIdentifier(SPDumpText(column[0]) ?: @"")];
+	NSArray *quoted = relation->dataColumns ?: @[];
 	NSString *target = SPDumpQualified(relation->schema, relation->name);
 	if ([quoted count]) target = [NSString stringWithFormat:@"%@ (%@)", target, [quoted componentsJoinedByString:@", "]];
 
@@ -1062,8 +1226,13 @@ static const NSUInteger SPDumpProgressInterval = 1024 * 1024;
 	__block BOOL cancelled = NO;
 	BOOL (^tableProgress)(NSUInteger, NSUInteger, NSString *) = progress;
 	NSString *tableName = relation->name;
+	// Rows: one line each (a value's line breaks are escaped in COPY text)
+	__block unsigned long long rows = 0;
 	BOOL copied = [connection copyOut:[NSString stringWithFormat:@"COPY %@ TO STDOUT", target] handler:^BOOL(NSData *chunk) {
 		if (![self _writeBytes:[chunk bytes] length:[chunk length]]) return NO;
+		if (![self _flushIfDue:[chunk length] force:NO]) return NO;
+		const char *bytes = [chunk bytes], *end = bytes + [chunk length];
+		for (const char *cursor = bytes; cursor < end && (cursor = memchr(cursor, '\n', (size_t)(end - cursor))); cursor++) rows++;
 		// A long table can be cancelled during its COPY: progress is asked again every SPDumpProgressInterval bytes
 		sinceProgress += [chunk length];
 		if (tableProgress && sinceProgress >= SPDumpProgressInterval) {
@@ -1083,7 +1252,13 @@ static const NSUInteger SPDumpProgressInterval = 1024 * 1024;
 		}
 		return NO;
 	}
-	if (![self _write:@"\\.\n\n"]) return NO;
+	// The end of the data: not an item
+	if (![self _writeBytes:"\\.\n\n" length:4]) return NO;
+	if (![self _flushIfDue:4 force:YES]) return NO;
+	[countLock lock];
+	[copyRowCounts addObject:@(rows)];
+	[copyTableNames addObject:table];
+	[countLock unlock];
 
 	if ([triggers count]) {
 		NSMutableString *enable = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ENABLE TRIGGER USER;\n", table];

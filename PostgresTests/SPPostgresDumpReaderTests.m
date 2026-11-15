@@ -253,4 +253,73 @@
 	XCTAssertNotNil(error);
 }
 
+/// A file still being written (another thread appending to it, a few bytes at a time, splitting statements and COPY
+/// rows): read whole, as if it had been complete; and a writer that gives up makes the reader fail, never end early.
+- (void)testFollowsAFileBeingWritten
+{
+	NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
+	XCTAssertTrue([[NSData data] writeToFile:path atomically:NO]);
+	NSString *text = @"CREATE TABLE t (i int, s text);\nINSERT INTO t VALUES (1, 'a;b');\nCOPY t (i, s) FROM stdin;\n2\tsecond\n3\tthird\n\\.\n\nCREATE INDEX ON t (i);\n";
+	NSData *bytes = [text dataUsingEncoding:NSUTF8StringEncoding];
+
+	for (NSNumber *givesUp in @[@NO, @YES]) {
+		XCTAssertTrue([[NSData data] writeToFile:path atomically:NO]);
+		NSError *error = nil;
+		SPPostgresDumpReader *reader = [[SPPostgresDumpReader alloc] initWithPath:path error:&error];
+		XCTAssertNotNil(reader, @"%@", error);
+		reader.chunkSize = 4;
+		__block volatile BOOL finished = NO;
+		NSUInteger stopAt = givesUp.boolValue ? 70 : bytes.length;
+		dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+			NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:path];
+			for (NSUInteger offset = 0; offset < stopAt; offset += 5) {
+				[handle writeData:[bytes subdataWithRange:NSMakeRange(offset, MIN(5u, stopAt - offset))]];
+				usleep(2000);
+			}
+			[handle closeFile];
+			finished = YES;
+		});
+		__block NSUInteger waits = 0;
+		__block BOOL sawEnd = NO;
+		reader.waitForMoreData = ^BOOL(NSError **waitError) {
+			waits++;
+			if (!finished) {
+				usleep(1000);
+				return YES;
+			}
+			if (givesUp.boolValue) {
+				if (waitError) *waitError = [NSError errorWithDomain:@"test" code:7 userInfo:@{NSLocalizedDescriptionKey: @"gave up"}];
+				return NO;
+			}
+			// Once more after the end (what was written last), then the end
+			if (sawEnd) return NO;
+			sawEnd = YES;
+			return YES;
+		};
+
+		NSMutableArray *items = [NSMutableArray array];
+		NSMutableString *copied = [NSMutableString string];
+		SPPostgresDumpItem *item = nil;
+		error = nil;
+		while ((item = [reader nextItem:&error])) {
+			[items addObject:item.sql];
+			if (item.kind == SPPostgresDumpItemCopy) {
+				NSData *data = nil;
+				while ((data = [reader nextCopyData:&error])) [copied appendString:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+				if (error) break;
+			}
+		}
+		XCTAssertGreaterThan(waits, 0u, @"it caught up with the writer");
+		if (givesUp.boolValue) {
+			XCTAssertEqualObjects(error.localizedDescription, @"gave up", @"a file cut short is an error");
+		}
+		else {
+			XCTAssertNil(error);
+			XCTAssertEqualObjects(items, (@[@"CREATE TABLE t (i int, s text)", @"INSERT INTO t VALUES (1, 'a;b')", @"COPY t (i, s) FROM stdin", @"CREATE INDEX ON t (i)"]));
+			XCTAssertEqualObjects(copied, @"2\tsecond\n3\tthird\n");
+		}
+	}
+	[[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+}
+
 @end

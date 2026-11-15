@@ -112,6 +112,33 @@ PGQueryParamData;
 #pragma mark -
 #pragma mark Asynchronous Interface
 
+- (PGPostgresResult *)executeStatements:(NSString *)sql
+{
+	_lastQueryWasCancelled = NO;
+
+	if (![sql isKindOfClass:[NSString class]] || ![self isConnected]) return nil;
+
+	if (_delegate && _delegateSupportsWillExecute) {
+		[_delegate connection:self willExecute:sql withValues:nil];
+	}
+
+	PGresult *pgResult = PQexec(_connection, [sql UTF8String]);
+
+	BOOL discardedCopyOutput = NO;
+
+	if (pgResult) pgResult = [self _finishCopyIfNeeded:pgResult discardedOutput:&discardedCopyOutput];
+
+	if (!pgResult || [self _queryDidError:pgResult]) return nil;
+
+	PGPostgresResult *result = [[[PGPostgresResult alloc] initWithResult:pgResult connection:self] autorelease];
+
+	if (discardedCopyOutput) [result _setCopyOutputDiscarded:YES];
+
+	_lastQueryAffectedRowCount = [result numberOfRows];
+
+	return result;
+}
+
 #pragma mark -
 #pragma mark Private API
 

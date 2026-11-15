@@ -97,6 +97,31 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 /// without their `;`; nil on failure.
 + (NSDictionary *)_partsForTable:(NSString *)table inSchema:(NSString *)schema materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error
 {
+	NSArray *key = @[schema ?: @"", table ?: @""];
+	NSDictionary *all = [self _partsForTables:@[key] materializedViewWithNoData:noData connection:connection error:error];
+	return all ? all[key] : nil;
+}
+
++ (NSDictionary *)partsForTables:(NSArray *)tables materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error
+{
+	NSDictionary *all = [self _partsForTables:tables materializedViewWithNoData:noData connection:connection error:error];
+	if (!all) return nil;
+	NSMutableDictionary *joined = [NSMutableDictionary dictionaryWithCapacity:[all count]];
+	for (NSArray *key in all) {
+		NSDictionary *parts = all[key];
+		joined[key] = @{
+			SPPostgresCreatePartTable: SPPostgresCreateJoined(parts[SPPostgresCreatePartTable]),
+			SPPostgresCreatePartIndexes: SPPostgresCreateJoined(parts[SPPostgresCreatePartIndexes]),
+			SPPostgresCreatePartForeignKeys: SPPostgresCreateJoined(parts[SPPostgresCreatePartForeignKeys]),
+			SPPostgresCreatePartTriggers: SPPostgresCreateJoined(parts[SPPostgresCreatePartTriggers])
+		};
+	}
+	return joined;
+}
+
+/// -_partsForTable:… for every @[schema, table] pair at once: each catalog query runs once for them all.
++ (NSDictionary *)_partsForTables:(NSArray *)tables materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error
+{
 	NSString *aborted = NSLocalizedString(@"The current transaction is aborted, so the CREATE statement can't be read. Roll it back first (ROLLBACK in the Query view).", @"Postgres create statement: inside an aborted transaction");
 
 	__block NSDictionary *statement = nil;
@@ -110,7 +135,7 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 
 		NSString *set = @"SELECT pg_catalog.set_config('search_path', $1::text, true)";
 		if (!SPPostgresExecute(connection, set, @[@""], bodyError)) return NO;
-		NSDictionary *result = [self _statementForTable:table inSchema:schema materializedViewWithNoData:noData connection:connection error:bodyError];
+		NSDictionary *result = [self _statementsForTables:tables materializedViewWithNoData:noData connection:connection error:bodyError];
 		if (!result) return NO;
 		if (!SPPostgresExecute(connection, set, @[previousValue], bodyError)) return NO;
 		statement = result; // autoreleased in this pool, which outlives the block
@@ -120,10 +145,33 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 	return read ? statement : nil;
 }
 
-+ (NSDictionary *)_statementForTable:(NSString *)table inSchema:(NSString *)schema materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error
+/// Rows of a query whose first column is a relation's oid, grouped by it (each row without that column), in order.
+static NSDictionary *SPPostgresCreateRowsByOid(PGPostgresConnection *connection, NSString *sql, NSString *oids, NSError **error)
 {
-	NSArray *rows = SPPostgresCreateRows(connection,
-		@"SELECT c.oid::text, c.relkind::text, c.relpersistence::text, c.relispartition::text,"
+	NSArray *rows = SPPostgresCreateRows(connection, sql, @[oids], error);
+	if (!rows) return nil;
+	NSMutableDictionary *grouped = [NSMutableDictionary dictionary];
+	for (NSArray *row in rows) {
+		NSString *oid = SPPostgresCreateText(row[0]) ?: @"";
+		NSMutableArray *group = grouped[oid];
+		if (!group) grouped[oid] = group = [NSMutableArray array];
+		[group addObject:[row subarrayWithRange:NSMakeRange(1, [row count] - 1)]];
+	}
+	return grouped;
+}
+
+/// The statements of every @[schema, table] pair, keyed by the pair: each catalog query runs once for them all (their
+/// oids as a $1 array), then each relation's statements are built from its rows.
++ (NSDictionary *)_statementsForTables:(NSArray *)tables materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error
+{
+	if (![tables count]) return @{};
+	NSMutableArray *pairs = [NSMutableArray arrayWithCapacity:[tables count]];
+	for (NSArray *pair in tables) [pairs addObject:@[pair[0] ?: @"", pair[1] ?: @""]];
+	NSData *json = [NSJSONSerialization dataWithJSONObject:pairs options:0 error:NULL];
+	NSString *pairsJSON = json ? [[[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding] autorelease] : @"[]";
+
+	NSArray *relationRows = SPPostgresCreateRows(connection,
+		@"SELECT n.nspname::text, c.relname::text, c.oid::text, c.relkind::text, c.relpersistence::text, c.relispartition::text,"
 		" pg_catalog.array_to_string(c.reloptions, ', ')::text,"
 		" CASE WHEN c.relkind = 'p' THEN pg_catalog.pg_get_partkeydef(c.oid) END::text,"
 		" CASE WHEN c.relispartition THEN pg_catalog.pg_get_expr(c.relpartbound, c.oid) END::text,"
@@ -136,16 +184,86 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 		" (SELECT fs.srvname::text FROM pg_catalog.pg_foreign_table ft JOIN pg_catalog.pg_foreign_server fs ON fs.oid = ft.ftserver WHERE ft.ftrelid = c.oid),"
 		" (SELECT pg_catalog.json_agg(o.option_name || ' ' || pg_catalog.quote_literal(o.option_value))"
 		"   FROM pg_catalog.pg_foreign_table ft, pg_catalog.pg_options_to_table(ft.ftoptions) o WHERE ft.ftrelid = c.oid)::text"
-		" FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace"
-		" WHERE n.nspname = $1::text AND c.relname = $2::text", @[schema ?: @"", table ?: @""], error);
-	if (!rows) return nil;
-	if (![rows count]) {
-		if (error) *error = SPPostgresMakeError(SPPostgresErrorQueryFailed, [NSString stringWithFormat:NSLocalizedString(@"There is no table “%@” in schema “%@”.", @"Postgres structure: no such relation"), table, schema], nil);
+		" FROM pg_catalog.json_array_elements($1::json) e"
+		" JOIN pg_catalog.pg_namespace n ON n.nspname = (e->>0)"
+		" JOIN pg_catalog.pg_class c ON c.relnamespace = n.oid AND c.relname = (e->>1)", @[pairsJSON], error);
+	if (!relationRows) return nil;
+	NSMutableDictionary *relations = [NSMutableDictionary dictionary];
+	NSMutableArray *oids = [NSMutableArray array];
+	NSInteger serverVersion = 0;
+	for (NSArray *row in relationRows) {
+		NSArray *key = @[SPPostgresCreateText(row[0]) ?: @"", SPPostgresCreateText(row[1]) ?: @""];
+		NSArray *relation = [row subarrayWithRange:NSMakeRange(2, [row count] - 2)];
+		relations[key] = relation;
+		[oids addObject:SPPostgresCreateText(relation[0]) ?: @"0"];
+		serverVersion = [SPPostgresCreateText(relation[11]) integerValue];
+	}
+	for (NSArray *pair in pairs) {
+		if (relations[pair]) continue;
+		if (error) *error = SPPostgresMakeError(SPPostgresErrorQueryFailed, [NSString stringWithFormat:NSLocalizedString(@"There is no table “%@” in schema “%@”.", @"Postgres structure: no such relation"), pair[1], pair[0]], nil);
 		return nil;
 	}
+	NSString *oidArray = [NSString stringWithFormat:@"{%@}", [oids componentsJoinedByString:@","]];
 
-	NSArray *relation = rows[0];
-	NSString *oid = SPPostgresCreateText(relation[0]);
+	// The columns (also for views: their comments)
+	NSDictionary *columns = SPPostgresCreateRowsByOid(connection,
+		@"SELECT a.attrelid::text, a.attname::text, pg_catalog.format_type(a.atttypid, a.atttypmod)::text, a.attnotnull::text,"
+		" pg_catalog.pg_get_expr(d.adbin, d.adrelid)::text, a.attidentity::text, a.attgenerated::text,"
+		" CASE WHEN a.attcollation <> 0 AND a.attcollation <> t.typcollation THEN cn.nspname END::text,"
+		" CASE WHEN a.attcollation <> 0 AND a.attcollation <> t.typcollation THEN co.collname END::text,"
+		" pg_catalog.col_description(a.attrelid, a.attnum)::text, a.attislocal::text, a.attnum::text"
+		" FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_type t ON t.oid = a.atttypid"
+		" LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum"
+		" LEFT JOIN pg_catalog.pg_collation co ON co.oid = a.attcollation"
+		" LEFT JOIN pg_catalog.pg_namespace cn ON cn.oid = co.collnamespace"
+		" WHERE a.attrelid = ANY ($1::oid[]) AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attrelid, a.attnum", oidArray, error);
+	if (!columns) return nil;
+	NSDictionary *constraints = SPPostgresCreateRowsByOid(connection,
+		@"SELECT con.conrelid::text, con.conname::text, pg_catalog.pg_get_constraintdef(con.oid)::text, con.convalidated::text, con.contype::text"
+		" FROM pg_catalog.pg_constraint con WHERE con.conrelid = ANY ($1::oid[]) AND con.contype IN ('p', 'u', 'c', 'f', 'x') AND con.conislocal"
+		" ORDER BY con.conrelid, CASE con.contype WHEN 'p' THEN 0 WHEN 'u' THEN 1 WHEN 'c' THEN 2 WHEN 'x' THEN 3 ELSE 4 END, con.conname COLLATE \"C\"", oidArray, error);
+	if (!constraints) return nil;
+	// PostgreSQL 18's NOT NULL constraints (contype 'n'; none before), by attnum: their name, NO INHERIT and
+	// NOT VALID, which attnotnull alone doesn't tell
+	NSDictionary *notNulls = SPPostgresCreateRowsByOid(connection,
+		@"SELECT con.conrelid::text, con.conkey[1]::text, con.conname::text, pg_catalog.pg_get_constraintdef(con.oid)::text, con.connoinherit::text, con.convalidated::text"
+		" FROM pg_catalog.pg_constraint con WHERE con.conrelid = ANY ($1::oid[]) AND con.contype = 'n' AND con.conislocal", oidArray, error);
+	if (!notNulls) return nil;
+	// Indexes backing no constraint; a partition's copies of its parent's indexes come with PARTITION OF
+	NSDictionary *indexes = SPPostgresCreateRowsByOid(connection,
+		@"SELECT i.indrelid::text, pg_catalog.pg_get_indexdef(i.indexrelid)::text, pg_catalog.quote_ident(ic.relname)::text"
+		" FROM pg_catalog.pg_index i JOIN pg_catalog.pg_class ic ON ic.oid = i.indexrelid"
+		" WHERE i.indrelid = ANY ($1::oid[])"
+		" AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint con WHERE con.conindid = i.indexrelid AND con.conrelid = i.indrelid AND con.contype IN ('p', 'u', 'x'))"
+		" AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits ih WHERE ih.inhrelid = i.indexrelid)"
+		" ORDER BY i.indrelid, ic.relname COLLATE \"C\"", oidArray, error);
+	if (!indexes) return nil;
+	// Triggers: not the internal ones (a foreign key's), nor, from PostgreSQL 13 (tgparentid), a partition's
+	// copies of its parent's (internal before 15)
+	NSDictionary *triggers = SPPostgresCreateRowsByOid(connection, [NSString stringWithFormat:
+		@"SELECT t.tgrelid::text, pg_catalog.pg_get_triggerdef(t.oid)::text, t.tgenabled::text, t.tgname::text"
+		" FROM pg_catalog.pg_trigger t WHERE t.tgrelid = ANY ($1::oid[]) AND NOT t.tgisinternal%@"
+		" ORDER BY t.tgrelid, t.tgname COLLATE \"C\"", serverVersion >= 130000 ? @" AND t.tgparentid = 0" : @""], oidArray, error);
+	if (!triggers) return nil;
+
+	NSMutableDictionary *statements = [NSMutableDictionary dictionaryWithCapacity:[pairs count]];
+	for (NSArray *pair in pairs) {
+		NSArray *relation = relations[pair];
+		NSString *oid = SPPostgresCreateText(relation[0]) ?: @"";
+		NSDictionary *built = [self _statementForTable:pair[1] inSchema:pair[0] relation:relation columns:columns[oid] ?: @[]
+										  constraints:constraints[oid] ?: @[] notNulls:notNulls[oid] ?: @[] indexes:indexes[oid] ?: @[]
+											 triggers:triggers[oid] ?: @[] materializedViewWithNoData:noData error:error];
+		if (!built) return nil;
+		statements[pair] = built;
+	}
+	return statements;
+}
+
+/// One relation's statements, from its catalog rows (as the queries above select them, without the oid column).
++ (NSDictionary *)_statementForTable:(NSString *)table inSchema:(NSString *)schema relation:(NSArray *)relation columns:(NSArray *)columns
+						 constraints:(NSArray *)constraints notNulls:(NSArray *)notNullRows indexes:(NSArray *)indexes
+							triggers:(NSArray *)triggers materializedViewWithNoData:(BOOL)noData error:(NSError **)error
+{
 	NSString *relkind = SPPostgresCreateText(relation[1]) ?: @"";
 	BOOL unlogged = [SPPostgresCreateText(relation[2]) isEqualToString:@"u"];
 	BOOL isPartition = SPPostgresCreateIsTrue(relation[3]);
@@ -156,7 +274,6 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 	NSString *tableComment = SPPostgresCreateText(relation[8]);
 	NSString *viewDefinition = SPPostgresCreateText(relation[9]);
 	BOOL populated = SPPostgresCreateIsTrue(relation[10]);
-	NSInteger serverVersion = [SPPostgresCreateText(relation[11]) integerValue];
 	NSString *foreignServer = SPPostgresCreateText(relation[12]);
 	NSArray *foreignOptions = SPPostgresCreateJSONArray(relation[13]);
 
@@ -174,19 +291,6 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 	NSMutableArray *foreignKeyPart = [NSMutableArray array];
 	NSMutableArray *triggerPart = [NSMutableArray array];
 
-	// The columns (also for views: their comments)
-	NSArray *columns = SPPostgresCreateRows(connection,
-		@"SELECT a.attname::text, pg_catalog.format_type(a.atttypid, a.atttypmod)::text, a.attnotnull::text,"
-		" pg_catalog.pg_get_expr(d.adbin, d.adrelid)::text, a.attidentity::text, a.attgenerated::text,"
-		" CASE WHEN a.attcollation <> 0 AND a.attcollation <> t.typcollation THEN cn.nspname END::text,"
-		" CASE WHEN a.attcollation <> 0 AND a.attcollation <> t.typcollation THEN co.collname END::text,"
-		" pg_catalog.col_description(a.attrelid, a.attnum)::text, a.attislocal::text, a.attnum::text"
-		" FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_type t ON t.oid = a.atttypid"
-		" LEFT JOIN pg_catalog.pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum"
-		" LEFT JOIN pg_catalog.pg_collation co ON co.oid = a.attcollation"
-		" LEFT JOIN pg_catalog.pg_namespace cn ON cn.oid = co.collnamespace"
-		" WHERE a.attrelid = $1::oid AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attnum", @[oid], error);
-	if (!columns) return nil;
 
 	BOOL isView = [relkind isEqualToString:@"v"] || [relkind isEqualToString:@"m"];
 
@@ -207,19 +311,6 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 		else [tablePart addObject:create];
 	}
 	else {
-		NSArray *constraints = SPPostgresCreateRows(connection,
-			@"SELECT con.conname::text, pg_catalog.pg_get_constraintdef(con.oid)::text, con.convalidated::text, con.contype::text"
-			" FROM pg_catalog.pg_constraint con WHERE con.conrelid = $1::oid AND con.contype IN ('p', 'u', 'c', 'f', 'x') AND con.conislocal"
-			" ORDER BY CASE con.contype WHEN 'p' THEN 0 WHEN 'u' THEN 1 WHEN 'c' THEN 2 WHEN 'x' THEN 3 ELSE 4 END, con.conname COLLATE \"C\"",
-			@[oid], error);
-		if (!constraints) return nil;
-
-		// PostgreSQL 18's NOT NULL constraints (contype 'n'; none before), by attnum: their name, NO INHERIT and
-		// NOT VALID, which attnotnull alone doesn't tell
-		NSArray *notNullRows = SPPostgresCreateRows(connection,
-			@"SELECT con.conkey[1]::text, con.conname::text, pg_catalog.pg_get_constraintdef(con.oid)::text, con.connoinherit::text, con.convalidated::text"
-			" FROM pg_catalog.pg_constraint con WHERE con.conrelid = $1::oid AND con.contype = 'n' AND con.conislocal", @[oid], error);
-		if (!notNullRows) return nil;
 		NSMutableDictionary *notNulls = [NSMutableDictionary dictionary];
 		for (NSArray *row in notNullRows) {
 			if (SPPostgresCreateText(row[0])) notNulls[SPPostgresCreateText(row[0])] = row;
@@ -318,14 +409,6 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 
 	// Indexes backing no constraint; a partition's copies of its parent's indexes come with PARTITION OF
 	if (![relkind isEqualToString:@"v"]) {
-		NSArray *indexes = SPPostgresCreateRows(connection,
-			@"SELECT pg_catalog.pg_get_indexdef(i.indexrelid)::text, pg_catalog.quote_ident(ic.relname)::text"
-			" FROM pg_catalog.pg_index i JOIN pg_catalog.pg_class ic ON ic.oid = i.indexrelid"
-			" WHERE i.indrelid = $1::oid"
-			" AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint con WHERE con.conindid = i.indexrelid AND con.conrelid = i.indrelid AND con.contype IN ('p', 'u', 'x'))"
-			" AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits ih WHERE ih.inhrelid = i.indexrelid)"
-			" ORDER BY ic.relname COLLATE \"C\"", @[oid], error);
-		if (!indexes) return nil;
 		for (NSArray *index in indexes) {
 			NSString *definition = SPPostgresCreateText(index[0]) ?: @"";
 			// A partitioned table's index reads ON ONLY (its partitions' indexes attached one by one); created
@@ -351,14 +434,7 @@ NSString * const SPPostgresCreatePartTriggers = @"SPPostgresCreatePartTriggers";
 	[statements addObjectsFromArray:comments];
 	[tablePart addObjectsFromArray:comments];
 
-	// Triggers: not the internal ones (a foreign key's), nor, from PostgreSQL 13 (tgparentid), a partition's
-	// copies of its parent's (internal before 15)
-	NSString *triggersSQL = [NSString stringWithFormat:
-		@"SELECT pg_catalog.pg_get_triggerdef(t.oid)::text, t.tgenabled::text, t.tgname::text"
-		" FROM pg_catalog.pg_trigger t WHERE t.tgrelid = $1::oid AND NOT t.tgisinternal%@"
-		" ORDER BY t.tgname COLLATE \"C\"", serverVersion >= 130000 ? @" AND t.tgparentid = 0" : @""];
-	NSArray *triggers = SPPostgresCreateRows(connection, triggersSQL, @[oid], error);
-	if (!triggers) return nil;
+	// Triggers
 	// ENABLE / DISABLE TRIGGER is an ALTER TABLE (ALTER FOREIGN TABLE) subcommand
 	NSString *alterKeyword = [relkind isEqualToString:@"f"] ? @"FOREIGN TABLE" : @"TABLE";
 	NSDictionary *states = @{@"D": @"DISABLE TRIGGER", @"R": @"ENABLE REPLICA TRIGGER", @"A": @"ENABLE ALWAYS TRIGGER"};

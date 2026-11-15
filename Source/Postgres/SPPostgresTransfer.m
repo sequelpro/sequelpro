@@ -26,6 +26,16 @@ static NSString *SPTransferJSON(NSArray *array)
 	return data ? [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease] : @"[]";
 }
 
+/// The table a `COPY "s"."t" (columns) FROM stdin` statement loads: "s"."t".
+static NSString *SPTransferTableOfCopy(NSString *sql)
+{
+	NSString *summary = [SPPostgresTransfer summaryOfStatement:sql];
+	if ([summary hasPrefix:@"COPY "]) summary = [summary substringFromIndex:5];
+	NSRange from = [summary rangeOfString:@" FROM stdin" options:NSCaseInsensitiveSearch | NSBackwardsSearch];
+	if (from.location != NSNotFound) summary = [summary substringToIndex:from.location];
+	return summary;
+}
+
 @interface SPPostgresTransfer ()
 
 - (BOOL)_runWithPath:(NSString *)path error:(NSError **)error;
@@ -46,6 +56,39 @@ static NSString *SPTransferJSON(NSArray *array)
 @synthesize skippedSettings;
 @synthesize readingTableIndex;
 @synthesize readingTableCount;
+@synthesize objectCount;
+@synthesize readTableCount;
+@synthesize readRowCount;
+@synthesize emptiedSchemas;
+@synthesize emptiedExtensions;
+@synthesize objectsToReplace;
+@synthesize structureItemCount;
+@synthesize postDataItemCount;
+@synthesize loadStepIndex;
+@synthesize loadStepCount;
+@synthesize loadRowsWritten;
+@synthesize loadTableRowsWritten;
+@synthesize loadTableRowCount;
+@synthesize loadingTableRows;
+@synthesize loadTableRowCountKnown;
+@synthesize failedWhileReading;
+
++ (NSString *)summaryOfStatement:(NSString *)sql
+{
+	NSMutableArray *words = [NSMutableArray array];
+	for (NSString *word in [sql ?: @"" componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {
+		if ([word length]) [words addObject:word];
+	}
+	NSString *line = [words componentsJoinedByString:@" "];
+	NSUInteger cut = [line length];
+	NSRange paren = [line rangeOfString:@"("];
+	if (paren.location != NSNotFound) cut = MIN(cut, paren.location);
+	NSRange as = [line rangeOfString:@" AS " options:NSCaseInsensitiveSearch];
+	if (as.location != NSNotFound) cut = MIN(cut, as.location);
+	line = [[line substringToIndex:cut] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	if ([line length] > 100) line = [[line substringToIndex:99] stringByAppendingString:@"…"];
+	return line;
+}
 
 - (instancetype)initWithSource:(PGPostgresConnection *)theSource target:(PGPostgresConnection *)theTarget
 {
@@ -69,6 +112,9 @@ static NSString *SPTransferJSON(NSArray *array)
 	[dependenciesCreated release];
 	[foreignTablesSkipped release];
 	[skippedSettings release];
+	[emptiedSchemas release];
+	[emptiedExtensions release];
+	[objectsToReplace release];
 	[super dealloc];
 }
 
@@ -166,9 +212,12 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 	}
 }
 
+/// Reports come from the load and from the writer's thread: one at a time.
 - (BOOL)_report:(SPPostgresTransferPhase)phase fraction:(double)fraction detail:(NSString *)detail
 {
-	return !progress || progress(phase, MAX(0.0, MIN(1.0, fraction)), detail);
+	@synchronized (self) {
+		return !progress || progress(phase, MAX(0.0, MIN(1.0, fraction)), detail);
+	}
 }
 
 - (NSError *)_cancelledError
@@ -307,6 +356,10 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 	NSMutableArray *extensions = [NSMutableArray array], *schemas = [NSMutableArray array];
 	for (NSArray *row in extensionRows) if (SPTransferText(row[0])) [extensions addObject:row[0]];
 	for (NSArray *row in schemaRows) if (SPTransferText(row[0])) [schemas addObject:row[0]];
+	[emptiedSchemas release];
+	emptiedSchemas = [schemas copy];
+	[emptiedExtensions release];
+	emptiedExtensions = [extensions copy];
 	return [[self class] emptyingStatementsForSchemas:schemas extensions:extensions serverVersion:(NSInteger)[target serverVersion]];
 }
 
@@ -341,6 +394,15 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 	foreignTablesSkipped = nil;
 	[skippedSettings release];
 	skippedSettings = nil;
+	objectCount = readTableCount = structureItemCount = postDataItemCount = loadStepIndex = loadStepCount = 0;
+	readRowCount = loadRowsWritten = loadTableRowsWritten = loadTableRowCount = 0;
+	loadingTableRows = loadTableRowCountKnown = failedWhileReading = NO;
+	[emptiedSchemas release];
+	emptiedSchemas = nil;
+	[emptiedExtensions release];
+	emptiedExtensions = nil;
+	[objectsToReplace release];
+	objectsToReplace = nil;
 
 	NSString *directory = [temporaryDirectory length] ? temporaryDirectory : NSTemporaryDirectory();
 	NSString *path = [[directory stringByAppendingPathComponent:[NSString stringWithFormat:@"sequel-pro-transfer-%@.sql", [[NSUUID UUID] UUIDString]]] retain];
@@ -397,6 +459,7 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 	if (!dependencies) return NO;
 	NSUInteger partitioned = [self _partitionedTablesAmong:objects error:error];
 	if (partitioned == NSNotFound) return NO;
+	objectCount = [objects count];
 
 	if (![self _report:SPPostgresTransferChecking fraction:0 detail:nil]) {
 		if (error) *error = [self _cancelledError];
@@ -437,6 +500,8 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 		}
 		[drops setArray:SPTransferInDropOrder(drops)];
 		statementsBeforeImport = [[self class] dropStatementsForObjects:drops];
+		[objectsToReplace release];
+		objectsToReplace = [[drops valueForKey:@"displayName"] copy];
 
 		if (![self _report:SPPostgresTransferChecking fraction:0 detail:nil]) {
 			if (error) *error = [self _cancelledError];
@@ -448,24 +513,13 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 	NSMutableArray *created = [NSMutableArray array];
 	for (SPPostgresDumpObject *object in dependencies) if (![skipped containsObject:object]) [created addObject:[object displayName]];
 
-	// The dump
+	// The dump and the load run at once: the source is read into the file on a thread of its own while the load
+	// follows the file on this one, each waiting for the other only when it catches up. A transfer then takes about
+	// as long as its slower side, not both one after the other.
 	[writer setSkippedObjects:skipped];
-	__block NSUInteger tableCount = 0;
-	[writer setProgress:^BOOL(NSUInteger tableIndex, NSUInteger count, NSString *table) {
-		tableCount = count;
-		readingTableIndex = tableIndex;
-		readingTableCount = count;
-		return [self _report:SPPostgresTransferReading fraction:count ? (double)(tableIndex - 1) / (double)count : 0 detail:table];
-	}];
-	NSError *writeError = nil;
-	BOOL written = [writer writeToPath:path error:&writeError];
-	[writer setProgress:nil];
-	if (!written) {
-		if (error) *error = [self _passedOn:writeError];
-		return NO;
-	}
+	[writer setFlushesOften:YES];
 
-	// The load, in one transaction, the mode's statements first
+	// Empty mode reads what the target holds first
 	if (![self _report:SPPostgresTransferWriting fraction:0 detail:nil]) {
 		if (error) *error = [self _cancelledError];
 		return NO;
@@ -474,20 +528,223 @@ static void SPTransferRollBack(PGPostgresConnection *connection)
 		statementsBeforeImport = [self _emptyingStatements:error];
 		if (!statementsBeforeImport) return NO;
 	}
+
+	// The file, created empty: the reader opens it now, the writer fills it
+	if (![[NSData data] writeToFile:path options:0 error:NULL]) {
+		if (error) *error = SPPostgresMakeError(SPPostgresErrorQueryFailed, [NSString stringWithFormat:NSLocalizedString(@"The temporary file “%@” can't be created.", @"Postgres transfer: temporary file not created"), path], nil);
+		return NO;
+	}
 	SPPostgresDumpReader *reader = [[[SPPostgresDumpReader alloc] initWithPath:path error:error] autorelease];
 	if (!reader) return NO;
+
+	// The writer's side (its thread sets these, under writerLock)
+	NSLock *writerLock = [[[NSLock alloc] init] autorelease];
+	__block BOOL writerFinished = NO, writerSucceeded = NO;
+	__block NSError *writerError = nil; // retained
+	__block volatile BOOL stopWriter = NO;
+	__block NSUInteger tableCount = 0;
+	[writer setProgress:^BOOL(NSUInteger tableIndex, NSUInteger count, NSString *table) {
+		tableCount = count;
+		readingTableIndex = tableIndex;
+		readingTableCount = count;
+		if (stopWriter) return NO;
+		return [self _report:SPPostgresTransferReading fraction:count ? (double)(tableIndex - 1) / (double)count : 0 detail:table];
+	}];
+	dispatch_group_t writing = dispatch_group_create();
+	dispatch_group_async(writing, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		// The structure first (Reading with no table yet), then each table's data
+		BOOL go = !stopWriter && [self _report:SPPostgresTransferReading fraction:0 detail:nil];
+		NSError *failure = go ? nil : [self _cancelledError];
+		BOOL ok = go && [writer writeToPath:path error:&failure];
+		if (ok) {
+			unsigned long long rows = 0;
+			NSArray *counts = [writer copyRowCounts];
+			for (NSNumber *count in counts) rows += [count unsignedLongLongValue];
+			readTableCount = [counts count];
+			readRowCount = rows;
+		}
+		// Reported before the load can see the end of the file (so before it commits)
+		if (ok) [self _report:SPPostgresTransferReadingDone fraction:1 detail:nil];
+		[writerLock lock];
+		writerFinished = YES;
+		writerSucceeded = ok;
+		writerError = [failure retain];
+		[writerLock unlock];
+		[pool drain];
+	});
+
 	SPPostgresSQLImporter *importer = [[[SPPostgresSQLImporter alloc] initWithConnection:target reader:reader] autorelease];
 	[importer setSingleTransaction:YES];
+	// The structure's statements go a few hundred per round trip
+	[importer setBatchesStatements:YES];
 	[importer setStatementsBeforeImport:statementsBeforeImport];
+
+	// Where the load is: each item's part (header, structure, data, structure after the data) as the writer wrote it
+	__block SPPostgresTransferPhase phase = SPPostgresTransferEmptying;
+	NSMutableString *detail = [NSMutableString string];
+	__block NSUInteger itemOrdinal = 0;
+	__block NSUInteger copyIndex = 0;
+	NSArray *before = statementsBeforeImport ?: @[];
+	double (^fraction)(void) = ^double{
+		if (phase == SPPostgresTransferLoadingData) {
+			[writerLock lock];
+			BOOL allRead = writerSucceeded;
+			[writerLock unlock];
+			if (allRead && readRowCount) return (double)loadRowsWritten / (double)readRowCount;
+			double table = (loadTableRowCountKnown && loadTableRowCount) ? (double)loadTableRowsWritten / (double)loadTableRowCount : 0;
+			return loadStepCount ? ((double)(loadStepIndex ? loadStepIndex - 1 : 0) + MIN(table, 1.0)) / (double)loadStepCount : 0;
+		}
+		return loadStepCount ? (double)(loadStepIndex ? loadStepIndex - 1 : 0) / (double)loadStepCount : 0;
+	};
+
+	// The load reads what the writer has written; at the end of what is there it waits for more, or for the end
+	__block BOOL sawWriterEnd = NO;
+	__block CFAbsoluteTime lastPoll = 0;
+	[reader setWaitForMoreData:^BOOL(NSError **waitError) {
+		[writerLock lock];
+		BOOL finished = writerFinished, succeeded = writerSucceeded;
+		[writerLock unlock];
+		if (finished) {
+			if (!succeeded) {
+				if (waitError) *waitError = SPPostgresMakeError(SPPostgresErrorQueryFailed, NSLocalizedString(@"Reading the source failed.", @"Postgres transfer: the source's reading failed during the load"), nil);
+				return NO;
+			}
+			// Once more: what was written last
+			if (!sawWriterEnd) {
+				sawWriterEnd = YES;
+				return YES;
+			}
+			return NO;
+		}
+		// Waiting for the source: a cancel still gets through
+		CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
+		if (now - lastPoll > 0.25) {
+			lastPoll = now;
+			if (![self _report:phase fraction:fraction() detail:[detail length] ? [[detail copy] autorelease] : nil]) {
+				stopWriter = YES;
+				if (waitError) *waitError = [self _cancelledError];
+				return NO;
+			}
+		}
+		usleep(5000);
+		return YES;
+	}];
+
+	// Reports while a statement runs can't cancel (the next one, right after it, does)
+	[importer setStatementBeforeImportObserver:^(NSUInteger index) {
+		phase = SPPostgresTransferEmptying;
+		loadStepIndex = index + 1;
+		loadStepCount = [before count];
+		[detail setString:[[self class] summaryOfStatement:before[index]]];
+		[self _report:phase fraction:fraction() detail:[[detail copy] autorelease]];
+	}];
+	[importer setItemObserver:^(SPPostgresDumpItem *item) {
+		NSUInteger ordinal = itemOrdinal++;
+		NSUInteger part = [writer partOfItemAtOrdinal:ordinal];
+		if (part == 0) return; // the session's settings
+		loadingTableRows = NO;
+		NSUInteger index = ordinal - [writer startOfPart:part];
+		BOOL whole = NO;
+		NSUInteger count = [writer itemCountOfPart:part known:&whole];
+		if (part == 1) {
+			phase = SPPostgresTransferCreating;
+			loadStepIndex = index + 1;
+			loadStepCount = whole ? count : 0;
+			if (whole) structureItemCount = count;
+			[detail setString:[[self class] summaryOfStatement:[item sql]]];
+		}
+		else if (part == 2) {
+			if (phase != SPPostgresTransferLoadingData) loadStepIndex = 0;
+			phase = SPPostgresTransferLoadingData;
+			// One COPY block per table but partitioned parents
+			loadStepCount = tableCount > partitioned ? tableCount - partitioned : tableCount;
+			loadingTableRows = [item kind] == SPPostgresDumpItemCopy;
+			if (loadingTableRows) {
+				loadStepIndex = ++copyIndex;
+				loadTableRowsWritten = 0;
+				BOOL rowsKnown = NO;
+				loadTableRowCount = [writer rowCountOfCopy:copyIndex - 1 known:&rowsKnown];
+				loadTableRowCountKnown = rowsKnown;
+				[detail setString:SPTransferTableOfCopy([item sql])];
+			}
+			else {
+				[detail setString:[[self class] summaryOfStatement:[item sql]]];
+			}
+		}
+		else {
+			phase = SPPostgresTransferFinishing;
+			loadStepIndex = index + 1;
+			loadStepCount = whole ? count : 0;
+			if (whole) postDataItemCount = count;
+			[detail setString:[[self class] summaryOfStatement:[item sql]]];
+		}
+		[self _report:phase fraction:fraction() detail:[[detail copy] autorelease]];
+	}];
+	[importer setCopyDataObserver:^(NSData *data) {
+		const char *bytes = [data bytes], *end = bytes + [data length];
+		unsigned long long rows = 0;
+		for (const char *cursor = bytes; cursor < end && (cursor = memchr(cursor, '\n', (size_t)(end - cursor))); cursor++) rows++;
+		loadRowsWritten += rows;
+		loadTableRowsWritten += rows;
+		// The table's whole count, once the writer has finished it
+		if (!loadTableRowCountKnown) {
+			BOOL rowsKnown = NO;
+			unsigned long long tableRows = [writer rowCountOfCopy:copyIndex - 1 known:&rowsKnown];
+			if (rowsKnown) {
+				loadTableRowCount = tableRows;
+				loadTableRowCountKnown = YES;
+			}
+		}
+	}];
+	[importer setCommitObserver:^{
+		phase = SPPostgresTransferCommitting;
+		loadStepIndex = loadStepCount = 0;
+		loadingTableRows = NO;
+		[detail setString:@""];
+		[self _report:phase fraction:0 detail:nil];
+	}];
 	[importer setProgress:^BOOL(unsigned long long bytesRead, unsigned long long fileSize) {
-		return [self _report:SPPostgresTransferWriting fraction:fileSize ? (double)bytesRead / (double)fileSize : 0 detail:nil];
+		BOOL go = [self _report:phase fraction:fraction() detail:[detail length] ? [[detail copy] autorelease] : nil];
+		if (!go) stopWriter = YES;
+		return go;
 	}];
 	NSError *loadError = nil;
 	BOOL loaded = [importer run:&loadError];
+	[loadError retain];
+
+	// Did the source fail first (the load then stopped short)? Then that is the error to show.
+	[writerLock lock];
+	BOOL readingFailed = writerFinished && !writerSucceeded;
+	[writerLock unlock];
+	// The writer stops at its next check when the load has failed; then it is waited for
+	if (!loaded) stopWriter = YES;
+	dispatch_group_wait(writing, DISPATCH_TIME_FOREVER);
+	dispatch_release(writing);
+	[writer setProgress:nil];
+	[reader setWaitForMoreData:nil];
 	[importer setProgress:nil];
+	[importer setStatementBeforeImportObserver:nil];
+	[importer setItemObserver:nil];
+	[importer setCopyDataObserver:nil];
+	[importer setCommitObserver:nil];
+	[writerError autorelease];
+	[loadError autorelease];
+	structureItemCount = [writer structureItemCount];
+	postDataItemCount = [writer postDataItemCount];
+
+	// Committed: nothing is left to cancel
+	if (loaded) [self _report:SPPostgresTransferCommitting fraction:1 detail:nil];
 	if (!loaded) {
 		if ([target transactionStatus] != PGPostgresTransactionIdle) SPTransferRollBack(target);
-		if (error) *error = [self _passedOn:loadError];
+		BOOL cancelled = [[loadError domain] isEqualToString:SPPostgresErrorDomain] && [loadError code] == SPPostgresErrorCancelled;
+		if (readingFailed && writerError && !cancelled) {
+			failedWhileReading = YES;
+			if (error) *error = [self _passedOn:writerError];
+		}
+		else if (error) {
+			*error = [self _passedOn:loadError];
+		}
 		return NO;
 	}
 

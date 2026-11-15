@@ -100,6 +100,8 @@ typedef NS_ENUM(NSInteger, SPCompressedFileFormat) {
 		case SPCompressedFilePlain: {
 			size_t n = fread(bytes, 1, count, file);
 			if (n == 0 && ferror(file)) return NO;
+			// At the end: a file still being written can be read further later
+			if (n == 0) clearerr(file);
 			*read = n;
 			long position = ftell(file);
 			if (position >= 0) offset = (unsigned long long)position;

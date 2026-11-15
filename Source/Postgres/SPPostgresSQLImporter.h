@@ -33,6 +33,11 @@ __attribute__((visibility("default")))
 	NSUInteger errorsIgnored;
 	NSMutableArray *skippedSettings;
 	NSArray *statementsBeforeImport;
+	void (^statementBeforeImportObserver)(NSUInteger index);
+	void (^itemObserver)(SPPostgresDumpItem *item);
+	void (^copyDataObserver)(NSData *data);
+	void (^commitObserver)(void);
+	BOOL batchesStatements;
 }
 
 - (instancetype)initWithConnection:(PGPostgresConnection *)connection reader:(SPPostgresDumpReader *)reader;
@@ -47,6 +52,24 @@ __attribute__((visibility("default")))
  * SPPostgresSQLStateErrorKey), and rolls back. Counted in statementsRun.
  */
 @property (copy) NSArray *statementsBeforeImport;
+
+/**
+ * Default NO. With singleTransaction, consecutive plain statements of the file (not COPY, settings or meta-commands)
+ * are sent several at a time, in one round trip, inside a savepoint: over a network each statement costs a round
+ * trip, so a dump's structure loads much faster. When a batch fails it is rolled back to its savepoint and its
+ * statements run one by one, so the error is the failing statement's, with its line, as without batching. The
+ * observers and progress are still called once per item (as the item is added to its batch).
+ */
+@property BOOL batchesStatements;
+
+/// Observers, called on the caller's thread (nil: none). Before each of statementsBeforeImport runs (its index);
+/// before each statement or COPY item of the file is handled (meta-commands aren't items here; transaction control
+/// the single transaction skips is still announced); with each chunk of COPY data as it is sent; and before the
+/// single transaction's COMMIT.
+@property (copy) void (^statementBeforeImportObserver)(NSUInteger index);
+@property (copy) void (^itemObserver)(SPPostgresDumpItem *item);
+@property (copy) void (^copyDataObserver)(NSData *data);
+@property (copy) void (^commitObserver)(void);
 
 /// Asked after a failed item when singleTransaction is NO (error as -run: would report it). nil means Stop.
 @property (copy) SPPostgresImportErrorChoice (^errorHandler)(NSError *error, SPPostgresDumpItem *item);

@@ -20,6 +20,72 @@
 @synthesize errorsIgnored;
 @synthesize settingsSkipped;
 @synthesize statementsBeforeImport;
+@synthesize statementBeforeImportObserver;
+@synthesize itemObserver;
+@synthesize copyDataObserver;
+@synthesize commitObserver;
+@synthesize batchesStatements;
+
+/// A batch is sent once it holds this many statements, or this many characters
+static const NSUInteger SPImportBatchStatements = 200;
+static const NSUInteger SPImportBatchCharacters = 1024 * 1024;
+
+/**
+ * Runs the statements held back in batch (emptied) in one round trip, inside a savepoint. NO when one fails: then
+ * *failure (retained) is its error as -run: reports a failed item ("Line n: …"), found by rolling the batch back and
+ * running its statements one by one; or *cancelled when stillGoing says the run was cancelled.
+ */
+- (BOOL)_runBatch:(NSMutableArray *)batch failure:(NSError **)failure cancelled:(BOOL *)cancelled stillGoing:(BOOL (^)(void))stillGoing
+{
+	if (![batch count]) return YES;
+	NSArray *items = [[batch copy] autorelease];
+	[batch removeAllObjects];
+
+	if ([items count] > 1) {
+		// The savepoint on its own: the server parses a whole batch before running any of it, so a syntax error fails
+		// it before a SAVEPOINT inside it would exist
+		NSError *batchError = nil;
+		if (!SPPostgresExecuteWithDetails(connection, @"SAVEPOINT sp_import_batch", nil, &batchError)) {
+			*failure = [batchError retain];
+			return NO;
+		}
+		// Each statement on lines of its own: a trailing -- comment can't swallow the separator
+		NSMutableString *sql = [NSMutableString string];
+		for (SPPostgresDumpItem *item in items) [sql appendFormat:@"%@\n;\n", [item sql]];
+		[sql appendString:@"RELEASE SAVEPOINT sp_import_batch"];
+		if (SPPostgresExecuteStatementsWithDetails(connection, sql, &batchError)) {
+			statementsRun += [items count];
+			return YES;
+		}
+		if (!stillGoing()) {
+			*cancelled = YES;
+			return NO;
+		}
+		// Undone, then one by one: the failing statement is named
+		NSError *undoError = nil;
+		if (!SPPostgresExecuteWithDetails(connection, @"ROLLBACK TO SAVEPOINT sp_import_batch", nil, &undoError)
+			|| !SPPostgresExecuteWithDetails(connection, @"RELEASE SAVEPOINT sp_import_batch", nil, &undoError)) {
+			*failure = [(undoError ?: batchError) retain];
+			return NO;
+		}
+	}
+
+	for (SPPostgresDumpItem *item in items) {
+		NSError *executeError = nil;
+		if (SPPostgresExecuteWithDetails(connection, [item sql], nil, &executeError)) {
+			statementsRun++;
+			continue;
+		}
+		if (!stillGoing()) {
+			*cancelled = YES;
+			return NO;
+		}
+		NSString *message = [NSString stringWithFormat:NSLocalizedString(@"Line %lu: %@", @"Postgres import: error at a line of the file"), (unsigned long)[item line], [self _serverMessageFallingBackTo:[executeError localizedDescription]]];
+		*failure = [SPPostgresMakeError(SPPostgresErrorQueryFailed, message, nil) retain];
+		return NO;
+	}
+	return YES;
+}
 
 - (instancetype)initWithConnection:(PGPostgresConnection *)theConnection reader:(SPPostgresDumpReader *)theReader
 {
@@ -39,6 +105,10 @@
 	[progress release];
 	[skippedSettings release];
 	[statementsBeforeImport release];
+	[statementBeforeImportObserver release];
+	[itemObserver release];
+	[copyDataObserver release];
+	[commitObserver release];
 	[super dealloc];
 }
 
@@ -179,7 +249,10 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 
 	// The caller's statements first (in the transaction, when there is one): a failure is the server's message with
 	// its DETAIL and HINT, as there is no line of the file to name
+	NSUInteger beforeIndex = 0;
 	for (NSString *sql in statementsBeforeImport) {
+		if (statementBeforeImportObserver) statementBeforeImportObserver(beforeIndex);
+		beforeIndex++;
 		NSError *statementError = nil;
 		if (SPPostgresExecuteWithDetails(connection, sql, nil, &statementError)) {
 			statementsRun++;
@@ -202,6 +275,10 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 		return NO;
 	}
 
+	BOOL batching = batchesStatements && singleTransaction;
+	NSMutableArray *batch = [NSMutableArray array];
+	NSUInteger batchCharacters = 0;
+
 	for (;;) {
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		BOOL stop = NO;
@@ -215,8 +292,26 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 		}
 
 		NSString *itemFailure = nil; // the server's message when the item failed
+		if (itemObserver && [item kind] != SPPostgresDumpItemMetaCommand) itemObserver(item);
 
-		switch ([item kind]) {
+		// Batching: a plain statement waits in the batch; anything else sends the batch first
+		BOOL batched = batching && [item kind] == SPPostgresDumpItemStatement && !SPIsTransactionControl([item sql]) && !SPConfigurationParameterSetBy([item sql]);
+		if (batched) {
+			[batch addObject:item];
+			batchCharacters += [[item sql] length];
+		}
+		if ([batch count] && (!batched || [batch count] >= SPImportBatchStatements || batchCharacters >= SPImportBatchCharacters)) {
+			NSError *batchFailure = nil;
+			BOOL batchCancelled = NO;
+			if (![self _runBatch:batch failure:&batchFailure cancelled:&batchCancelled stillGoing:stillGoing]) {
+				if (batchCancelled) cancelled = YES;
+				else failure = batchFailure; // retained
+				stop = YES;
+			}
+			batchCharacters = 0;
+		}
+
+		if (!stop && !batched) switch ([item kind]) {
 			case SPPostgresDumpItemMetaCommand: {
 				NSString *command = [[[item sql] componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] firstObject];
 				if ([command isEqualToString:@"\\restrict"] || [command isEqualToString:@"\\unrestrict"]) break;
@@ -261,6 +356,7 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 						*cancel = YES;
 						return nil;
 					}
+					if (data && self->copyDataObserver) self->copyDataObserver(data);
 					return data;
 				} error:&copyError];
 
@@ -326,6 +422,16 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 		if (stop) break;
 	}
 
+	// What the batch still holds, before the COMMIT
+	if (!failure && !cancelled && [batch count]) {
+		NSError *batchFailure = nil;
+		BOOL batchCancelled = NO;
+		if (![self _runBatch:batch failure:&batchFailure cancelled:&batchCancelled stillGoing:stillGoing]) {
+			if (batchCancelled) cancelled = YES;
+			else failure = batchFailure; // retained
+		}
+	}
+
 	[failure autorelease];
 
 	if (cancelled) {
@@ -342,6 +448,7 @@ static NSString *SPConfigurationParameterSetBy(NSString *sql)
 	}
 
 	if (singleTransaction) {
+		if (commitObserver) commitObserver();
 		NSError *commitError = nil;
 		if (!SPPostgresExecuteWithDetails(connection, @"COMMIT", nil, &commitError)) {
 			[self _rollBackIfInTransaction];

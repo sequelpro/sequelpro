@@ -31,6 +31,13 @@
 - (PGPostgresResult *)executePrepared:(PGPostgresStatement *)statement values:(NSArray *)values;
 - (PGPostgresResult *)executePrepared:(PGPostgresStatement *)statement value:(NSObject *)value;
 
+/**
+ * Runs sql, which may hold several `;`-separated statements, in one round trip (PQexec, the simple query protocol:
+ * no parameters, no COPY). The last statement's result, or nil when one fails (lastError tells; the statements after
+ * it aren't run, and inside a transaction it is aborted).
+ */
+- (PGPostgresResult *)executeStatements:(NSString *)sql;
+
 // Asynchronous interface
 
 @end

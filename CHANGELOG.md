@@ -6,6 +6,41 @@ Upgrading from 2.0.2.
 
 - Version **2.0.3**.
 
+### Filters in Transfer's To: and Database: menus (PostgreSQL)
+A **Filter** field beside each of the Transfer sheet's **To:** and **Database:** menus narrows that menu to the names containing what you type (upper or lower case, with or without accents).
+- When you pause typing (half a second), the menu opens showing the matches; choose one, or press Esc to type more. It doesn't open when nothing matches.
+- A connection or database the filter leaves out is unset: the connection is closed and its databases cleared, or the database is no longer chosen, and **Transfer** stays disabled until you choose one the menu lists. Clearing the filter doesn't choose again, and typing never opens a connection.
+- **New Database…** always stays in the Database: menu, and the database filter also applies to the databases of another connection you choose. A database you make with New Database… clears the database filter and is chosen.
+
+### Faster Transfer, especially over a network (PostgreSQL)
+- **Read** no longer asks the source about each table one at a time. It used to send about 13 queries per table before any data, and over a network each query waits a round trip, so a database with 1,000 tables spent minutes just waiting. It now reads every table's definition, columns, constraints, indexes and triggers in a few queries for all of them (about 55 queries in all, however many tables), and the sequences' values a few hundred at a time.
+- The target gets the structure's statements a few hundred at a time instead of one round trip each.
+- Reading the source and writing to the target now run at the same time: the target starts loading while the source is still being read, so a transfer takes about as long as the slower of the two instead of both added together. In the task list, **Read** keeps running beside the other steps until the source has been read whole.
+- Nothing else changes: the source is still read in one consistent snapshot, the target is still written in one transaction, and if either side fails or you cancel, the target is left unchanged. If reading the source fails, the **Read** step is marked as the one that failed.
+
+### Transfer shows its steps as a task list (PostgreSQL)
+While a transfer runs, its sheet lists eight steps:
+1. **Connect to the source and the target**
+2. **Check the source and the target**
+3. **Read** the source database
+4. **Empty** the target (in Overwrite mode: **Drop what will be replaced**)
+5. **Create the structure**: schemas, types, functions, tables, views
+6. **Write the data**
+7. **Create indexes, foreign keys and triggers**
+8. **Commit**
+
+- Each step shows a spinner while it runs, a green check when it's done, and a red cross if it fails; the steps after a failure are marked as not run.
+- Under the running step, a line says what it's doing, with a count, for example *Reading table 3 of 12: orders*, *1 of 2: DROP SCHEMA IF EXISTS "old", public CASCADE*, *14 of 85: CREATE TABLE public.orders* or *Table 3 of 12: public.orders — 12,000 of 50,000 rows*. The bar under the list is that step's.
+- A finished step keeps a line saying what it did: how many objects there are to copy, how many tables and rows were read, which schemas and extensions were dropped (or which objects will be replaced), how many statements ran, how many rows were written.
+- Before, reading the source's structure and the whole load showed only *Checking the target…* and *Writing to …*.
+- When it ends, the sheet stays open with the result: **Transfer complete** and what was copied, or why it failed (the target is left unchanged), next to the step that failed and what it was doing. Click **Close** when you're done. This replaces the separate message shown before. Cancel still closes the sheet straight away.
+
+### Transfer says who owns the copy (PostgreSQL)
+Transfer doesn't copy owners or privileges, and the sheet now says so under the mode choice. Everything the transfer creates is owned by the user the **To:** connection logs in as, and the note names that user. Grants for other roles need to be made again afterwards. The **Transfer complete** message ends with the same information.
+
+### Transfer moved beside Query in the toolbar
+The toolbar's **Transfer** button now comes right after **Query** instead of after **Users**. A toolbar you already have is updated once when a window opens. After that, wherever you put Transfer with Customize Toolbar stays, and if you removed it, it isn't added back.
+
 ### Fixed: crash after the app sat open
 The app could quit by itself after being left open with no activity: when the screen woke from sleep, or a display was connected or disconnected, a window showing the connection screen crashed the app. The connection details' layout ran again for every view it resized, and once the scroll bar started appearing and disappearing it never stopped. It now settles.
 

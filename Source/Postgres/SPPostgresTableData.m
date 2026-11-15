@@ -25,9 +25,21 @@ NSString *SPPostgresErrorDetailLines(PGPostgresError *error)
 	return lines;
 }
 
+static PGPostgresResult *SPPostgresReportingFailure(PGPostgresConnection *connection, PGPostgresResult *result, BOOL withDetails, NSError **error);
+
 static PGPostgresResult *SPPostgresExecuteReporting(PGPostgresConnection *connection, NSString *sql, NSArray *values, BOOL withDetails, NSError **error)
 {
-	PGPostgresResult *result = [connection execute:sql values:values ?: @[]];
+	return SPPostgresReportingFailure(connection, [connection execute:sql values:values ?: @[]], withDetails, error);
+}
+
+PGPostgresResult *SPPostgresExecuteStatementsWithDetails(PGPostgresConnection *connection, NSString *sql, NSError **error)
+{
+	return SPPostgresReportingFailure(connection, [connection executeStatements:sql], YES, error);
+}
+
+/// result; when it is nil, *error says why (the server's message, with its DETAIL / HINT lines when withDetails).
+static PGPostgresResult *SPPostgresReportingFailure(PGPostgresConnection *connection, PGPostgresResult *result, BOOL withDetails, NSError **error)
+{
 	if (!result && error) {
 		NSString *message = nil;
 		if ([connection isConnected]) {

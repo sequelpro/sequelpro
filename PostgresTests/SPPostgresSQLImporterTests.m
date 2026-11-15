@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <objc/runtime.h>
 #import <PostgresKit/PostgresKit.h>
 #import "SPPostgresTestServers.h"
 #import "../Source/Postgres/SPPostgresDumpReader.h"
@@ -534,6 +535,71 @@
 		XCTAssertFalse([self table:@"public.never" existsOn:destination], @"the file never ran");
 		XCTAssertTrue([self table:@"public.kept" existsOn:destination]);
 		[destination disconnect];
+	}
+}
+
+#pragma mark - Batching
+
+/// Statements batched (one round trip per batch) load as one by one: counted once each, and a 450-statement file
+/// takes a handful of round trips. Counted on -[PGPostgresConnection executeStatements:].
+- (void)testBatchedStatementsLoadAndCount
+{
+	for (NSNumber *port in [SPPostgresTestServers ports]) {
+		PGPostgresConnection *destination = [SPPostgresTestServers ioConnectionOnPort:port.unsignedIntegerValue database:@"pgkit_io_dst"];
+		NSMutableString *sql = [NSMutableString stringWithString:@"CREATE TABLE public.b (i int, note text);\n"];
+		for (NSUInteger i = 1; i <= 450; i++) [sql appendFormat:@"INSERT INTO public.b VALUES (%lu, 'x;y') -- a comment\n;\n", (unsigned long)i];
+		[sql appendString:@"COPY public.b (i, note) FROM stdin;\n1000\tcopied\n\\.\n"];
+		[sql appendString:@"CREATE INDEX b_i ON public.b (i);\n"];
+		NSString *path = [self writeText:sql named:@"batched.sql"];
+
+		__block NSUInteger roundTrips = 0;
+		SEL selector = @selector(executeStatements:);
+		Method method = class_getInstanceMethod([PGPostgresConnection class], selector);
+		IMP original = method_getImplementation(method);
+		method_setImplementation(method, imp_implementationWithBlock(^id(PGPostgresConnection *me, NSString *batchSQL) {
+			if (me == destination) roundTrips++;
+			return ((id (*)(id, SEL, NSString *))original)(me, selector, batchSQL);
+		}));
+		SPPostgresSQLImporter *importer = [self importerForPath:path connection:destination];
+		importer.batchesStatements = YES;
+		NSMutableArray *observed = [NSMutableArray array];
+		importer.itemObserver = ^(SPPostgresDumpItem *item) { [observed addObject:@(item.line)]; };
+		NSError *error = nil;
+		BOOL ok = [importer run:&error];
+		method_setImplementation(method, original);
+		XCTAssertTrue(ok, @"port %@: %@", port, error.localizedDescription);
+		XCTAssertEqual(importer.statementsRun, 453u);
+		XCTAssertEqual(observed.count, 453u, @"each item observed once");
+		XCTAssertGreaterThan(roundTrips, 0u);
+		XCTAssertLessThanOrEqual(roundTrips, 4u, @"port %@: %lu", port, (unsigned long)roundTrips);
+		PGPostgresResult *count = [destination execute:@"SELECT count(*)::text, count(*) FILTER (WHERE note = 'x;y')::text FROM public.b"];
+		XCTAssertEqualObjects([count textValueAtRow:0 column:0], @"451");
+		XCTAssertEqualObjects([count textValueAtRow:0 column:1], @"450");
+		XCTAssertTrue([self table:@"public.b_i" existsOn:destination]);
+	}
+}
+
+/// A failing statement in a batch (at run time, or a syntax error that fails the whole batch before it runs) is
+/// reported as without batching, with its own line, and everything rolls back.
+- (void)testBatchFailureNamesTheStatement
+{
+	for (NSNumber *port in [SPPostgresTestServers ports]) {
+		for (NSString *bad in @[@"INSERT INTO public.c VALUES (1/0)", @"INSERT INTO public.c VALUES (1"]) {
+			PGPostgresConnection *destination = [SPPostgresTestServers ioConnectionOnPort:port.unsignedIntegerValue database:@"pgkit_io_dst"];
+			NSMutableString *sql = [NSMutableString stringWithString:@"CREATE TABLE public.c (i int);\n"];
+			for (NSUInteger i = 1; i <= 50; i++) [sql appendFormat:@"INSERT INTO public.c VALUES (%lu);\n", (unsigned long)i];
+			// Line 52
+			[sql appendFormat:@"%@;\n", bad];
+			for (NSUInteger i = 1; i <= 50; i++) [sql appendFormat:@"INSERT INTO public.c VALUES (%lu);\n", (unsigned long)i];
+			NSString *path = [self writeText:sql named:@"failing.sql"];
+			SPPostgresSQLImporter *importer = [self importerForPath:path connection:destination];
+			importer.batchesStatements = YES;
+			NSError *error = nil;
+			XCTAssertFalse([importer run:&error]);
+			XCTAssertTrue([error.localizedDescription hasPrefix:@"Line 52: "], @"port %@, %@: %@", port, bad, error.localizedDescription);
+			XCTAssertEqual(destination.transactionStatus, PGPostgresTransactionIdle);
+			XCTAssertFalse([self table:@"public.c" existsOn:destination], @"rolled back");
+		}
 	}
 }
 

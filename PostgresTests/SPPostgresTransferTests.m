@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <objc/runtime.h>
 #import <PostgresKit/PostgresKit.h>
 #import "SPPostgresTestServers.h"
 #import "../Source/Postgres/SPPostgresTransfer.h"
@@ -229,14 +230,65 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 		SPPostgresTransfer *transfer = [self transferFrom:source to:target];
 		transfer.wholeDatabase = YES;
 		NSMutableArray *phases = [NSMutableArray array];
+		NSMutableDictionary *lastSteps = [NSMutableDictionary dictionary], *stepCounts = [NSMutableDictionary dictionary];
+		NSMutableArray *creatingDetails = [NSMutableArray array], *tableDetails = [NSMutableArray array];
+		__block unsigned long long rowsAtCommit = 0;
+		__block BOOL objectsCountedWhenReading = NO;
+		__block BOOL creatingBeforeCounted = NO;
+		__block SPPostgresTransfer *engine = transfer;
 		transfer.progress = ^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
 			XCTAssertTrue(fraction >= 0 && fraction <= 1, @"%f", fraction);
 			if (![phases.lastObject isEqual:@(phase)]) [phases addObject:@(phase)];
+			if (phase == SPPostgresTransferReading && engine.objectCount > 0) objectsCountedWhenReading = YES;
+			if (phase >= SPPostgresTransferEmptying && phase <= SPPostgresTransferFinishing) {
+				lastSteps[@(phase)] = @(engine.loadStepIndex);
+				stepCounts[@(phase)] = @(engine.loadStepCount);
+				// 0: not known yet (the source's reading is still in that part)
+				if (engine.loadStepCount) XCTAssertLessThanOrEqual(engine.loadStepIndex, engine.loadStepCount, @"phase %ld", (long)phase);
+				if (phase == SPPostgresTransferCreating && !engine.loadStepCount) creatingBeforeCounted = YES;
+			}
+			if (phase == SPPostgresTransferCreating && detail && ![creatingDetails containsObject:detail]) [creatingDetails addObject:detail];
+			if (phase == SPPostgresTransferLoadingData && engine.loadingTableRows && ![tableDetails containsObject:detail]) {
+				[tableDetails addObject:detail];
+				XCTAssertLessThanOrEqual(engine.loadTableRowsWritten, engine.loadTableRowCount);
+			}
+			if (phase == SPPostgresTransferCommitting) rowsAtCommit = engine.loadRowsWritten;
 			return YES;
 		};
 		NSError *error = nil;
 		XCTAssertTrue([transfer run:&error], @"port %@: %@", port, error.localizedDescription);
-		XCTAssertEqualObjects(phases, (@[@(SPPostgresTransferChecking), @(SPPostgresTransferReading), @(SPPostgresTransferWriting)]));
+		// Reading runs alongside the load: its reports come between the load's. Apart from them the phases go in order.
+		NSArray *loadPhases = [phases filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSNumber *phase, NSDictionary *bindings) {
+			return phase.integerValue != SPPostgresTransferReading && phase.integerValue != SPPostgresTransferReadingDone;
+		}]];
+		NSMutableArray *distinct = [NSMutableArray array];
+		for (NSNumber *phase in loadPhases) if (![distinct.lastObject isEqual:phase]) [distinct addObject:phase];
+		XCTAssertEqualObjects(distinct, (@[@(SPPostgresTransferChecking), @(SPPostgresTransferWriting),
+										   @(SPPostgresTransferEmptying), @(SPPostgresTransferCreating), @(SPPostgresTransferLoadingData),
+										   @(SPPostgresTransferFinishing), @(SPPostgresTransferCommitting)]), @"%@", phases);
+		XCTAssertTrue([phases containsObject:@(SPPostgresTransferReading)]);
+		NSUInteger readingDoneReports = [[phases filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF == %@", @(SPPostgresTransferReadingDone)]] count];
+		XCTAssertEqual(readingDoneReports, 1u);
+		XCTAssertEqualObjects(phases.lastObject, @(SPPostgresTransferCommitting));
+		XCTAssertLessThan([phases indexOfObject:@(SPPostgresTransferReadingDone)], [phases indexOfObject:@(SPPostgresTransferCommitting)], @"read whole before the commit");
+		// The writer's counts match the items the load ran: every part reached its last step
+		XCTAssertTrue(objectsCountedWhenReading);
+		XCTAssertGreaterThan(transfer.structureItemCount, 0u);
+		XCTAssertGreaterThan(transfer.postDataItemCount, 0u);
+		XCTAssertEqualObjects(lastSteps[@(SPPostgresTransferCreating)], @(transfer.structureItemCount));
+		NSLog(@"Load began creating before the structure was read whole: %d", creatingBeforeCounted);
+		XCTAssertEqualObjects(lastSteps[@(SPPostgresTransferFinishing)], @(transfer.postDataItemCount));
+		XCTAssertEqualObjects(lastSteps[@(SPPostgresTransferLoadingData)], @(transfer.readTableCount));
+		XCTAssertEqual(tableDetails.count, transfer.readTableCount, @"%@", tableDetails);
+		XCTAssertEqual(transfer.readTableCount, transfer.tablesCopied);
+		XCTAssertGreaterThan(transfer.readRowCount, 3ull);
+		XCTAssertEqual(rowsAtCommit, transfer.readRowCount, @"every row read was written");
+		XCTAssertEqual(transfer.loadRowsWritten, transfer.readRowCount);
+		XCTAssertTrue([creatingDetails.firstObject hasPrefix:@"CREATE SCHEMA"], @"%@", creatingDetails);
+		for (NSString *created in creatingDetails) XCTAssertFalse([created containsString:@"\n"], @"%@", created);
+		XCTAssertTrue([transfer.emptiedSchemas containsObject:@"junk"], @"%@", transfer.emptiedSchemas);
+		XCTAssertTrue([transfer.emptiedSchemas containsObject:@"public"]);
+		XCTAssertEqualObjects(transfer.emptiedExtensions, @[@"pg_trgm"]);
 		[self assertIdle:source];
 		[self assertIdle:target];
 		[self assertTemporaryDirectoryEmpty];
@@ -485,10 +537,52 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 	XCTAssertEqualObjects(error.domain, SPPostgresErrorDomain);
 	XCTAssertEqual(error.code, SPPostgresErrorQueryFailed, @"%@", error.localizedDescription);
 	XCTAssertTrue([error.localizedDescription hasPrefix:@"Line "], @"the importer's error: %@", error.localizedDescription);
+	XCTAssertFalse(transfer.failedWhileReading, @"the load failed, not the reading (stopped because of it)");
+	[self assertIdle:source];
 	[self assertIdle:target];
 	[self assertTemporaryDirectoryEmpty];
 	[self assertMarkerOn:target];
 	[SPPostgresTestServers assertDescription:[self describe:target] equals:before context:@"18 → 12"];
+}
+
+/// The source's session ends while it is being read (the load running alongside): the load stops before it commits,
+/// the target is unchanged, and the error is the reading's.
+- (void)testSourceFailingWhileReadingLeavesTargetUnchanged
+{
+	for (NSNumber *port in [SPPostgresTestServers ports]) {
+		PGPostgresConnection *source = [self sourceOn:port];
+		PGPostgresConnection *target = [self targetOn:port];
+		[self addMarkerTo:target];
+		NSDictionary *before = [self describe:target];
+		NSString *pid = [self text:@"SELECT pg_backend_pid()::text" on:source];
+		PGPostgresConnection *killer = [self kept:[SPPostgresTestServers connectedConnectionOnPort:port.unsignedIntegerValue database:@"postgres"]];
+
+		SPPostgresTransfer *transfer = [self transferFrom:source to:target];
+		transfer.wholeDatabase = YES;
+		__block BOOL terminated = NO, committed = NO;
+		__block SPPostgresTransfer *engine = transfer;
+		transfer.progress = ^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
+			if (phase == SPPostgresTransferReading && engine.readingTableIndex == 2 && !terminated) {
+				terminated = YES;
+				NSString *terminate = [NSString stringWithFormat:@"SELECT pg_terminate_backend(%@)", pid];
+				XCTAssertNotNil([killer execute:terminate]);
+			}
+			if (phase == SPPostgresTransferCommitting) committed = YES;
+			return YES;
+		};
+		NSError *error = nil;
+		XCTAssertFalse([transfer run:&error]);
+		XCTAssertTrue(terminated);
+		XCTAssertFalse(committed, @"never committed");
+		XCTAssertTrue(transfer.failedWhileReading, @"port %@: %@", port, error.localizedDescription);
+		XCTAssertEqualObjects(error.domain, SPPostgresErrorDomain);
+		XCTAssertNotEqual(error.code, SPPostgresErrorCancelled, @"%@", error.localizedDescription);
+		XCTAssertFalse([error.localizedDescription isEqualToString:@"Reading the source failed."], @"the reading's own error, not the load's: %@", error.localizedDescription);
+		[self assertIdle:target];
+		[self assertTemporaryDirectoryEmpty];
+		[self assertMarkerOn:target];
+		[SPPostgresTestServers assertDescription:[self describe:target] equals:before context:[NSString stringWithFormat:@"port %@", port]];
+	}
 }
 
 - (void)testCrossVersion12To18
@@ -525,7 +619,7 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 		transfer.wholeDatabase = YES;
 		__block NSString *cancelledAt = nil;
 		transfer.progress = ^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
-			XCTAssertNotEqual(phase, SPPostgresTransferWriting);
+			XCTAssertNotEqual(phase, SPPostgresTransferCommitting, @"never committed");
 			if (phase == SPPostgresTransferReading && fraction > 0) {
 				cancelledAt = detail;
 				return NO;
@@ -561,7 +655,7 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 		__block BOOL cancelled = NO;
 		__block BOOL markerGoneInTransaction = NO;
 		transfer.progress = ^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
-			if (phase == SPPostgresTransferWriting && fraction > 0) {
+			if (phase == SPPostgresTransferCreating) {
 				// The emptying ran: inside the load's transaction the marker is gone
 				markerGoneInTransaction = target.transactionStatus == PGPostgresTransactionInTransaction
 					&& [[self text:@"SELECT count(*)::text FROM pg_catalog.pg_class WHERE relname = 'marker'" on:target] isEqualToString:@"0"];
@@ -614,7 +708,7 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 			transfer.temporaryDirectory = directory;
 			transfer.wholeDatabase = YES;
 			transfer.progress = ^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
-				if (phase == SPPostgresTransferWriting && fraction > 0) writing = YES;
+				if (phase >= SPPostgresTransferCreating) writing = YES;
 				return !cancelRequested;
 			};
 			BOOL transferred = [transfer run:error];
@@ -647,6 +741,101 @@ static NSString *const SPPublicComment = @"schema public = standard public schem
 		[self assertMarkerOn:target];
 		XCTAssertEqualObjects([self text:@"SELECT count(*)::text FROM pg_catalog.pg_stat_activity WHERE datname = 'pgkit_io_dst' AND state LIKE 'idle in transaction%'" on:monitor], @"0");
 		[SPPostgresTestServers assertDescription:[self describe:target] equals:before context:[NSString stringWithFormat:@"port %@", port]];
+	}
+}
+
+- (void)testSummaryOfStatement
+{
+	XCTAssertEqualObjects([SPPostgresTransfer summaryOfStatement:@"CREATE TABLE public.orders (\n    id integer NOT NULL,\n    note text\n)"], @"CREATE TABLE public.orders");
+	XCTAssertEqualObjects([SPPostgresTransfer summaryOfStatement:@"CREATE VIEW public.v AS\n SELECT 1"], @"CREATE VIEW public.v");
+	XCTAssertEqualObjects([SPPostgresTransfer summaryOfStatement:@"CREATE INDEX orders_idx ON public.orders USING btree (id)"], @"CREATE INDEX orders_idx ON public.orders USING btree");
+	XCTAssertEqualObjects([SPPostgresTransfer summaryOfStatement:@"DROP SCHEMA IF EXISTS a, \"b c\" CASCADE"], @"DROP SCHEMA IF EXISTS a, \"b c\" CASCADE");
+	XCTAssertEqualObjects([SPPostgresTransfer summaryOfStatement:@"  \n "], @"");
+	NSString *longName = [@"CREATE SCHEMA " stringByPaddingToLength:150 withString:@"x" startingAtIndex:0];
+	NSString *summary = [SPPostgresTransfer summaryOfStatement:longName];
+	XCTAssertEqual(summary.length, 100u);
+	XCTAssertTrue([summary hasSuffix:@"…"]);
+}
+
+
+/// Queries the transfer sends the source (counted on -[PGPostgresConnection _execute:values:], which every query goes
+/// through) for a source with tableCount extra tables, each with a serial key, an index and a few rows.
+- (NSUInteger)sourceQueriesForExtraTables:(NSUInteger)tableCount port:(NSNumber *)port
+{
+	return [self queriesForExtraTables:tableCount port:port targetQueries:NULL];
+}
+
+/// As above, also counting the target's round trips (queries and batches of statements; COPY blocks aside).
+- (NSUInteger)queriesForExtraTables:(NSUInteger)tableCount port:(NSNumber *)port targetQueries:(NSUInteger *)targetQueries
+{
+	PGPostgresConnection *source = [self sourceOn:port];
+	PGPostgresConnection *target = [self targetOn:port];
+	[self run:@"DROP SCHEMA IF EXISTS many CASCADE" on:source];
+	[self run:@"CREATE SCHEMA many" on:source];
+	[self run:[NSString stringWithFormat:@"DO $$ BEGIN FOR i IN 1..%lu LOOP"
+			   " EXECUTE format('CREATE TABLE many.t%%s (id serial PRIMARY KEY, note text, n int)', i);"
+			   " EXECUTE format('CREATE INDEX ON many.t%%s (n)', i);"
+			   " EXECUTE format('INSERT INTO many.t%%s (note, n) SELECT md5(g::text), g FROM generate_series(1, 3) g', i);"
+			   " END LOOP; END $$", (unsigned long)tableCount] on:source];
+
+	__block NSUInteger count = 0, targetCount = 0;
+	SEL selector = NSSelectorFromString(@"_execute:values:");
+	Method method = class_getInstanceMethod([PGPostgresConnection class], selector);
+	XCTAssertTrue(method != NULL);
+	IMP original = method_getImplementation(method);
+	method_setImplementation(method, imp_implementationWithBlock(^id(PGPostgresConnection *me, NSObject *query, NSArray *values) {
+		@synchronized (self) {
+			if (me == source) count++;
+			if (me == target) targetCount++;
+		}
+		return ((id (*)(id, SEL, NSObject *, NSArray *))original)(me, selector, query, values);
+	}));
+	SEL batchSelector = @selector(executeStatements:);
+	Method batchMethod = class_getInstanceMethod([PGPostgresConnection class], batchSelector);
+	IMP batchOriginal = method_getImplementation(batchMethod);
+	method_setImplementation(batchMethod, imp_implementationWithBlock(^id(PGPostgresConnection *me, NSString *sql) {
+		@synchronized (self) {
+			if (me == target) targetCount++;
+		}
+		return ((id (*)(id, SEL, NSString *))batchOriginal)(me, batchSelector, sql);
+	}));
+	SPPostgresTransfer *transfer = [self transferFrom:source to:target];
+	transfer.wholeDatabase = YES;
+	NSError *error = nil;
+	BOOL ok = [transfer run:&error];
+	method_setImplementation(method, original);
+	method_setImplementation(batchMethod, batchOriginal);
+	if (targetQueries) *targetQueries = targetCount;
+	XCTAssertTrue(ok, @"%@", error.localizedDescription);
+	XCTAssertEqual(transfer.readRowCount, [self.class rowsIn:target] , @"every row arrived");
+	[self run:@"DROP SCHEMA IF EXISTS many CASCADE" on:source];
+	return count;
+}
+
++ (unsigned long long)rowsIn:(PGPostgresConnection *)connection
+{
+	PGPostgresResult *result = [connection execute:@"SELECT sum((xpath('/row/c/text()', query_to_xml(format('SELECT count(*) AS c FROM %I.%I', n.nspname, c.relname), false, true, '')))[1]::text::bigint)::text"
+								" FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace"
+								" WHERE c.relkind = 'r' AND n.nspname NOT LIKE 'pg\\_%' AND n.nspname <> 'information_schema'"];
+	id value = [result textValueAtRow:0 column:0];
+	return [value isKindOfClass:[NSString class]] ? strtoull([value UTF8String], NULL, 10) : 0;
+}
+
+/// Round trips don't grow with the number of tables (over a network each is what makes a transfer slow): reading the
+/// source takes a few queries whatever the tables, and the target's statements go in batches.
+- (void)testRoundTripsDoNotGrowPerTable
+{
+	for (NSNumber *port in [SPPostgresTestServers ports]) {
+		NSUInteger fewTarget = 0, manyTarget = 0;
+		NSUInteger few = [self queriesForExtraTables:10 port:port targetQueries:&fewTarget];
+		NSUInteger many = [self queriesForExtraTables:70 port:port targetQueries:&manyTarget];
+		// The target's statements go in batches: 60 more tables (each a CREATE TABLE, a sequence's ALTER, an index
+		// and a setval) add a few round trips, not hundreds
+		XCTAssertLessThanOrEqual(manyTarget, fewTarget + 10, @"port %@: %lu target round trips for 10 tables, %lu for 70", port, (unsigned long)fewTarget, (unsigned long)manyTarget);
+		NSLog(@"Round trips: source %lu / %lu, target %lu / %lu (10 / 70 tables)", (unsigned long)few, (unsigned long)many, (unsigned long)fewTarget, (unsigned long)manyTarget);
+		XCTAssertGreaterThan(few, 0u);
+		XCTAssertLessThanOrEqual(many, few + 2, @"port %@: %lu queries for 10 tables, %lu for 70", port, (unsigned long)few, (unsigned long)many);
+		XCTAssertLessThan(many, 80u, @"port %@: %lu", port, (unsigned long)many);
 	}
 }
 

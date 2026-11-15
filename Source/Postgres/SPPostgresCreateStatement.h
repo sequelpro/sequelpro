@@ -75,4 +75,9 @@ __attribute__((visibility("default")))
 /// the data).
 + (NSDictionary *)partsForTable:(NSString *)table inSchema:(NSString *)schema materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error;
 
+/// +partsForTable:inSchema:materializedViewWithNoData:connection:error: for many @[schema, table] pairs at once, keyed
+/// by the pair: the catalog is read with one query of each kind for them all (not one per table), so a dump of many
+/// tables costs a few round trips to the server. nil on failure (a missing table fails them all).
++ (NSDictionary *)partsForTables:(NSArray *)tables materializedViewWithNoData:(BOOL)noData connection:(PGPostgresConnection *)connection error:(NSError **)error;
+
 @end

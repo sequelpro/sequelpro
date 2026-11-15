@@ -22,6 +22,10 @@ extern PGPostgresResult *SPPostgresExecute(PGPostgresConnection *connection, NSS
 /// (SPPostgresErrorDetailLines).
 extern PGPostgresResult *SPPostgresExecuteWithDetails(PGPostgresConnection *connection, NSString *sql, NSArray *values, NSError **error) __attribute__((visibility("default")));
 
+/// As SPPostgresExecuteWithDetails, for sql holding several statements, sent in one round trip (no parameters, no
+/// COPY): nil with the failing statement's error when one fails (those after it aren't run).
+extern PGPostgresResult *SPPostgresExecuteStatementsWithDetails(PGPostgresConnection *connection, NSString *sql, NSError **error) __attribute__((visibility("default")));
+
 /**
  * Runs body all or nothing on a connection that may be shared with the Query view, where the user may have a
  * transaction open: when idle, in a transaction of its own (BEGIN, then COMMIT, or ROLLBACK if body fails);

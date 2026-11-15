@@ -55,6 +55,7 @@ __attribute__((visibility("default")))
 	BOOL inCopy;             // the last item was a Copy whose data hasn't been read to its \. line
 	NSUInteger copyLine;
 	NSError *readError;
+	BOOL (^waitForMoreData)(NSError **error);
 }
 
 /// Opens path for reading; nil with an error (SPPostgresErrorDomain) when it can't be opened.
@@ -75,6 +76,14 @@ __attribute__((visibility("default")))
  * error, e.g. when the file ends before the \. line.
  */
 - (NSData *)nextCopyData:(NSError **)error;
+
+/**
+ * For a file still being written (nil, the default: the file is complete). Asked whenever a read finds no more bytes:
+ * YES to read again (after waiting a little: more may have been written), NO when the file is complete (error left
+ * nil: this is its end) or will never be (error set: returned by -nextItem: / -nextCopyData:, so a reader never takes
+ * a file cut short for a whole one).
+ */
+@property (copy) BOOL (^waitForMoreData)(NSError **error);
 
 /// Bytes read from the file so far, and its size (both compressed for a compressed file), for progress.
 @property (readonly) unsigned long long bytesRead;

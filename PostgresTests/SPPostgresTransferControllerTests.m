@@ -41,6 +41,11 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 @property (strong) NSMutableArray *heldConnects;
 @property (strong) NSMutableArray<PGPostgresConnection *> *providedConnections;
 @property (strong) NSMutableArray<NSAlert *> *alerts;
+/// The task list's marks, message and text as the last transfer ended (before Close)
+@property (copy) NSArray<NSNumber *> *finishedTaskStates;
+@property (copy) NSString *finishedMessage;
+@property (copy) NSString *finishedText;
+@property (copy) NSArray<NSString *> *finishedTaskDetails;
 @property (strong) NSMutableArray<PGPostgresConnection *> *openConnections;
 @property (copy) NSString *directory;
 @property (strong) SPPostgresTransferController *controller;
@@ -265,6 +270,8 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 {
 	controller.favorites = favorites ?: @[[self favoriteNamed:@"Test target" database:@"pgkit_io_dst"]];
 	controller.temporaryDirectory = self.directory;
+	// A real menu would track (blocking the run) until closed: tests that look at it set their own
+	controller.filteredMenuOpener = ^(NSPopUpButton *popup) {};
 	self.sessionConnections = [NSMutableArray array];
 	self.sessionTokens = [NSMutableArray array];
 	NSMutableArray *requests = self.targetRequests;
@@ -386,8 +393,27 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 {
 	XCTAssertTrue(controller.transferButton.isEnabled);
 	[controller transfer:nil];
-	XCTAssertTrue([self spinUntil:^BOOL{ return self.ended && [self window].attachedSheet == nil; } timeout:120],
+	[self waitForTransferEnd:controller];
+}
+
+/// The transfer has ended; a task list left open with its outcome is checked (it's the progress sheet, the window's
+/// sheet, its tasks marked) and closed.
+- (void)waitForTransferEnd:(SPPostgresTransferController *)controller
+{
+	XCTAssertTrue([self spinUntil:^BOOL{ return self.ended && ([self window].attachedSheet == nil || controller.progressSheet.finished); } timeout:120],
 				  @"the transfer ends (%@)", controller.lastErrorMessage);
+	SPPostgresProgressSheet *progress = controller.progressSheet;
+	if (progress.finished) {
+		XCTAssertEqual([self window].attachedSheet, progress.panel, @"the outcome stays on the task list");
+		XCTAssertEqualObjects(progress.cancelButton.title, @"Close");
+		XCTAssertFalse(progress.statusField.isHidden && progress.resultMessageField == nil);
+		self.finishedTaskStates = progress.taskStates;
+		self.finishedMessage = progress.resultMessageField.stringValue;
+		self.finishedText = progress.resultTextView.string;
+		self.finishedTaskDetails = [progress.taskDetailFields valueForKey:@"stringValue"];
+		[progress.cancelButton performClick:nil];
+	}
+	XCTAssertTrue([self spinUntil:^BOOL{ return [self window].attachedSheet == nil; } timeout:10], @"Close ends the task list");
 }
 
 - (NSDictionary *)rowsOf:(PGPostgresConnection *)connection
@@ -428,6 +454,11 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"Test target");
 		XCTAssertTrue(controller.favoritePopup.isEnabled);
 		XCTAssertEqualObjects(controller.targetDescriptionField.stringValue, ([NSString stringWithFormat:@"pgkit_test@127.0.0.1:%@", port]));
+		XCTAssertEqualObjects(controller.ownershipNoteField.stringValue, @"Owners and privileges aren't copied: the tables, views and other objects the transfer creates are owned by “pgkit_test”, the user the To: connection logs in as. Grant other roles access afterwards if they need it.");
+		XCTAssertFalse(controller.ownershipNoteField.isHidden);
+		XCTAssertTrue(NSContainsRect(controller.sheet.contentView.bounds, controller.ownershipNoteField.frame));
+		XCTAssertFalse(NSIntersectsRect(controller.ownershipNoteField.frame, controller.overwriteModeRadio.frame));
+		XCTAssertFalse(NSIntersectsRect(controller.ownershipNoteField.frame, controller.transferButton.frame));
 		XCTAssertEqualObjects(controller.databasePopup.titleOfSelectedItem, @"pgkit_io_dst", @"the favorite's database");
 		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
 		XCTAssertEqualObjects(controller.targetStatusField.stringValue, @"");
@@ -440,6 +471,17 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertFalse([controller respondsToSelector:NSSelectorFromString(@"passwordField")], @"no Password field");
 		XCTAssertFalse([controller respondsToSelector:NSSelectorFromString(@"databaseField")], @"a menu, not a field");
 	}];
+}
+
+- (void)testOwnershipNotes
+{
+	SPPostgresFavorite *favorite = [[SPPostgresFavorite alloc] init];
+	favorite.user = @"ann";
+	XCTAssertEqualObjects([SPPostgresTransferController ownershipNoteForFavorite:favorite], @"Owners and privileges aren't copied: the tables, views and other objects the transfer creates are owned by “ann”, the user the To: connection logs in as. Grant other roles access afterwards if they need it.");
+	favorite.user = @"";
+	NSString *generic = @"Owners and privileges aren't copied: the tables, views and other objects the transfer creates are owned by the user the To: connection logs in as. Grant other roles access afterwards if they need it.";
+	XCTAssertEqualObjects([SPPostgresTransferController ownershipNoteForFavorite:favorite], generic);
+	XCTAssertEqualObjects([SPPostgresTransferController ownershipNoteForFavorite:nil], generic);
 }
 
 - (void)testTargetDescriptions
@@ -541,6 +583,7 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 
 		[self chooseFavorite:1 in:controller];
 		XCTAssertEqualObjects(controller.targetDescriptionField.stringValue, ([NSString stringWithFormat:@"someone@127.0.0.1:%@", port]));
+		XCTAssertTrue([controller.ownershipNoteField.stringValue containsString:@"owned by “someone”"], @"%@", controller.ownershipNoteField.stringValue);
 		[self waitForSession:controller];
 		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
 		XCTAssertFalse(self.sessionConnections[0].isConnected, @"the first favorite's session is closed");
@@ -596,26 +639,40 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"Staging", @"prod replica"]));
 		NSUInteger requests = self.targetRequests.count;
 
-		// Case-insensitive, anywhere in the name; the choice and its session stay as they are
+		// Case-insensitive, anywhere in the name; the choice still listed stays, with its session
 		[self typeFilter:@"PROD" in:controller.favoriteFilterField];
 		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"prod replica"]));
+		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"Prod main");
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
+		XCTAssertTrue(self.sessionConnections[0].isConnected);
+
+		// Filtered out: no connection chosen, its session closed, no database, no Transfer
 		[self typeFilter:@"ag" in:controller.favoriteFilterField];
 		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Staging"]));
-		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"Prod main", @"the choice stays while typing");
-		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
+		XCTAssertNil(controller.favoritePopup.selectedItem, @"the connection filtered out is unset");
+		XCTAssertEqualObjects(controller.targetDescriptionField.stringValue, @"");
+		XCTAssertTrue([controller.ownershipNoteField.stringValue containsString:@"owned by the user the To: connection logs in as"], @"%@", controller.ownershipNoteField.stringValue);
+		XCTAssertNil(controller.selectedDatabase);
+		XCTAssertEqual(controller.databasePopup.numberOfItems, 0);
+		XCTAssertFalse(controller.databasePopup.isEnabled);
+		XCTAssertFalse(controller.transferButton.isEnabled);
+		XCTAssertFalse(self.sessionConnections[0].isConnected, @"its session is closed");
 		XCTAssertEqual(self.targetRequests.count, requests, @"no connection opened while typing");
 
 		[self typeFilter:@"nothing like it" in:controller.favoriteFilterField];
 		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[]));
 		[self typeFilter:@"" in:controller.favoriteFilterField];
 		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"Staging", @"prod replica"]));
+		XCTAssertNil(controller.favoritePopup.selectedItem, @"clearing the filter chooses nothing");
+		XCTAssertEqual(self.targetRequests.count, requests);
 
-		// Choosing a match still opens its session
+		// Choosing a match opens its session
 		[self typeFilter:@"replica" in:controller.favoriteFilterField];
 		[self chooseFavorite:2 in:controller];
 		[self waitForSession:controller];
 		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"prod replica");
 		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
+		XCTAssertTrue(controller.transferButton.isEnabled);
 	}];
 }
 
@@ -627,24 +684,160 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		SPPostgresTransferController *controller = [self openSheetWithFavorites:@[first, second]];
 		XCTAssertEqualObjects(controller.databaseFilterField.placeholderString, @"Filter");
 
-		[self typeFilter:@"IO_SRC" in:controller.databaseFilterField];
-		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], (@[@"pgkit_io_src", @"-", @"New Database…"]), @"New Database… stays");
-		XCTAssertEqualObjects(controller.databasePopup.titleOfSelectedItem, @"pgkit_io_dst", @"the choice stays while typing");
+		// Still listed: stays chosen
+		[self typeFilter:@"IO_" in:controller.databaseFilterField];
 		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
 		XCTAssertTrue(controller.transferButton.isEnabled);
 
+		// Filtered out: unset, no Transfer; New Database… stays
+		[self typeFilter:@"IO_SRC" in:controller.databaseFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], (@[@"pgkit_io_src", @"-", @"New Database…"]));
+		XCTAssertNil(controller.databasePopup.selectedItem, @"the database filtered out is unset");
+		XCTAssertNil(controller.selectedDatabase);
+		XCTAssertFalse(controller.transferButton.isEnabled);
+		[self typeFilter:@"" in:controller.databaseFilterField];
+		XCTAssertNil(controller.selectedDatabase, @"clearing the filter chooses nothing");
+
+		[self typeFilter:@"src" in:controller.databaseFilterField];
 		[self chooseDatabase:@"pgkit_io_src" in:controller];
 		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
+		XCTAssertTrue(controller.transferButton.isEnabled);
 
-		// The databases of another favorite are filtered too
+		// Another connection's databases are filtered too: its database is chosen when listed...
 		[self chooseFavorite:1 in:controller];
 		[self waitForSession:controller];
 		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], (@[@"pgkit_io_src", @"-", @"New Database…"]));
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
+		// ...and not when filtered out
+		[self chooseFavorite:0 in:controller];
+		[self waitForSession:controller];
+		XCTAssertNil(controller.databasePopup.selectedItem);
+		XCTAssertNil(controller.selectedDatabase);
+		XCTAssertFalse(controller.transferButton.isEnabled);
 
 		[self typeFilter:@"" in:controller.databaseFilterField];
 		NSArray *all = [self visibleTitles:controller.databasePopup];
 		XCTAssertTrue([all containsObject:@"pgkit_io_dst"], @"%@", all);
 		XCTAssertEqualObjects(all, [self menuTitles:controller]);
+	}];
+}
+
+/// Once typing in a filter pauses, the menu it narrows opens (the matches); not while typing on, nor without a match.
+- (void)testFilterOpensTheMenuOnceTypingPauses
+{
+	[self onEachPort:^(NSNumber *port, PGPostgresConnection *target) {
+		SPPostgresFavorite *prod = [self favoriteNamed:@"Prod main" database:@"pgkit_io_dst"];
+		SPPostgresFavorite *staging = [self favoriteNamed:@"Staging" database:@"pgkit_io_src"];
+		SPPostgresTransferController *controller = [self openSheetWithFavorites:@[prod, staging]];
+		NSMutableArray *opened = [NSMutableArray array];
+		controller.filteredMenuOpener = ^(NSPopUpButton *popup) {
+			[opened addObject:(popup == controller.favoritePopup) ? @"to" : (popup == controller.databasePopup) ? @"database" : @"?"];
+		};
+
+		// Typed on within the pause: one menu, after the last key
+		[self typeFilter:@"p" in:controller.favoriteFilterField];
+		[self typeFilter:@"pr" in:controller.favoriteFilterField];
+		[self typeFilter:@"pro" in:controller.favoriteFilterField];
+		XCTAssertEqualObjects(opened, (@[]), @"not while typing");
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		XCTAssertEqualObjects(opened, (@[@"to"]));
+
+		// No match, or the filter emptied: no menu
+		[self typeFilter:@"nothing like it" in:controller.favoriteFilterField];
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		[self typeFilter:@"" in:controller.favoriteFilterField];
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		XCTAssertEqualObjects(opened, (@[@"to"]));
+
+		// The database menu (of the connection chosen again)
+		[self chooseFavorite:0 in:controller];
+		[self waitForSession:controller];
+		[self typeFilter:@"io_s" in:controller.databaseFilterField];
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		XCTAssertEqualObjects(opened, (@[@"to", @"database"]));
+		// New Database… alone is no match
+		[self typeFilter:@"nothing like it" in:controller.databaseFilterField];
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		XCTAssertEqualObjects(opened, (@[@"to", @"database"]));
+
+		// Not once the sheet has ended
+		[self typeFilter:@"io" in:controller.databaseFilterField];
+		[controller cancel:nil];
+		[self spinUntil:^BOOL{ return NO; } timeout:1];
+		XCTAssertEqualObjects(opened, (@[@"to", @"database"]));
+	}];
+}
+
+/// Typed in the field (its field editor, as a person types), with the real opener: each menu really opens, showing
+/// only the matches. Its tracking is cancelled at once (a safety timer cancels it too, so the run never blocks).
+- (void)testTypingOpensTheRealMenu
+{
+	[self onEachPort:^(NSNumber *port, PGPostgresConnection *target) {
+		SPPostgresFavorite *prod = [self favoriteNamed:@"Prod main" database:@"pgkit_io_dst"];
+		SPPostgresFavorite *staging = [self favoriteNamed:@"Staging" database:@"pgkit_io_src"];
+		SPPostgresTransferController *controller = [self openSheetWithFavorites:@[prod, staging]];
+		controller.filteredMenuOpener = nil;
+
+		NSMutableArray<NSString *> *opened = [NSMutableArray array];
+		NSMutableArray<NSArray *> *shown = [NSMutableArray array];
+		id observer = [[NSNotificationCenter defaultCenter] addObserverForName:NSMenuDidBeginTrackingNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
+			NSMenu *menu = note.object;
+			NSPopUpButton *popup = (menu == controller.favoritePopup.menu) ? controller.favoritePopup : (menu == controller.databasePopup.menu) ? controller.databasePopup : nil;
+			if (!popup) return;
+			[opened addObject:(popup == controller.favoritePopup) ? @"to" : @"database"];
+			[shown addObject:[self visibleTitles:popup]];
+			[[NSRunLoop currentRunLoop] performInModes:@[NSEventTrackingRunLoopMode, NSDefaultRunLoopMode, NSModalPanelRunLoopMode] block:^{ [menu cancelTrackingWithoutAnimation]; }];
+		}];
+		NSTimer *safety = [NSTimer timerWithTimeInterval:3 repeats:YES block:^(NSTimer *timer) {
+			[controller.favoritePopup.menu cancelTrackingWithoutAnimation];
+			[controller.databasePopup.menu cancelTrackingWithoutAnimation];
+		}];
+		[[NSRunLoop currentRunLoop] addTimer:safety forMode:NSRunLoopCommonModes];
+		[[NSRunLoop currentRunLoop] addTimer:safety forMode:NSEventTrackingRunLoopMode];
+
+		void (^type)(NSSearchField *, NSString *) = ^(NSSearchField *field, NSString *text) {
+			XCTAssertTrue([controller.sheet makeFirstResponder:field]);
+			NSText *editor = [controller.sheet fieldEditor:YES forObject:field];
+			XCTAssertEqual(controller.sheet.firstResponder, editor);
+			for (NSUInteger i = 0; i < text.length; i++) {
+				[(NSTextView *)editor insertText:[text substringWithRange:NSMakeRange(i, 1)] replacementRange:NSMakeRange(NSNotFound, 0)];
+				[self spinUntil:^BOOL{ return NO; } timeout:0.1];
+			}
+		};
+
+		type(controller.favoriteFilterField, @"stag");
+		XCTAssertEqualObjects(controller.favoriteFilterField.stringValue, @"stag");
+		XCTAssertTrue([self spinUntil:^BOOL{ return opened.count == 1; } timeout:5], @"the To: menu opens");
+		XCTAssertEqualObjects(opened, (@[@"to"]));
+		XCTAssertEqualObjects(shown.firstObject, (@[@"Staging"]));
+
+		[self chooseFavorite:1 in:controller];
+		[self waitForSession:controller];
+		XCTAssertTrue(controller.databasePopup.isEnabled);
+		type(controller.databaseFilterField, @"io_d");
+		XCTAssertTrue([self spinUntil:^BOOL{ return opened.count == 2; } timeout:5], @"the Database: menu opens");
+		XCTAssertEqualObjects(opened, (@[@"to", @"database"]));
+		XCTAssertTrue([shown.lastObject containsObject:@"pgkit_io_dst"], @"%@", shown.lastObject);
+		XCTAssertFalse([shown.lastObject containsObject:@"pgkit_io_src"], @"%@", shown.lastObject);
+
+		[safety invalidate];
+		[[NSNotificationCenter defaultCenter] removeObserver:observer];
+	}];
+}
+
+/// A database made with New Database… is chosen even when the filter wouldn't list it: the filter is cleared.
+- (void)testNewDatabaseClearsTheDatabaseFilter
+{
+	[self onEachPort:^(NSNumber *port, PGPostgresConnection *target) {
+		SPPostgresTransferController *controller = [self openSheet];
+		controller.newDatabasePrompt = ^(SPPostgresFavorite *favorite, void (^answer)(NSString *)) { answer(@"sp_t7_filtered"); };
+		[self typeFilter:@"pgkit" in:controller.databaseFilterField];
+		[self chooseDatabase:@"New Database…" in:controller];
+		XCTAssertEqualObjects(controller.databaseFilterField.stringValue, @"");
+		XCTAssertEqualObjects(controller.selectedDatabase, @"sp_t7_filtered");
+		XCTAssertEqualObjects(controller.databasePopup.titleOfSelectedItem, @"sp_t7_filtered");
+		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], [self menuTitles:controller]);
+		XCTAssertTrue(controller.transferButton.isEnabled);
 	}];
 }
 
@@ -736,7 +929,7 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		NSMutableArray *fractions = [NSMutableArray array];
 		controller.progressObserver = ^(SPPostgresProgressSheet *sheet) {
 			// On the job's thread, right after the status was set there
-			NSString *status = [sheet valueForKey:@"pendingStatus"];
+			NSString *status = sheet.lastStatus;
 			@synchronized (statuses) {
 				if (status && ![statuses.lastObject isEqualToString:status]) [statuses addObject:status];
 				[fractions addObject:[sheet valueForKey:@"pendingFraction"]];
@@ -747,9 +940,26 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertNil(controller.lastErrorMessage);
 		XCTAssertTrue([controller.completionNote hasPrefix:@"Copied"], @"%@", controller.completionNote);
 		XCTAssertTrue([controller.completionNote containsString:@"Copied 5 tables to “pgkit_io_dst” on “Test target”."], @"%@", controller.completionNote);
-		XCTAssertEqual(self.alerts.count, 1u);
-		XCTAssertEqualObjects(self.alerts.firstObject.messageText, @"Transfer complete");
-		XCTAssertEqualObjects(self.alerts.firstObject.informativeText, controller.completionNote);
+		XCTAssertTrue([controller.completionNote hasSuffix:@"\n\nWhat was created is owned by “pgkit_test”. The source's owners and privileges weren't copied."], @"%@", controller.completionNote);
+		XCTAssertEqual(self.alerts.count, 0u, @"shown on the task list instead");
+		XCTAssertEqualObjects(self.finishedMessage, @"Transfer complete");
+		XCTAssertEqualObjects(self.finishedText, controller.completionNote);
+		NSNumber *done = @(SPPostgresTaskDone);
+		XCTAssertEqualObjects(self.finishedTaskStates, (@[done, done, done, done, done, done, done, done]));
+		XCTAssertEqualObjects(controller.progressSheet.taskTitles, (@[@"Connect to the source and the target", @"Check the source and the target", @"Read “pgkit_io_src”",
+																	  @"Empty “pgkit_io_dst”", @"Create the structure: schemas, types, functions, tables, views",
+																	  @"Write the data", @"Create indexes, foreign keys and triggers", @"Commit"]));
+		// What each task did
+		NSArray *summaries = self.finishedTaskDetails;
+		XCTAssertEqualObjects(summaries[0], @"Connected to “pgkit_io_src” and to “pgkit_io_dst” on “Test target”");
+		XCTAssertTrue([summaries[1] hasSuffix:@" objects to copy"], @"%@", summaries[1]);
+		XCTAssertTrue([summaries[2] containsString:@"5 tables with rows, "], @"%@", summaries[2]);
+		XCTAssertTrue([summaries[3] hasPrefix:@"Dropped "] && [summaries[3] containsString:@"public"] && [summaries[3] hasSuffix:@"; public created again"], @"%@", summaries[3]);
+		XCTAssertTrue([summaries[4] hasSuffix:@" statements run"], @"%@", summaries[4]);
+		XCTAssertTrue([summaries[5] hasPrefix:@"5 tables, "] && [summaries[5] hasSuffix:@" rows written"], @"%@", summaries[5]);
+		XCTAssertEqualObjects([summaries[2] substringFromIndex:[@"5 tables with rows, " length]], [[summaries[5] substringFromIndex:[@"5 tables, " length]] stringByReplacingOccurrencesOfString:@" written" withString:@""], @"every row read was written");
+		XCTAssertTrue([summaries[6] hasSuffix:@" statements run"], @"%@", summaries[6]);
+		XCTAssertEqualObjects(summaries[7], @"Committed: “pgkit_io_dst” now holds the copy");
 
 		XCTAssertEqualObjects(self.providedDatabases, @[@"pgkit_io_src"]);
 		XCTAssertEqualObjects(self.targetRequests, (@[@"Test target|(none)|pgkit_io_dst|session", @"Test target|(none)|pgkit_io_dst|token 1"]), @"through the session");
@@ -763,11 +973,23 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertEqualObjects([self rowsOf:target], expected, @"port %@", port);
 		XCTAssertEqualObjects([self value:@"SELECT (to_regclass('public.marker') IS NULL)::text" on:target], @"true", @"emptied first");
 
-		XCTAssertEqualObjects(statuses.firstObject, @"Checking the target…", @"%@", statuses);
+		XCTAssertEqualObjects(statuses.firstObject, @"Checking the source's objects and what the target has…", @"%@", statuses);
+		XCTAssertTrue([statuses containsObject:@"Reading the structure: schemas, tables, views, functions…"], @"%@", statuses);
+		XCTAssertTrue([statuses containsObject:@"Reading what “pgkit_io_dst” holds…"], @"%@", statuses);
+		NSArray *(^matching)(NSString *) = ^NSArray *(NSString *pattern) {
+			return [statuses filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern]];
+		};
+		XCTAssertGreaterThan(matching(@"1 of [0-9]+: DROP .+").count, 0u, @"%@", statuses);
+		// Counts are given once the source's reading has passed that part (it reads while the load runs)
+		XCTAssertGreaterThan(matching(@"1( of [0-9]+)?: CREATE SCHEMA .+").count, 0u, @"%@", statuses);
+		XCTAssertGreaterThan(matching(@"Table 1 of 5: .+ — [0-9,]+( of [0-9,]+)? rows?").count, 0u, @"%@", statuses);
+		XCTAssertGreaterThan(matching(@"Table 5 of 5: .+ — [0-9,]+( of [0-9,]+)? rows?").count, 0u, @"%@", statuses);
+		XCTAssertGreaterThan(matching(@"[0-9]+( of [0-9]+)?: CREATE (UNIQUE )?INDEX .+").count, 0u, @"%@", statuses);
+		XCTAssertLessThan([statuses indexOfObject:@"Reading the structure: schemas, tables, views, functions…"], [statuses indexOfObject:[statuses filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF BEGINSWITH 'Reading table 1 of'"]].firstObject]);
 		// Every table the dump reads, the partitioned parent public.events included
 		XCTAssertEqual([[statuses filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF MATCHES 'Reading table 1 of 6: .+'"]] count], 1u, @"%@", statuses);
 		XCTAssertEqual([[statuses filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF MATCHES 'Reading table 6 of 6: .+'"]] count], 1u, @"%@", statuses);
-		XCTAssertEqualObjects(statuses.lastObject, @"Writing to “pgkit_io_dst”…", @"%@", statuses);
+		XCTAssertEqualObjects(statuses.lastObject, @"Committing to “pgkit_io_dst”…", @"%@", statuses);
 		for (NSNumber *fraction in fractions) XCTAssertTrue(fraction.doubleValue >= 0 && fraction.doubleValue <= 1);
 		XCTAssertEqualWithAccuracy([fractions.lastObject doubleValue], 1.0, 0.001);
 	}];
@@ -839,7 +1061,7 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 			XCTAssertNotNil(connector, @"the transfer's connection is connecting");
 			XCTAssertEqualObjects(connector.password, @"pgkit", @"the session's password");
 			XCTAssertNil(connector.parentWindow);
-			XCTAssertTrue([self spinUntil:^BOOL{ return self.ended && [self window].attachedSheet == nil; } timeout:120]);
+			[self waitForTransferEnd:controller];
 			XCTAssertTrue([SPPostgresTestServers waitForRunner:self.document.taskRunner timeout:30]);
 			XCTAssertNil(controller.lastErrorMessage);
 			XCTAssertNil(controller.pendingConnector);
@@ -881,9 +1103,14 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		XCTAssertTrue([controller.lastErrorMessage containsString:@"“pgkit_io_dst” on “Test target”"], @"%@", controller.lastErrorMessage);
 		XCTAssertTrue([controller.lastErrorMessage containsString:@"public.report"], @"%@", controller.lastErrorMessage);
 		XCTAssertTrue([controller.lastErrorMessage containsString:@"public.refs"], @"%@", controller.lastErrorMessage);
-		XCTAssertEqual(self.alerts.count, 1u);
-		XCTAssertEqualObjects(self.alerts.firstObject.messageText, @"The transfer failed. “pgkit_io_dst” on “Test target” wasn't changed.");
-		XCTAssertTrue([self.alerts.firstObject.informativeText containsString:@"public.report"]);
+		XCTAssertEqual(self.alerts.count, 0u, @"shown on the task list instead");
+		XCTAssertEqualObjects(self.finishedMessage, @"The transfer failed. “pgkit_io_dst” on “Test target” wasn't changed.");
+		XCTAssertTrue([self.finishedText containsString:@"public.report"], @"%@", self.finishedText);
+		// The dry run of the drops is part of the check
+		NSNumber *notRun = @(SPPostgresTaskNotRun);
+		XCTAssertEqualObjects(self.finishedTaskStates, (@[@(SPPostgresTaskDone), @(SPPostgresTaskFailed), notRun, notRun, notRun, notRun, notRun, notRun]));
+		XCTAssertEqualObjects(self.finishedTaskDetails[1], @"Checking the source's objects and what the target has…", @"what it was doing");
+		XCTAssertEqualObjects(self.finishedTaskDetails[2], @"");
 		XCTAssertEqualObjects([self rowsOf:target], before);
 		[self assertTemporaryDirectoryEmpty];
 	}];
@@ -899,7 +1126,7 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		__block BOOL cancelledWhileReading = NO;
 		__block SPPostgresProgressSheet *seen = nil;
 		controller.progressObserver = ^(SPPostgresProgressSheet *sheet) {
-			NSString *status = [sheet valueForKey:@"pendingStatus"];
+			NSString *status = sheet.lastStatus;
 			if (!cancelledWhileReading && [status hasPrefix:@"Reading table "]) {
 				cancelledWhileReading = YES;
 				seen = sheet;

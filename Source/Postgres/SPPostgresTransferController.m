@@ -20,6 +20,73 @@ static const NSUInteger SPPostgresTransferDefaultPort = 5432;
 
 /// The Empty mode confirmation's text field: enables its button only while it holds exactly the expected name (as
 /// typed, or as set by -setStringValue:).
+/// The progress sheet's tasks, in order
+enum {
+	SPPostgresTransferTaskConnect = 0,
+	SPPostgresTransferTaskCheck = 1,
+	SPPostgresTransferTaskRead = 2,
+	SPPostgresTransferTaskEmpty = 3,
+	SPPostgresTransferTaskCreate = 4,
+	SPPostgresTransferTaskData = 5,
+	SPPostgresTransferTaskFinish = 6,
+	SPPostgresTransferTaskCommit = 7,
+	SPPostgresTransferTaskCount = 8
+};
+
+/// "1 table" / "3 tables" (count formatted with grouping)
+static NSString *SPTransferCount(unsigned long long count, NSString *one, NSString *many)
+{
+	NSString *number = [NSNumberFormatter localizedStringFromNumber:@(count) numberStyle:NSNumberFormatterDecimalStyle];
+	return [NSString stringWithFormat:(count == 1) ? one : many, number];
+}
+
+/// "a, b, c" or "a, b, c and 4 more"
+static NSString *SPTransferList(NSArray *names, NSUInteger shown)
+{
+	if ([names count] <= shown) return [names componentsJoinedByString:@", "];
+	NSString *first = [[names subarrayWithRange:NSMakeRange(0, shown)] componentsJoinedByString:@", "];
+	return [NSString stringWithFormat:NSLocalizedString(@"%@ and %lu more", @"Postgres transfer task list: a shortened list (names, how many more)"), first, (unsigned long)([names count] - shown)];
+}
+
+/// What a finished task did, from the engine's counts.
+static NSString *SPTransferTaskSummary(NSUInteger task, SPPostgresTransfer *engine, SPPostgresTransferMode mode, NSString *sourceDatabase, NSString *targetDatabase, NSString *favoriteName)
+{
+	switch (task) {
+		case SPPostgresTransferTaskConnect:
+			return [NSString stringWithFormat:NSLocalizedString(@"Connected to “%@” and to “%@” on “%@”", @"Postgres transfer task list: connect summary (source database, target database, favorite)"), sourceDatabase, targetDatabase, favoriteName];
+		case SPPostgresTransferTaskCheck:
+			return SPTransferCount([engine objectCount], NSLocalizedString(@"%@ object to copy", @"Postgres transfer task list: check summary (one)"), NSLocalizedString(@"%@ objects to copy", @"Postgres transfer task list: check summary (count)"));
+		case SPPostgresTransferTaskRead:
+			return [NSString stringWithFormat:NSLocalizedString(@"%@, %@", @"Postgres transfer task list: read summary (tables, rows)"),
+					SPTransferCount([engine readTableCount], NSLocalizedString(@"%@ table with rows", @"Postgres transfer task list: tables (one)"), NSLocalizedString(@"%@ tables with rows", @"Postgres transfer task list: tables (count)")),
+					SPTransferCount([engine readRowCount], NSLocalizedString(@"%@ row", @"Postgres transfer task list: rows (one)"), NSLocalizedString(@"%@ rows", @"Postgres transfer task list: rows (count)"))];
+		case SPPostgresTransferTaskEmpty: {
+			if (mode == SPPostgresTransferOverwrite) {
+				NSArray *replaced = [engine objectsToReplace];
+				if (![replaced count]) return NSLocalizedString(@"Nothing to replace", @"Postgres transfer task list: overwrite summary, nothing dropped");
+				return [NSString stringWithFormat:NSLocalizedString(@"Dropped to be created again: %@", @"Postgres transfer task list: overwrite summary (objects)"), SPTransferList(replaced, 6)];
+			}
+			NSMutableArray *parts = [NSMutableArray array];
+			NSArray *schemas = [engine emptiedSchemas], *extensions = [engine emptiedExtensions];
+			if ([schemas count]) [parts addObject:[NSString stringWithFormat:@"%@ (%@)", SPTransferCount([schemas count], NSLocalizedString(@"%@ schema", @"Postgres transfer task list: schemas (one)"), NSLocalizedString(@"%@ schemas", @"Postgres transfer task list: schemas (count)")), SPTransferList(schemas, 6)]];
+			if ([extensions count]) [parts addObject:[NSString stringWithFormat:@"%@ (%@)", SPTransferCount([extensions count], NSLocalizedString(@"%@ extension", @"Postgres transfer task list: extensions (one)"), NSLocalizedString(@"%@ extensions", @"Postgres transfer task list: extensions (count)")), SPTransferList(extensions, 6)]];
+			if (![parts count]) return NSLocalizedString(@"Nothing to drop; public created again", @"Postgres transfer task list: empty summary, nothing dropped");
+			return [NSString stringWithFormat:NSLocalizedString(@"Dropped %@; public created again", @"Postgres transfer task list: empty summary (what was dropped)"), [parts componentsJoinedByString:NSLocalizedString(@" and ", @"Postgres transfer task list: joins two lists")]];
+		}
+		case SPPostgresTransferTaskCreate:
+			return SPTransferCount([engine structureItemCount], NSLocalizedString(@"%@ statement run", @"Postgres transfer task list: statements (one)"), NSLocalizedString(@"%@ statements run", @"Postgres transfer task list: statements (count)"));
+		case SPPostgresTransferTaskData:
+			return [NSString stringWithFormat:NSLocalizedString(@"%@, %@ written", @"Postgres transfer task list: data summary (tables, rows)"),
+					SPTransferCount([engine readTableCount], NSLocalizedString(@"%@ table", @"Postgres transfer task list: tables written (one)"), NSLocalizedString(@"%@ tables", @"Postgres transfer task list: tables written (count)")),
+					SPTransferCount([engine loadRowsWritten], NSLocalizedString(@"%@ row", @"Postgres transfer task list: rows (one)"), NSLocalizedString(@"%@ rows", @"Postgres transfer task list: rows (count)"))];
+		case SPPostgresTransferTaskFinish:
+			return SPTransferCount([engine postDataItemCount], NSLocalizedString(@"%@ statement run", @"Postgres transfer task list: statements (one)"), NSLocalizedString(@"%@ statements run", @"Postgres transfer task list: statements (count)"));
+		case SPPostgresTransferTaskCommit:
+			return [NSString stringWithFormat:NSLocalizedString(@"Committed: “%@” now holds the copy", @"Postgres transfer task list: commit summary (target database)"), targetDatabase];
+	}
+	return nil;
+}
+
 @interface SPPostgresTransferConfirmationField : NSTextField
 {
 	NSString *expected;
@@ -167,6 +234,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	SPPostgresCheckList *tablesList;
 	NSPopUpButton *favoritePopup;
 	NSTextField *targetDescriptionField;
+	NSTextField *ownershipNoteField;
 	NSPopUpButton *databasePopup;
 	NSSearchField *favoriteFilterField;
 	NSSearchField *databaseFilterField;
@@ -219,6 +287,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 @synthesize newDatabasePrompt;
 @synthesize emptyConfirmation;
 @synthesize progressObserver;
+@synthesize filteredMenuOpener;
 @synthesize temporaryDirectory;
 @synthesize sheet;
 @synthesize wholeDatabaseRadio;
@@ -226,6 +295,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 @synthesize tablesList;
 @synthesize favoritePopup;
 @synthesize targetDescriptionField;
+@synthesize ownershipNoteField;
 @synthesize databasePopup;
 @synthesize favoriteFilterField;
 @synthesize databaseFilterField;
@@ -265,6 +335,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[newDatabasePrompt release];
 	[emptyConfirmation release];
 	[progressObserver release];
+	[filteredMenuOpener release];
 	[temporaryDirectory release];
 	[sheet release];
 	[wholeDatabaseRadio release];
@@ -272,6 +343,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[tablesList release];
 	[favoritePopup release];
 	[targetDescriptionField release];
+	[ownershipNoteField release];
 	[databasePopup release];
 	[favoriteFilterField release];
 	[databaseFilterField release];
@@ -393,7 +465,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 {
 	if (sheet) return;
 
-	CGFloat width = 520, height = 500;
+	CGFloat width = 520, height = 536;
 	sheet = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, width, height) styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:YES];
 	[sheet setReleasedWhenClosed:NO];
 	[sheet setContentMinSize:NSMakeSize(width, height)];
@@ -414,7 +486,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	selectedTablesRadio = [self _radioWithFrame:NSMakeRect(20, height - 90, width - 40, 20) title:NSLocalizedString(@"Selected tables", @"Postgres transfer sheet: scope") action:@selector(_scopeChanged:) on:NO];
 	[content addSubview:selectedTablesRadio];
 
-	CGFloat listBottom = 258;
+	CGFloat listBottom = 294;
 	tablesList = [[SPPostgresCheckList alloc] initWithFrame:NSMakeRect(40, listBottom, width - 60, height - 98 - listBottom) inView:content];
 	[tablesList setGroupsByFirstElement:YES];
 	// Not capturing self: the list keeps the block, and the controller keeps the list
@@ -422,18 +494,18 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[tablesList setChecksChanged:^{ [controller _updateControls]; }];
 
 	// Target
-	NSTextField *toLabel = [self _labelWithFrame:NSMakeRect(20, 216, 80, 18) text:NSLocalizedString(@"To:", @"Postgres transfer sheet: target favorite label")];
+	NSTextField *toLabel = [self _labelWithFrame:NSMakeRect(20, 252, 80, 18) text:NSLocalizedString(@"To:", @"Postgres transfer sheet: target favorite label")];
 	[toLabel setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:toLabel];
-	favoritePopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(104, 211, 280, 26) pullsDown:NO];
+	favoritePopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(104, 247, 280, 26) pullsDown:NO];
 	[favoritePopup setTarget:self];
 	[favoritePopup setAction:@selector(_favoriteChanged:)];
 	[favoritePopup setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:favoritePopup];
-	favoriteFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 213, width - 20 - 392, 22)];
+	favoriteFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 249, width - 20 - 392, 22)];
 	[content addSubview:favoriteFilterField];
 
-	targetDescriptionField = [[self _labelWithFrame:NSMakeRect(108, 192, width - 128, 16) text:@""] retain];
+	targetDescriptionField = [[self _labelWithFrame:NSMakeRect(108, 228, width - 128, 16) text:@""] retain];
 	[targetDescriptionField setAlignment:NSTextAlignmentLeft];
 	[targetDescriptionField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[targetDescriptionField setTextColor:[NSColor secondaryLabelColor]];
@@ -441,20 +513,20 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[targetDescriptionField setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
 	[content addSubview:targetDescriptionField];
 
-	NSTextField *databaseLabel = [self _labelWithFrame:NSMakeRect(20, 160, 80, 18) text:NSLocalizedString(@"Database:", @"Postgres transfer sheet: target database label")];
+	NSTextField *databaseLabel = [self _labelWithFrame:NSMakeRect(20, 196, 80, 18) text:NSLocalizedString(@"Database:", @"Postgres transfer sheet: target database label")];
 	[databaseLabel setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:databaseLabel];
-	databasePopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(104, 155, 280, 26) pullsDown:NO];
+	databasePopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(104, 191, 280, 26) pullsDown:NO];
 	[[databasePopup menu] setAutoenablesItems:NO];
 	[databasePopup setTarget:self];
 	[databasePopup setAction:@selector(_databaseChanged:)];
 	[databasePopup setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:databasePopup];
-	databaseFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 157, width - 20 - 392, 22)];
+	databaseFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 193, width - 20 - 392, 22)];
 	[content addSubview:databaseFilterField];
 
 	// The session's error, and Retry next to it
-	targetStatusField = [[self _labelWithFrame:NSMakeRect(108, 118, width - 128 - 96, 32) text:@""] retain];
+	targetStatusField = [[self _labelWithFrame:NSMakeRect(108, 154, width - 128 - 96, 32) text:@""] retain];
 	[targetStatusField setAlignment:NSTextAlignmentLeft];
 	[targetStatusField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[targetStatusField setTextColor:[NSColor systemRedColor]];
@@ -462,7 +534,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[[targetStatusField cell] setTruncatesLastVisibleLine:YES];
 	[targetStatusField setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
 	[content addSubview:targetStatusField];
-	retryButton = [[NSButton alloc] initWithFrame:NSMakeRect(width - 20 - 90, 120, 90, 28)];
+	retryButton = [[NSButton alloc] initWithFrame:NSMakeRect(width - 20 - 90, 156, 90, 28)];
 	[retryButton setBezelStyle:NSBezelStyleRounded];
 	[retryButton setTitle:NSLocalizedString(@"Retry", @"Postgres transfer sheet: connect to the target again")];
 	[retryButton setTarget:self];
@@ -472,12 +544,21 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[content addSubview:retryButton];
 
 	// Mode
-	emptyModeRadio = [self _radioWithFrame:NSMakeRect(20, 88, width - 40, 20) title:NSLocalizedString(@"Empty the target database first", @"Postgres transfer sheet: mode") action:@selector(_modeChanged:) on:YES];
+	emptyModeRadio = [self _radioWithFrame:NSMakeRect(20, 124, width - 40, 20) title:NSLocalizedString(@"Empty the target database first", @"Postgres transfer sheet: mode") action:@selector(_modeChanged:) on:YES];
 	[emptyModeRadio setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:emptyModeRadio];
-	overwriteModeRadio = [self _radioWithFrame:NSMakeRect(20, 64, width - 40, 20) title:NSLocalizedString(@"Overwrite tables that already exist on the target", @"Postgres transfer sheet: mode") action:@selector(_modeChanged:) on:NO];
+	overwriteModeRadio = [self _radioWithFrame:NSMakeRect(20, 100, width - 40, 20) title:NSLocalizedString(@"Overwrite tables that already exist on the target", @"Postgres transfer sheet: mode") action:@selector(_modeChanged:) on:NO];
 	[overwriteModeRadio setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:overwriteModeRadio];
+
+	// What happens to owners and privileges
+	ownershipNoteField = [[self _labelWithFrame:NSMakeRect(20, 50, width - 40, 34) text:[[self class] ownershipNoteForFavorite:nil]] retain];
+	[ownershipNoteField setAlignment:NSTextAlignmentLeft];
+	[ownershipNoteField setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[ownershipNoteField setTextColor:[NSColor secondaryLabelColor]];
+	[[ownershipNoteField cell] setWraps:YES];
+	[ownershipNoteField setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
+	[content addSubview:ownershipNoteField];
 
 	// Buttons
 	transferButton = [[NSButton alloc] initWithFrame:NSMakeRect(width - 20 - 100, 12, 100, 32)];
@@ -588,8 +669,9 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 #pragma mark - Filters
 
 /// Hides the names in popup's menu (favorites, or databases) that don't hold its filter field's text; separators,
-/// "New Database…" and the disabled state items ("Connecting…", "Not connected") are never hidden. The selected item
-/// stays selected (and shown in the button) even when hidden: nothing is chosen, nor connected to, while typing.
+/// "New Database…" and the disabled state items ("Connecting…", "Not connected") are never hidden. A choice filtered
+/// out is unset: a favorite's session is closed (no database then), a database no longer chosen; Transfer is then
+/// disabled. Nothing is chosen, nor connected to, by the filter (clearing it doesn't bring the choice back).
 - (void)_applyFilterToPopup:(NSPopUpButton *)popup
 {
 	NSSearchField *field = (popup == favoritePopup) ? favoriteFilterField : databaseFilterField;
@@ -599,16 +681,65 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 		BOOL matches = ![text length] || [[item title] rangeOfString:text options:NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location != NSNotFound;
 		[item setHidden:!filtered && !matches];
 	}
+
+	NSMenuItem *chosen = [popup selectedItem];
+	if (!chosen || ![chosen isHidden]) return;
+	[popup selectItem:nil];
+	if (popup == favoritePopup) {
+		[self _favoriteChanged:nil];
+	} else {
+		[self _setSelectedDatabase:nil];
+		[self _updateControls];
+	}
 }
+
+/// How long typing in a filter pauses before its menu opens
+static const NSTimeInterval SPPostgresTransferFilterMenuDelay = 0.5;
 
 - (void)_filterChanged:(id)sender
 {
-	[self _applyFilterToPopup:(sender == favoriteFilterField) ? favoritePopup : databasePopup];
+	NSPopUpButton *popup = (sender == favoriteFilterField) ? favoritePopup : databasePopup;
+	[self _applyFilterToPopup:popup];
+	// The menu opens once typing pauses: a key typed meanwhile starts the wait again
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_openFilteredMenu:) object:favoritePopup];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_openFilteredMenu:) object:databasePopup];
+	if ([[[sender stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) {
+		[self performSelector:@selector(_openFilteredMenu:) withObject:popup afterDelay:SPPostgresTransferFilterMenuDelay];
+	}
+}
+
+/// Opens popup's menu (the filter's matches), when the sheet is still up and usable, its filter has text and the menu
+/// lists at least one matching name (New Database… alone is none).
+- (void)_openFilteredMenu:(NSPopUpButton *)popup
+{
+	if (finished || running || confirming || prompting || ![sheet isVisible] || ![popup isEnabled]) return;
+	NSSearchField *field = (popup == favoritePopup) ? favoriteFilterField : databaseFilterField;
+	if (![[[field stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) return;
+	BOOL matched = NO;
+	for (NSMenuItem *item in [popup itemArray]) {
+		if ([item isHidden] || [item isSeparatorItem] || ![item isEnabled] || [item tag] == SPPostgresTransferNewDatabaseTag) continue;
+		if (popup == databasePopup && ![item representedObject]) continue;
+		matched = YES;
+		break;
+	}
+	if (!matched) return;
+	if (filteredMenuOpener) filteredMenuOpener(popup);
+	else [popup performClick:nil];
 }
 
 - (void)_showFavorite
 {
 	[targetDescriptionField setStringValue:[[self class] targetDescriptionForFavorite:[self _selectedFavorite]]];
+	[ownershipNoteField setStringValue:[[self class] ownershipNoteForFavorite:[self _selectedFavorite]]];
+}
+
++ (NSString *)ownershipNoteForFavorite:(SPPostgresFavorite *)favorite
+{
+	NSString *user = [favorite user];
+	if ([user length]) {
+		return [NSString stringWithFormat:NSLocalizedString(@"Owners and privileges aren't copied: the tables, views and other objects the transfer creates are owned by “%@”, the user the To: connection logs in as. Grant other roles access afterwards if they need it.", @"Postgres transfer sheet: ownership note (target user)"), user];
+	}
+	return NSLocalizedString(@"Owners and privileges aren't copied: the tables, views and other objects the transfer creates are owned by the user the To: connection logs in as. Grant other roles access afterwards if they need it.", @"Postgres transfer sheet: ownership note");
 }
 
 /// The target line follows the favorite; a session to it replaces the previous favorite's.
@@ -673,10 +804,11 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[menu addItem:[NSMenuItem separatorItem]];
 	NSMenuItem *newItem = [menu addItemWithTitle:NSLocalizedString(@"New Database…", @"Postgres transfer sheet: database menu item creating a database on the target") action:NULL keyEquivalent:@""];
 	[newItem setTag:SPPostgresTransferNewDatabaseTag];
-	[self _applyFilterToPopup:databasePopup];
 	[databasePopup selectItem:selected];
 	[self _setSelectedDatabase:[selected representedObject]];
 	[targetStatusField setStringValue:@""];
+	// The filter lists only what matches: the favorite's database filtered out is not chosen
+	[self _applyFilterToPopup:databasePopup];
 	[self _updateControls];
 }
 
@@ -891,6 +1023,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 		return;
 	}
 	[createdDatabases addObject:name];
+	// The database just made is chosen, whatever the filter: it is cleared
+	[databaseFilterField setStringValue:@""];
 	NSArray *names = [catalog databaseNames:&error];
 	if (!names) {
 		// Listed before, so the menu's names plus the new one
@@ -1013,6 +1147,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 /// Takes the sheet off the window (the controller stays).
 - (void)_endSheet
 {
+	// No filter's menu once the sheet is gone (the only delayed performs here)
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	if ([sheet sheetParent]) [[sheet sheetParent] endSheet:sheet];
 	[sheet orderOut:nil];
 }
@@ -1162,9 +1298,24 @@ static NSError *SPPostgresTransferCancelledError(void)
 	if (finished || cancelRequested) return;
 	NSString *title = [NSString stringWithFormat:NSLocalizedString(@"Transferring “%@” to “%@”…", @"Postgres transfer: progress title (source database, target database)"), database, targetDatabase];
 	[progressSheet release];
-	progressSheet = [[SPPostgresProgressSheet beginOnWindow:[document parentWindow] title:title] retain];
+	NSArray *tasks = @[
+		NSLocalizedString(@"Connect to the source and the target", @"Postgres transfer task list: connect"),
+		NSLocalizedString(@"Check the source and the target", @"Postgres transfer task list: check"),
+		[NSString stringWithFormat:NSLocalizedString(@"Read “%@”", @"Postgres transfer task list: read the source (source database)"), database],
+		(mode == SPPostgresTransferEmptyTarget)
+			? [NSString stringWithFormat:NSLocalizedString(@"Empty “%@”", @"Postgres transfer task list: Empty mode (target database)"), targetDatabase]
+			: [NSString stringWithFormat:NSLocalizedString(@"Drop what will be replaced in “%@”", @"Postgres transfer task list: Overwrite mode (target database)"), targetDatabase],
+		NSLocalizedString(@"Create the structure: schemas, types, functions, tables, views", @"Postgres transfer task list: structure"),
+		NSLocalizedString(@"Write the data", @"Postgres transfer task list: data"),
+		NSLocalizedString(@"Create indexes, foreign keys and triggers", @"Postgres transfer task list: structure after the data"),
+		NSLocalizedString(@"Commit", @"Postgres transfer task list: commit")];
+	NSString *sourceDatabase = [[database copy] autorelease];
+	NSString *summaryFavoriteName = [[[favorite name] copy] autorelease] ?: @"";
+	progressSheet = [[SPPostgresProgressSheet beginOnWindow:[document parentWindow] title:title tasks:tasks] retain];
 	SPPostgresProgressSheet *progress = progressSheet;
-	[progress setStatus:NSLocalizedString(@"Connecting…", @"Postgres transfer: progress status while connecting") fraction:0];
+	// The source is read while the load runs
+	[progress setTaskRunsAlongside:SPPostgresTransferTaskRead];
+	[progress setTask:SPPostgresTransferTaskConnect status:NSLocalizedString(@"Connecting…", @"Postgres transfer: progress status while connecting") fraction:0];
 	NSWindow *progressWindow = [progress panel];
 
 	// The job's blocks hold the controller only while the job runs (it lets go of them when it ends)
@@ -1197,6 +1348,8 @@ static NSError *SPPostgresTransferCancelledError(void)
 	NSString *directory = [[temporaryDirectory copy] autorelease];
 	void (^observer)(SPPostgresProgressSheet *) = [[progressObserver copy] autorelease];
 	NSMutableDictionary *results = [NSMutableDictionary dictionary];
+	// Who owns what the transfer creates (the target connection's user), for the completion note
+	if ([[favorite user] length]) [results setObject:[favorite user] forKey:@"owner"];
 	BOOL (^work)(PGPostgresConnection *, PGPostgresConnection *, NSError **) = ^BOOL(PGPostgresConnection *source, PGPostgresConnection *target, NSError **error) {
 		if ([progress cancelled]) {
 			if (error) *error = SPPostgresTransferCancelledError();
@@ -1208,28 +1361,93 @@ static NSError *SPPostgresTransferCancelledError(void)
 		[transfer setMode:mode];
 		if (directory) [transfer setTemporaryDirectory:directory];
 		__block SPPostgresTransfer *engine = transfer; // the engine keeps the block
+		// The tasks before the running one get what they did
+		__block NSUInteger summarized = 0;
+		void (^summarizeBefore)(NSUInteger) = ^(NSUInteger task) {
+			for (; summarized < task; summarized++) {
+				if (summarized == SPPostgresTransferTaskRead) continue; // summarized once read whole
+				[progress setSummary:SPTransferTaskSummary(summarized, engine, mode, sourceDatabase, targetDatabase, summaryFavoriteName) forTask:summarized];
+			}
+		};
 		[transfer setProgress:^BOOL(SPPostgresTransferPhase phase, double fraction, NSString *detail) {
+			// The bar shows the running task's part done
 			NSString *status = nil;
-			double bar = 0;
+			NSUInteger task = SPPostgresTransferTaskCheck;
+			// "14 of 85", or "14" while the count isn't known (the source is still being read)
+			NSString *step = [engine loadStepCount]
+				? [NSString stringWithFormat:NSLocalizedString(@"%lu of %lu", @"Postgres transfer: progress, step of steps"), (unsigned long)[engine loadStepIndex], (unsigned long)[engine loadStepCount]]
+				: [NSString stringWithFormat:@"%lu", (unsigned long)[engine loadStepIndex]];
+			// Reading runs alongside the load: its own line
+			if (phase == SPPostgresTransferReading || phase == SPPostgresTransferReadingDone) {
+				if (phase == SPPostgresTransferReading) {
+					NSString *reading = [engine readingTableIndex]
+						? [NSString stringWithFormat:NSLocalizedString(@"Reading table %lu of %lu: %@", @"Postgres transfer: progress status (index, count, table)"), (unsigned long)[engine readingTableIndex], (unsigned long)[engine readingTableCount], detail ?: @""]
+						: NSLocalizedString(@"Reading the structure: schemas, tables, views, functions…", @"Postgres transfer: progress status before the first table");
+					[progress setStatus:reading forTaskAlongside:SPPostgresTransferTaskRead];
+				}
+				else {
+					[progress setSummary:SPTransferTaskSummary(SPPostgresTransferTaskRead, engine, mode, sourceDatabase, targetDatabase, summaryFavoriteName) forTask:SPPostgresTransferTaskRead];
+					[progress finishTaskAlongside:SPPostgresTransferTaskRead];
+				}
+				if (observer) observer(progress);
+				return ![progress cancelled];
+			}
 			switch (phase) {
 				case SPPostgresTransferChecking:
-					status = NSLocalizedString(@"Checking the target…", @"Postgres transfer: progress status");
+					status = NSLocalizedString(@"Checking the source's objects and what the target has…", @"Postgres transfer: progress status");
 					break;
 				case SPPostgresTransferReading:
-					status = [NSString stringWithFormat:NSLocalizedString(@"Reading table %lu of %lu: %@", @"Postgres transfer: progress status (index, count, table)"), (unsigned long)[engine readingTableIndex], (unsigned long)[engine readingTableCount], detail ?: @""];
-					bar = fraction * 0.5;
+				case SPPostgresTransferReadingDone:
 					break;
 				case SPPostgresTransferWriting:
-					status = [NSString stringWithFormat:NSLocalizedString(@"Writing to “%@”…", @"Postgres transfer: progress status (target database)"), targetDatabase];
-					bar = 0.5 + fraction * 0.5;
+					task = SPPostgresTransferTaskEmpty;
+					status = (mode == SPPostgresTransferEmptyTarget)
+						? [NSString stringWithFormat:NSLocalizedString(@"Reading what “%@” holds…", @"Postgres transfer: progress status, Empty mode reads the target (target database)"), targetDatabase]
+						: NSLocalizedString(@"Starting…", @"Postgres transfer: progress status as the load starts");
+					break;
+				case SPPostgresTransferEmptying:
+					task = SPPostgresTransferTaskEmpty;
+					status = [NSString stringWithFormat:NSLocalizedString(@"%@: %@", @"Postgres transfer: progress status (step, statement)"), step, detail ?: @""];
+					break;
+				case SPPostgresTransferCreating:
+					task = SPPostgresTransferTaskCreate;
+					status = [NSString stringWithFormat:NSLocalizedString(@"%@: %@", @"Postgres transfer: progress status (step, statement)"), step, detail ?: @""];
+					break;
+				case SPPostgresTransferLoadingData:
+					task = SPPostgresTransferTaskData;
+					if ([engine loadingTableRows] && [engine loadTableRowCountKnown]) {
+						status = [NSString stringWithFormat:NSLocalizedString(@"Table %@: %@ — %@ of %@", @"Postgres transfer: progress status (step, table, rows written, rows)"), step, detail,
+								  [NSNumberFormatter localizedStringFromNumber:@([engine loadTableRowsWritten]) numberStyle:NSNumberFormatterDecimalStyle],
+								  SPTransferCount([engine loadTableRowCount], NSLocalizedString(@"%@ row", @"Postgres transfer task list: rows (one)"), NSLocalizedString(@"%@ rows", @"Postgres transfer task list: rows (count)"))];
+					}
+					else if ([engine loadingTableRows]) {
+						// The source is still reading this table: its whole count isn't known yet
+						status = [NSString stringWithFormat:NSLocalizedString(@"Table %@: %@ — %@", @"Postgres transfer: progress status while the table is still being read (step, table, rows written)"), step, detail,
+								  SPTransferCount([engine loadTableRowsWritten], NSLocalizedString(@"%@ row", @"Postgres transfer task list: rows (one)"), NSLocalizedString(@"%@ rows", @"Postgres transfer task list: rows (count)"))];
+					}
+					else {
+						status = NSLocalizedString(@"Setting the sequences' values…", @"Postgres transfer: progress status (setval)");
+					}
+					break;
+				case SPPostgresTransferFinishing:
+					task = SPPostgresTransferTaskFinish;
+					status = [NSString stringWithFormat:NSLocalizedString(@"%@: %@", @"Postgres transfer: progress status (step, statement)"), step, detail ?: @""];
+					break;
+				case SPPostgresTransferCommitting:
+					task = SPPostgresTransferTaskCommit;
+					status = [NSString stringWithFormat:NSLocalizedString(@"Committing to “%@”…", @"Postgres transfer: progress status (target database)"), targetDatabase];
 					break;
 			}
-			[progress setStatus:status fraction:bar];
+			summarizeBefore(task);
+			[progress setTask:task status:status fraction:fraction];
 			if (observer) observer(progress);
 			return ![progress cancelled];
 		}];
 		BOOL ok = [transfer run:error];
 		[transfer setProgress:nil];
+		if (ok) summarizeBefore(SPPostgresTransferTaskCount);
+		// Which task failed: the source's reading (alongside), or the load's running step
+		if (!ok) [results setObject:@([transfer failedWhileReading]) forKey:@"failedWhileReading"];
 		if (ok) {
 			// Read on the main thread once the job has ended
 			[results setObject:@([transfer tablesCopied]) forKey:@"tablesCopied"];
@@ -1281,28 +1499,30 @@ static NSString *SPPostgresTransferPlace(NSString *targetDatabase, NSString *fav
 	}
 	NSArray *settings = [results objectForKey:@"skippedSettings"];
 	if ([settings count]) [lines addObject:[NSString stringWithFormat:NSLocalizedString(@"Settings the target doesn't know were skipped: %@.", @"Postgres transfer: completion, settings skipped"), [settings componentsJoinedByString:@", "]]];
+	NSString *owner = [results objectForKey:@"owner"];
+	[lines addObject:[owner length]
+		? [NSString stringWithFormat:NSLocalizedString(@"What was created is owned by “%@”. The source's owners and privileges weren't copied.", @"Postgres transfer: completion, ownership (target user)"), owner]
+		: NSLocalizedString(@"What was created is owned by the To: connection's user. The source's owners and privileges weren't copied.", @"Postgres transfer: completion, ownership")];
 	return [lines componentsJoinedByString:@"\n\n"];
 }
 
 - (void)_jobEndedWithSuccess:(BOOL)ok error:(NSError *)error results:(NSDictionary *)results database:(NSString *)targetDatabase favoriteName:(NSString *)favoriteName
 {
 	if (finished) return;
-	[progressSheet end];
 	[job release];
 	job = nil;
 	[self _setPendingConnector:nil];
 	running = NO;
 
-	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	// The outcome stays on the task list (its tasks marked done, or failed) until Close
 	if (ok) {
 		[self _setCompletionNote:[self _completionNoteForResults:results database:targetDatabase favoriteName:favoriteName]];
-		[alert setMessageText:NSLocalizedString(@"Transfer complete", @"Postgres transfer: success title")];
-		[alert setInformativeText:completionNote];
+		[progressSheet finishWithSuccess:YES message:NSLocalizedString(@"Transfer complete", @"Postgres transfer: success title") text:completionNote];
 	}
 	else if ([[error domain] isEqualToString:SPPostgresErrorDomain] && [error code] == SPPostgresErrorCancelled) {
 		// A cancel isn't an error: nothing to show (the target's transaction, if any, rolled back)
+		[progressSheet end];
 		[self _setLastErrorMessage:[error localizedDescription] ?: [SPPostgresTransferCancelledError() localizedDescription]];
-		alert = nil;
 	}
 	else {
 		NSString *message = [NSString stringWithFormat:NSLocalizedString(@"The transfer failed. %@ wasn't changed.", @"Postgres transfer: failure title (target)"), SPPostgresTransferPlace(targetDatabase, favoriteName)];
@@ -1312,13 +1532,7 @@ static NSString *SPPostgresTransferPlace(NSString *targetDatabase, NSString *fav
 			[text appendFormat:@"\n\n%@\n%@", NSLocalizedString(@"In the way:", @"Postgres transfer: failure, the target's objects depending on objects the transfer would replace"), [dependents componentsJoinedByString:@"\n"]];
 		}
 		[self _setLastErrorMessage:[NSString stringWithFormat:@"%@\n\n%@", message, text]];
-		[alert setMessageText:message];
-		[alert setInformativeText:text];
-	}
-	if (alert) {
-		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
-		// As the document shows its alerts: never dropped, it waits while the tab isn't shown
-		[document presentAlert:alert];
+		[progressSheet finishWithSuccess:NO failedTask:[[results objectForKey:@"failedWhileReading"] boolValue] ? SPPostgresTransferTaskRead : -1 message:message text:text];
 	}
 	[self _finish];
 }

@@ -66,6 +66,7 @@ static NSUInteger SPCompleteUTF8Length(const unsigned char *bytes, NSUInteger co
 @implementation SPPostgresDumpReader
 
 @synthesize chunkSize;
+@synthesize waitForMoreData;
 
 - (instancetype)initWithPath:(NSString *)path error:(NSError **)error
 {
@@ -88,6 +89,7 @@ static NSUInteger SPCompleteUTF8Length(const unsigned char *bytes, NSUInteger co
 	[source release];
 	[pendingBytes release];
 	[readError release];
+	[waitForMoreData release];
 	if (characters) free(characters);
 	[super dealloc];
 }
@@ -152,6 +154,25 @@ static NSUInteger SPCompleteUTF8Length(const unsigned char *bytes, NSUInteger co
 		[pendingBytes setLength:pendingLength];
 		if (error) *error = [[readError retain] autorelease];
 		return NO;
+	}
+	// A file still being written: wait for more, or for its end
+	while (!got && waitForMoreData) {
+		NSError *waitError = nil;
+		if (!waitForMoreData(&waitError)) {
+			if (waitError) {
+				[pendingBytes setLength:pendingLength];
+				[readError release];
+				readError = [waitError retain];
+				if (error) *error = [[readError retain] autorelease];
+				return NO;
+			}
+			break;
+		}
+		if (![self _readBytes:(unsigned char *)[pendingBytes mutableBytes] + pendingLength count:wanted read:&got]) {
+			[pendingBytes setLength:pendingLength];
+			if (error) *error = [[readError retain] autorelease];
+			return NO;
+		}
 	}
 	[pendingBytes setLength:pendingLength + got];
 	if (!got) endOfFile = YES;
