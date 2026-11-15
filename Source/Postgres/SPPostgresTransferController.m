@@ -151,6 +151,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 @interface SPPostgresTransferController ()
 - (void)_beginProgressTo:(SPPostgresFavorite *)favorite database:(NSString *)targetDatabase mode:(SPPostgresTransferMode)mode tables:(NSArray *)tables;
 - (void)_updateControls;
+- (void)_applyFilterToPopup:(NSPopUpButton *)popup;
 - (void)_finish;
 - (void)_closeSession;
 @end
@@ -167,6 +168,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	NSPopUpButton *favoritePopup;
 	NSTextField *targetDescriptionField;
 	NSPopUpButton *databasePopup;
+	NSSearchField *favoriteFilterField;
+	NSSearchField *databaseFilterField;
 	NSTextField *targetStatusField;
 	NSButton *retryButton;
 	NSButton *emptyModeRadio;
@@ -224,6 +227,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 @synthesize favoritePopup;
 @synthesize targetDescriptionField;
 @synthesize databasePopup;
+@synthesize favoriteFilterField;
+@synthesize databaseFilterField;
 @synthesize targetStatusField;
 @synthesize retryButton;
 @synthesize selectedDatabase;
@@ -249,7 +254,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 - (void)dealloc
 {
 	[tablesList setChecksChanged:nil];
-	for (NSControl *control in [NSArray arrayWithObjects:wholeDatabaseRadio, selectedTablesRadio, favoritePopup, databasePopup, retryButton, emptyModeRadio, overwriteModeRadio, transferButton, cancelButton, nil]) [control setTarget:nil];
+	for (NSControl *control in [NSArray arrayWithObjects:wholeDatabaseRadio, selectedTablesRadio, favoritePopup, databasePopup, favoriteFilterField, databaseFilterField, retryButton, emptyModeRadio, overwriteModeRadio, transferButton, cancelButton, nil]) [control setTarget:nil];
 	// Normally closed by -_finish; a connecting session holds the controller, so none is pending here
 	SPPostgresTransferCloseSession(sessionConnection, sessionToken);
 
@@ -268,6 +273,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[favoritePopup release];
 	[targetDescriptionField release];
 	[databasePopup release];
+	[favoriteFilterField release];
+	[databaseFilterField release];
 	[targetStatusField release];
 	[retryButton release];
 	[selectedDatabase release];
@@ -357,6 +364,19 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	return label;
 }
 
+/// A filter field beside a menu: its action runs as it's typed in.
+- (NSSearchField *)_filterFieldWithFrame:(NSRect)frame
+{
+	NSSearchField *field = [[NSSearchField alloc] initWithFrame:frame];
+	[field setPlaceholderString:NSLocalizedString(@"Filter", @"Postgres transfer sheet: placeholder of the fields filtering the target favorite and database menus")];
+	[[field cell] setSendsSearchStringImmediately:YES];
+	[[field cell] setSendsWholeSearchString:NO];
+	[field setTarget:self];
+	[field setAction:@selector(_filterChanged:)];
+	[field setAutoresizingMask:NSViewMaxYMargin];
+	return field;
+}
+
 - (NSButton *)_radioWithFrame:(NSRect)frame title:(NSString *)title action:(SEL)action on:(BOOL)on
 {
 	NSButton *radio = [[NSButton alloc] initWithFrame:frame];
@@ -410,6 +430,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[favoritePopup setAction:@selector(_favoriteChanged:)];
 	[favoritePopup setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:favoritePopup];
+	favoriteFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 213, width - 20 - 392, 22)];
+	[content addSubview:favoriteFilterField];
 
 	targetDescriptionField = [[self _labelWithFrame:NSMakeRect(108, 192, width - 128, 16) text:@""] retain];
 	[targetDescriptionField setAlignment:NSTextAlignmentLeft];
@@ -428,6 +450,8 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[databasePopup setAction:@selector(_databaseChanged:)];
 	[databasePopup setAutoresizingMask:NSViewMaxYMargin];
 	[content addSubview:databasePopup];
+	databaseFilterField = [self _filterFieldWithFrame:NSMakeRect(392, 157, width - 20 - 392, 22)];
+	[content addSubview:databaseFilterField];
 
 	// The session's error, and Retry next to it
 	targetStatusField = [[self _labelWithFrame:NSMakeRect(108, 118, width - 128 - 96, 32) text:@""] retain];
@@ -506,6 +530,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 		if (preselected < 0 && !own) preselected = (NSInteger)index;
 	}
 	if ([favorites count]) [favoritePopup selectItemAtIndex:preselected >= 0 ? preselected : 0];
+	[self _applyFilterToPopup:favoritePopup];
 	[self _showFavorite];
 	return error;
 }
@@ -558,6 +583,27 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[emptyModeRadio setState:empty ? NSControlStateValueOn : NSControlStateValueOff];
 	[overwriteModeRadio setState:empty ? NSControlStateValueOff : NSControlStateValueOn];
 	[self _updateControls];
+}
+
+#pragma mark - Filters
+
+/// Hides the names in popup's menu (favorites, or databases) that don't hold its filter field's text; separators,
+/// "New Database…" and the disabled state items ("Connecting…", "Not connected") are never hidden. The selected item
+/// stays selected (and shown in the button) even when hidden: nothing is chosen, nor connected to, while typing.
+- (void)_applyFilterToPopup:(NSPopUpButton *)popup
+{
+	NSSearchField *field = (popup == favoritePopup) ? favoriteFilterField : databaseFilterField;
+	NSString *text = [[field stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	for (NSMenuItem *item in [popup itemArray]) {
+		BOOL filtered = [item isSeparatorItem] || [item tag] == SPPostgresTransferNewDatabaseTag || (popup == databasePopup && ![item representedObject]);
+		BOOL matches = ![text length] || [[item title] rangeOfString:text options:NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location != NSNotFound;
+		[item setHidden:!filtered && !matches];
+	}
+}
+
+- (void)_filterChanged:(id)sender
+{
+	[self _applyFilterToPopup:(sender == favoriteFilterField) ? favoritePopup : databasePopup];
 }
 
 - (void)_showFavorite
@@ -627,6 +673,7 @@ static BOOL SPPostgresTransferErrorIs(NSError *error, NSInteger code)
 	[menu addItem:[NSMenuItem separatorItem]];
 	NSMenuItem *newItem = [menu addItemWithTitle:NSLocalizedString(@"New Database…", @"Postgres transfer sheet: database menu item creating a database on the target") action:NULL keyEquivalent:@""];
 	[newItem setTag:SPPostgresTransferNewDatabaseTag];
+	[self _applyFilterToPopup:databasePopup];
 	[databasePopup selectItem:selected];
 	[self _setSelectedDatabase:[selected representedObject]];
 	[targetStatusField setStringValue:@""];

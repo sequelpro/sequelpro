@@ -568,6 +568,86 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 	}];
 }
 
+#pragma mark - Filters
+
+/// The titles a pop-up's menu shows (hidden items left out), the separator as "-".
+- (NSArray<NSString *> *)visibleTitles:(NSPopUpButton *)popup
+{
+	NSMutableArray *titles = [NSMutableArray array];
+	for (NSMenuItem *item in popup.itemArray) if (!item.isHidden) [titles addObject:item.isSeparatorItem ? @"-" : item.title];
+	return titles;
+}
+
+- (void)typeFilter:(NSString *)text in:(NSSearchField *)field
+{
+	XCTAssertNotNil(field);
+	field.stringValue = text;
+	[NSApp sendAction:field.action to:field.target from:field];
+}
+
+- (void)testFavoriteFilterNarrowsTheMenu
+{
+	[self onEachPort:^(NSNumber *port, PGPostgresConnection *target) {
+		SPPostgresFavorite *prod = [self favoriteNamed:@"Prod main" database:@"pgkit_io_dst"];
+		SPPostgresFavorite *staging = [self favoriteNamed:@"Staging" database:@"pgkit_io_src"];
+		SPPostgresFavorite *replica = [self favoriteNamed:@"prod replica" database:@"pgkit_io_src"];
+		SPPostgresTransferController *controller = [self openSheetWithFavorites:@[prod, staging, replica]];
+		XCTAssertEqualObjects(controller.favoriteFilterField.placeholderString, @"Filter");
+		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"Staging", @"prod replica"]));
+		NSUInteger requests = self.targetRequests.count;
+
+		// Case-insensitive, anywhere in the name; the choice and its session stay as they are
+		[self typeFilter:@"PROD" in:controller.favoriteFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"prod replica"]));
+		[self typeFilter:@"ag" in:controller.favoriteFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Staging"]));
+		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"Prod main", @"the choice stays while typing");
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
+		XCTAssertEqual(self.targetRequests.count, requests, @"no connection opened while typing");
+
+		[self typeFilter:@"nothing like it" in:controller.favoriteFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[]));
+		[self typeFilter:@"" in:controller.favoriteFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.favoritePopup], (@[@"Prod main", @"Staging", @"prod replica"]));
+
+		// Choosing a match still opens its session
+		[self typeFilter:@"replica" in:controller.favoriteFilterField];
+		[self chooseFavorite:2 in:controller];
+		[self waitForSession:controller];
+		XCTAssertEqualObjects(controller.favoritePopup.titleOfSelectedItem, @"prod replica");
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
+	}];
+}
+
+- (void)testDatabaseFilterNarrowsTheMenu
+{
+	[self onEachPort:^(NSNumber *port, PGPostgresConnection *target) {
+		SPPostgresFavorite *first = [self favoriteNamed:@"Test target" database:@"pgkit_io_dst"];
+		SPPostgresFavorite *second = [self favoriteNamed:@"Other target" database:@"pgkit_io_src"];
+		SPPostgresTransferController *controller = [self openSheetWithFavorites:@[first, second]];
+		XCTAssertEqualObjects(controller.databaseFilterField.placeholderString, @"Filter");
+
+		[self typeFilter:@"IO_SRC" in:controller.databaseFilterField];
+		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], (@[@"pgkit_io_src", @"-", @"New Database…"]), @"New Database… stays");
+		XCTAssertEqualObjects(controller.databasePopup.titleOfSelectedItem, @"pgkit_io_dst", @"the choice stays while typing");
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_dst");
+		XCTAssertTrue(controller.transferButton.isEnabled);
+
+		[self chooseDatabase:@"pgkit_io_src" in:controller];
+		XCTAssertEqualObjects(controller.selectedDatabase, @"pgkit_io_src");
+
+		// The databases of another favorite are filtered too
+		[self chooseFavorite:1 in:controller];
+		[self waitForSession:controller];
+		XCTAssertEqualObjects([self visibleTitles:controller.databasePopup], (@[@"pgkit_io_src", @"-", @"New Database…"]));
+
+		[self typeFilter:@"" in:controller.databaseFilterField];
+		NSArray *all = [self visibleTitles:controller.databasePopup];
+		XCTAssertTrue([all containsObject:@"pgkit_io_dst"], @"%@", all);
+		XCTAssertEqualObjects(all, [self menuTitles:controller]);
+	}];
+}
+
 #pragma mark - Empty mode's confirmation
 
 - (void)testEmptyConfirmationNeedsExactName

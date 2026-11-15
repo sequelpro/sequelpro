@@ -18,6 +18,8 @@
  *   opens a session to it (the favorite's database, or postgres; one retry on postgres) with the Keychain password,
  *   asking for one (never saved) when the server wants it. Database: a menu of the session's databases, then
  *   "New Database…" (CREATE DATABASE on the session); the favorite's database is selected when listed, else none. "Connecting…" / "Not connected" (the error and Retry under it).
+ * - Filter fields (placeholder "Filter") beside the To: and Database: menus narrow each menu to the names holding the
+ *   typed text (case- and diacritic-insensitive); "New Database…" always stays. The choice doesn't change while typing.
  * - Mode: "Empty the target database first" (default; confirmed first by typing the database's name, except for a
  *   database created in this sheet) or "Overwrite tables that already exist on the target".
  *
@@ -95,6 +97,10 @@ __attribute__((visibility("default")))
 @property (readonly) NSPopUpButton *favoritePopup;
 @property (readonly) NSTextField *targetDescriptionField;
 @property (readonly) NSPopUpButton *databasePopup;
+/// Narrows the To: menu (hidden items) as it's typed in
+@property (readonly) NSSearchField *favoriteFilterField;
+/// Narrows the Database: menu (hidden items, "New Database…" always shown) as it's typed in
+@property (readonly) NSSearchField *databaseFilterField;
 /// The session's error under the menu ("" otherwise)
 @property (readonly) NSTextField *targetStatusField;
 /// Shown while not connected
