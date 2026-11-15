@@ -9,6 +9,14 @@ Upgrading from 2.0.2.
 ### Fixed: crash after the app sat open
 The app could quit by itself after being left open with no activity: when the screen woke from sleep, or a display was connected or disconnected, a window showing the connection screen crashed the app. The connection details' layout ran again for every view it resized, and once the scroll bar started appearing and disappearing it never stopped. It now settles.
 
+### Fixed: editing after a column is dragged (MySQL)
+In a MySQL table's Content, or a query's results, dragging a column to another position could make editing act on the wrong column:
+- Typing in a cell could be checked against another column's type: the key was dropped and the edit cancelled, or the pop-up sheet opened for a plain single-line value.
+- Editing a long value in place could start from its shortened 150-character preview rather than the whole value.
+- The hexadecimal check for binary columns, and the check of which row an edit of a view or a query result will update, looked at the wrong column.
+
+Editing now always acts on the column being edited, wherever it is in the grid.
+
 ## Sequel Plus 2.0.2
 
 Upgrading from 2.0.1.
