@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import <XCTest/XCTest.h>
 #import "../Source/SPWindowController.h"
+#import "../Source/Postgres/SPPostgresDateTimePicker.h"
 
 @interface NSObject (SPMySQLContentEditingTests)
 - (id)connectionController;
@@ -29,7 +30,8 @@ static NSString * const SPTestEditInSheetEnabled = @"EditInSheetEnabled";
  * (`docker run -d --name sp-mysql8 -p 127.0.0.1:55438:3306 -e MYSQL_ROOT_PASSWORD=sptest -e MYSQL_DATABASE=sp_test
  * -e MYSQL_USER=sp_test -e MYSQL_PASSWORD=sptest mysql:8.0.44`). Skipped when it isn't running.
  *
- * Table `content_edit`: id INT PRIMARY KEY, a VARCHAR(300), t TEXT, n VARCHAR(50) (holding a line break), b VARCHAR(50).
+ * Table `content_edit`: id INT PRIMARY KEY, a VARCHAR(300), t TEXT, n VARCHAR(50) (holding a line break), b VARCHAR(50),
+ * d DATETIME.
  */
 @interface SPMySQLFieldEditorSheetTests : XCTestCase
 @property (strong) id document;
@@ -125,8 +127,8 @@ static NSString * const SPTestEditInSheetEnabled = @"EditInSheetEnabled";
 
 	id connection = [mysql getConnection];
 	[connection queryString:@"DROP TABLE IF EXISTS content_edit"];
-	[connection queryString:@"CREATE TABLE content_edit (id INT PRIMARY KEY, a VARCHAR(300), t TEXT, n VARCHAR(50), b VARCHAR(50))"];
-	[connection queryString:@"INSERT INTO content_edit VALUES (1, 'old a', 'old t', 'old\\nn', 'old b')"];
+	[connection queryString:@"CREATE TABLE content_edit (id INT PRIMARY KEY, a VARCHAR(300), t TEXT, n VARCHAR(50), b VARCHAR(50), d DATETIME)"];
+	[connection queryString:@"INSERT INTO content_edit VALUES (1, 'old a', 'old t', 'old\\nn', 'old b', '2020-01-01 00:00:00')"];
 	XCTAssertFalse([connection queryErrored], @"%@", [connection lastErrorMessage]);
 	[[mysql valueForKey:@"tablesListInstance"] updateTables:nil];
 
@@ -225,6 +227,112 @@ static NSString * const SPTestEditInSheetEnabled = @"EditInSheetEnabled";
 	[self.grid deselectAll:nil];
 	[self spin:0.3];
 	XCTAssertEqualObjects([self savedValueOf:@"n"], value);
+}
+
+
+- (void)testSheetEditsAfterTheDatePickerWithEveryFieldInTheSheet
+{
+	if (![self connected]) { XCTSkip(@"no MySQL test server on 127.0.0.1:55438 (docker sp-mysql8)"); }
+	[[NSUserDefaults standardUserDefaults] setBool:YES forKey:SPTestEditInSheetEnabled];
+	// The picker on d is not opened (the sheet is used for every field): edit d, a and t in sheets
+	for (NSString *name in @[@"d", @"a", @"t"]) {
+		[[self.grid window] makeFirstResponder:self.grid];
+		XCTAssertFalse([self.content tableView:self.grid shouldEditTableColumn:[self column:name] row:0], @"%@", name);
+		id sheet = [self.content valueForKey:@"fieldEditor"];
+		if (!sheet) { [[SPPostgresDateTimePicker currentPicker] cancel:nil]; continue; }
+		NSTextView *text = [sheet valueForKey:@"editTextView"];
+		[[text window] makeFirstResponder:text];
+		[text selectAll:nil];
+		[text deleteBackward:nil];
+		NSString *value = [name isEqualToString:@"d"] ? @"2022-03-04 05:06:07" : [@"sheet " stringByAppendingString:name];
+		for (NSUInteger c = 0; c < [value length]; c++) [text insertText:[value substringWithRange:NSMakeRange(c, 1)] replacementRange:[text selectedRange]];
+		[sheet closeEditSheet:[sheet valueForKey:@"editSheetOkButton"]];
+		[self spin:0.3];
+		XCTAssertEqualObjects([self.content tableView:self.grid objectValueForTableColumn:[self column:name] row:0], value, @"%@", name);
+	}
+}
+
+- (void)testSheetEditWhileTheDatePickersValueIsStillBeingEdited
+{
+	if (![self connected]) { XCTSkip(@"no MySQL test server on 127.0.0.1:55438 (docker sp-mysql8)"); }
+	for (NSNumber *everyField in @[@NO, @YES]) {
+		[[NSUserDefaults standardUserDefaults] setBool:NO forKey:SPTestEditInSheetEnabled];
+		[[self.grid window] makeFirstResponder:self.grid];
+		// The picker on d: Set leaves d being edited in place
+		XCTAssertFalse([self.content tableView:self.grid shouldEditTableColumn:[self column:@"d"] row:0]);
+		SPPostgresDateTimePicker *picker = [SPPostgresDateTimePicker currentPicker];
+		picker.textField.stringValue = [everyField boolValue] ? @"2021-02-03 04:05:06" : @"2022-02-03 04:05:06";
+		[picker set:nil];
+		[self spin:0.3];
+		XCTAssertEqual([self.grid editedColumn], [self gridIndexOf:@"d"]);
+		[[NSUserDefaults standardUserDefaults] setBool:[everyField boolValue] forKey:SPTestEditInSheetEnabled];
+
+		// Then a double click on t (TEXT; or on a with every field in the sheet) while d is still being edited
+		NSString *name = [everyField boolValue] ? @"a" : @"t";
+		XCTAssertFalse([self.content tableView:self.grid shouldEditTableColumn:[self column:name] row:0]);
+		id sheet = [self.content valueForKey:@"fieldEditor"];
+		XCTAssertNotNil(sheet);
+		if (!sheet) continue;
+		NSTextView *text = [sheet valueForKey:@"editTextView"];
+		[[text window] makeFirstResponder:text];
+		[text selectAll:nil];
+		[text deleteBackward:nil];
+		NSString *value = [NSString stringWithFormat:@"sheet %@ %@", name, everyField];
+		for (NSUInteger c = 0; c < [value length]; c++) [text insertText:[value substringWithRange:NSMakeRange(c, 1)] replacementRange:[text selectedRange]];
+		[sheet closeEditSheet:[sheet valueForKey:@"editSheetOkButton"]];
+		[self spin:0.3];
+		XCTAssertEqualObjects([self.content tableView:self.grid objectValueForTableColumn:[self column:name] row:0], value, @"%@", name);
+		[[self.grid window] makeFirstResponder:self.grid];
+		[self.grid deselectAll:nil];
+		[self spin:0.3];
+		XCTAssertEqualObjects([self savedValueOf:name], value);
+		[self.grid selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+	}
+}
+
+- (void)testEditingAfterTheDatePickerSetADate
+{
+	if (![self connected]) { XCTSkip(@"no MySQL test server on 127.0.0.1:55438 (docker sp-mysql8)"); }
+	// The picker on d: Set puts the value into d's in-place editor
+	XCTAssertFalse([self.content tableView:self.grid shouldEditTableColumn:[self column:@"d"] row:0]);
+	SPPostgresDateTimePicker *picker = [SPPostgresDateTimePicker currentPicker];
+	XCTAssertNotNil(picker);
+	picker.textField.stringValue = @"2021-02-03 04:05:06";
+	[picker set:nil];
+	[self spin:0.3];
+	XCTAssertNil([SPPostgresDateTimePicker currentPicker]);
+	XCTAssertEqual([self.grid editedColumn], [self gridIndexOf:@"d"]);
+
+	// A click on a (VARCHAR) of the same row: in place, no sheet
+	XCTAssertTrue([self.content tableView:self.grid shouldEditTableColumn:[self column:@"a"] row:0], @"a is edited in place");
+	XCTAssertNil([self.content valueForKey:@"fieldEditor"], @"no sheet for a");
+	[self.grid editColumn:[self gridIndexOf:@"a"] row:0 withEvent:nil select:YES];
+	[self spin:0.3];
+	XCTAssertEqual([self.grid editedColumn], [self gridIndexOf:@"a"]);
+	[self typeKey:@"x"];
+	XCTAssertNil([self.content valueForKey:@"fieldEditor"], @"typing in a opens no sheet");
+	XCTAssertEqualObjects([[[self.grid window] fieldEditor:NO forObject:self.grid] string], @"x");
+
+	// The sheet on t (TEXT) changes t
+	[[self.grid window] makeFirstResponder:self.grid];
+	XCTAssertFalse([self.content tableView:self.grid shouldEditTableColumn:[self column:@"t"] row:0]);
+	id sheet = [self.content valueForKey:@"fieldEditor"];
+	XCTAssertNotNil(sheet);
+	NSTextView *text = [sheet valueForKey:@"editTextView"];
+	[[text window] makeFirstResponder:text];
+	[text selectAll:nil];
+	[text deleteBackward:nil];
+	for (NSString *c in @[@"n", @"e", @"w"]) [text insertText:c replacementRange:[text selectedRange]];
+	[sheet closeEditSheet:[sheet valueForKey:@"editSheetOkButton"]];
+	[self spin:0.3];
+	XCTAssertEqualObjects([self.content tableView:self.grid objectValueForTableColumn:[self column:@"t"] row:0], @"new");
+
+	[[self.grid window] makeFirstResponder:self.grid];
+	[self.grid deselectAll:nil];
+	[self spin:0.3];
+	XCTAssertEqualObjects([self savedValueOf:@"d"], @"2021-02-03 04:05:06");
+	XCTAssertEqualObjects([self savedValueOf:@"a"], @"x");
+	XCTAssertEqualObjects([self savedValueOf:@"t"], @"new");
 }
 
 @end
