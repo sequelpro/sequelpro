@@ -4403,6 +4403,8 @@ static BOOL isOSAtLeast10_14;
 
 	// A layout saved before Transfer existed gets it once (the toolbar has its items once in a window)
 	SPInsertTransferToolbarItemIfNeeded(mainToolbar, prefs);
+	// and, once, a saved layout's Transfer moves from after Users to right after Query
+	SPMoveTransferToolbarItemAfterQueryIfNeeded(mainToolbar, prefs);
 
 	// Compact title and toolbar layout, kept centered as the window resizes
 	[parentWindow sp_useExpandedCompactToolbar];

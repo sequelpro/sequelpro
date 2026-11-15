@@ -41,7 +41,8 @@ BOOL SPInsertTransferToolbarItemIfNeeded(NSToolbar *toolbar, NSUserDefaults *def
 	BOOL inserted = NO;
 
 	if (![identifiers containsObject:SPMainToolbarTransfer]) {
-		NSUInteger index = [identifiers indexOfObject:SPMainToolbarUserManager];
+		NSUInteger index = [identifiers indexOfObject:SPMainToolbarCustomQuery];
+		if (index == NSNotFound) index = [identifiers indexOfObject:SPMainToolbarUserManager];
 
 		if (index != NSNotFound) {
 			index++;
@@ -58,6 +59,31 @@ BOOL SPInsertTransferToolbarItemIfNeeded(NSToolbar *toolbar, NSUserDefaults *def
 	[defaults setBool:YES forKey:SPToolbarTransferItemAdded];
 
 	return inserted;
+}
+
+BOOL SPMoveTransferToolbarItemAfterQueryIfNeeded(NSToolbar *toolbar, NSUserDefaults *defaults)
+{
+	if (!toolbar || [defaults boolForKey:SPToolbarTransferItemMovedAfterQuery]) return NO;
+
+	NSArray *identifiers = [[toolbar items] valueForKey:@"itemIdentifier"];
+
+	// No items yet: the layout isn't loaded (a toolbar loads it once it is in a window)
+	if (![identifiers count]) return NO;
+
+	BOOL moved = NO;
+	NSUInteger transfer = [identifiers indexOfObject:SPMainToolbarTransfer];
+	NSUInteger query = [identifiers indexOfObject:SPMainToolbarCustomQuery];
+
+	if (transfer != NSNotFound && query != NSNotFound && transfer != query + 1) {
+		[toolbar removeItemAtIndex:(NSInteger)transfer];
+		if (transfer < query) query--;
+		[toolbar insertItemWithItemIdentifier:SPMainToolbarTransfer atIndex:(NSInteger)(query + 1)];
+		moved = YES;
+	}
+
+	[defaults setBool:YES forKey:SPToolbarTransferItemMovedAfterQuery];
+
+	return moved;
 }
 
 @implementation SPDisabledToolbarItem

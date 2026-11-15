@@ -43,10 +43,10 @@ NSArray *SPMainToolbarDefaultItemIdentifiers(void)
 		SPMainToolbarTableTriggers,
 		SPMainToolbarTableInfo,
 		SPMainToolbarCustomQuery,
+		SPMainToolbarTransfer,
 		NSToolbarFlexibleSpaceItemIdentifier,
 		SPMainToolbarHistoryNavigation,
 		SPMainToolbarUserManager,
-		SPMainToolbarTransfer,
 		SPMainToolbarShowConsole
 	];
 }

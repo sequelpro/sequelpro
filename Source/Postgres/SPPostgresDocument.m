@@ -1689,6 +1689,8 @@ static BOOL SPPostgresPaneIsInScope(NSString *pane)
 
 	// A layout saved before Transfer existed gets it once (the toolbar has its items once in a window)
 	SPInsertTransferToolbarItemIfNeeded(toolbar, [NSUserDefaults standardUserDefaults]);
+	// and, once, a saved layout's Transfer moves from after Users to right after Query
+	SPMoveTransferToolbarItemAfterQueryIfNeeded(toolbar, [NSUserDefaults standardUserDefaults]);
 
 	// Compact title and toolbar layout, kept centered as the window resizes
 	[parentWindow sp_useExpandedCompactToolbar];

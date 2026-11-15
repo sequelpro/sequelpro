@@ -2,6 +2,8 @@
 
 /// The preference SPInsertTransferToolbarItemIfNeeded records itself in (forced to YES for the test run).
 extern NSString * const SPTestTransferAddedKey;
+/// The preference SPMoveTransferToolbarItemAfterQueryIfNeeded records itself in (forced to YES for the test run).
+extern NSString * const SPTestTransferMovedKey;
 
 /// MySQL's SPSelectLastFavoriteUsed / SPDefaultFavorite (forced to NO / 0 for the test run, so MySQL
 /// connection tabs preselect no saved favorite and never read its password from the keychain).

@@ -480,6 +480,8 @@ extern NSString *SPMainToolbarUserManager;
 extern NSString *SPMainToolbarTransfer;
 // YES once the Transfer item was added to the saved main toolbar layout (it is added only once)
 extern NSString *SPToolbarTransferItemAdded;
+// YES once a saved layout's Transfer item was moved to right after Query (moved only once)
+extern NSString *SPToolbarTransferItemMovedAfterQuery;
 extern NSString **SPViewModeToMainToolbarMap[];
 
 // Preferences toolbar

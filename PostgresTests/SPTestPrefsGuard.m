@@ -6,6 +6,7 @@
 #import <XCTest/XCTest.h>
 
 NSString * const SPTestTransferAddedKey = @"SPToolbarTransferItemAdded";
+NSString * const SPTestTransferMovedKey = @"SPToolbarTransferItemMovedAfterQuery";
 NSString * const SPTestSelectLastFavoriteUsedKey = @"SelectLastFavoriteUsed";
 NSString * const SPTestDefaultFavoriteKey = @"DefaultFavorite";
 NSString * const SPTestSparkleAutomaticChecksKey = @"SUEnableAutomaticChecks";
@@ -31,6 +32,7 @@ static const void *SPRequestedAutosaveNameKey = &SPRequestedAutosaveNameKey;
  *   <name>") saves or restores divider positions, so split views in tests use their built layout.
  * - SPToolbarTransferItemAdded reads YES from the volatile argument domain, so documents created by
  *   tests never try the one-time Transfer insertion, which records itself in the given defaults.
+ *   SPToolbarTransferItemMovedAfterQuery reads YES too, so they never try the one-time move either.
  * - MySQL connection tabs preselect no saved favorite: SelectLastFavoriteUsed reads NO and
  *   DefaultFavorite 0 (Quick Connect) from the volatile argument domain. Otherwise a new MySQL tab
  *   selects the owner's favorite and reads its password from the login keychain
@@ -133,6 +135,7 @@ static NSString *SPTestQueryStoreDirectory = nil;
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	NSMutableDictionary *domain = [([prefs volatileDomainForName:NSArgumentDomain] ?: @{}) mutableCopy];
 	domain[SPTestTransferAddedKey] = @YES;
+	domain[SPTestTransferMovedKey] = @YES;
 	domain[SPTestSelectLastFavoriteUsedKey] = @NO;
 	domain[SPTestDefaultFavoriteKey] = @0;
 	// Sparkle never checks for updates during the run: a check needs the bundle version, which test builds leave
