@@ -2026,7 +2026,8 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 	NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
 	// Check if the IDstring identifies the current field bijectively and get the WHERE clause
-	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
+	// (a grid position: the result's columns can be dragged into another order)
+	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[customQueryView columnWithIdentifier:[aTableColumn identifier]]];
 	fieldIDQueryString = [editStatus objectAtIndex:1];
 	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 
@@ -2170,7 +2171,9 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 	if (aTableView == customQueryView) {
 		NSUInteger columnIndex = [[tableColumn identifier] integerValue];
 		// if a user enters the field by keyboard navigation they might want to copy the contents without invoking the field editor sheet first
-		BOOL forEditing = ([customQueryView editedColumn] == (NSInteger)columnIndex && [customQueryView editedRow] == rowIndex);
+		// (editedColumn is a grid position, columnIndex the data's: the columns can be dragged into another order)
+		NSInteger editedColumn = [customQueryView editedColumn];
+		BOOL forEditing = (editedColumn >= 0 && (NSUInteger)[[[[customQueryView tableColumns] objectAtIndex:editedColumn] identifier] integerValue] == columnIndex && [customQueryView editedRow] == rowIndex);
 		return [self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:NO asPreview:(forEditing != YES)];
 	}
 
@@ -2528,7 +2531,7 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 				editedColumn++;
 			}
 
-			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
+			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[customQueryView columnWithIdentifier:[aTableColumn identifier]]];
 			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 
 			NSString *fieldType = nil;
@@ -3474,7 +3477,8 @@ typedef void (^QueryProgressHandler)(QueryProgress *);
 	isFieldEditable = shouldBeginEditing;
 
 	// Open the field editor sheet if required
-	if ([customQueryView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
+	// (column is a grid position; the sheet check takes the data's index)
+	if ([customQueryView shouldUseFieldEditorForRow:row column:[[[[customQueryView tableColumns] objectAtIndex:column] identifier] integerValue] checkWithLock:NULL])
 	{
 
 		[customQueryView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];

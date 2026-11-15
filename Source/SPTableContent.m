@@ -115,6 +115,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #pragma mark - SPTableContentDataSource_Private_API
 
 - (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;
+- (NSInteger)_dataColumnIndexForGridColumn:(NSInteger)gridColumn;
+- (NSInteger)_gridColumnForTableColumn:(NSTableColumn *)tableColumn;
 
 @end
 
@@ -3093,7 +3095,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[self storeCurrentDetailsForRestoration];
 
 	// Check if the IDstring identifies the current field bijectively and get the WHERE clause
-	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
+	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[self _gridColumnForTableColumn:aTableColumn]];
 	NSString *fieldIDQueryStr = [editStatus objectAtIndex:1];
 	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 
@@ -3794,7 +3796,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			if (!value) return @"...";
 		}
 		else {
-			if ([tableView editedColumn] == (NSInteger)columnIndex && [tableView editedRow] == rowIndex) {
+			if ([self _dataColumnIndexForGridColumn:[tableView editedColumn]] == (NSInteger)columnIndex && [tableView editedRow] == rowIndex) {
 				value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:NO];
 			}
 			else {
@@ -3825,7 +3827,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			}
 
 			// Unless we're editing, always retrieve the short string representation, truncating the value where necessary
-			if ([tableView editedColumn] == (NSInteger)columnIndex || [tableView editedRow] == rowIndex) {
+			if ([self _dataColumnIndexForGridColumn:[tableView editedColumn]] == (NSInteger)columnIndex || [tableView editedRow] == rowIndex) {
 				return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 			} else {
 				return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
@@ -3928,6 +3930,22 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	}
 
 	return SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
+}
+
+/**
+ * The grid's columns can be dragged into another order, so a column's position in the grid (editedColumn,
+ * frameOfCellAtColumn:, fieldEditStatusForRow:andColumn:) is not its index in the data (tableValues, dataColumns,
+ * shouldUseFieldEditorForRow:column:), which is its identifier. These convert between the two; -1 for no column.
+ */
+- (NSInteger)_dataColumnIndexForGridColumn:(NSInteger)gridColumn
+{
+	if (gridColumn < 0 || gridColumn >= (NSInteger)[[tableContentView tableColumns] count]) return -1;
+	return [[[[tableContentView tableColumns] objectAtIndex:gridColumn] identifier] integerValue];
+}
+
+- (NSInteger)_gridColumnForTableColumn:(NSTableColumn *)tableColumn
+{
+	return [tableContentView columnWithIdentifier:[tableColumn identifier]];
 }
 
 #pragma mark - SPTableContentFilter
@@ -4169,7 +4187,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 			// Check for Views if field is editable
 			if ([tablesListInstance tableType] == SPTableTypeView) {
-				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[tableColumn identifier] integerValue]];
+				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[self _gridColumnForTableColumn:tableColumn]];
 				isFieldEditable = [[editStatus objectAtIndex:0] integerValue] == 1;
 			}
 
@@ -4547,8 +4565,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	// Validate hex input
 	// We do this here because the textfield will still be selected with the pending changes if we bail out here
 	if(control == tableContentView) {
-		NSInteger columnIndex = [tableContentView editedColumn];
-		if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
+		NSInteger columnIndex = [self _dataColumnIndexForGridColumn:[tableContentView editedColumn]];
+		if (columnIndex >= 0 && [self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
 			// special case: the "NULL" string
 			NSDictionary *column = NSArrayObjectAtIndex(dataColumns, columnIndex);
 			if ([[editor string] isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue]) {
@@ -4590,7 +4608,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	// or bypass if numberOfPossibleUpdateRows == 1
 	if ([tableContentView isCellEditingMode]) {
 
-		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier] integerValue]];
+		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:column];
 		NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
 
@@ -4623,7 +4641,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	}
 
 	// Open the field editor sheet if required
-	if ([tableContentView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
+	if ([tableContentView shouldUseFieldEditorForRow:row column:[self _dataColumnIndexForGridColumn:column] checkWithLock:NULL])
 	{
 		[tableContentView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 
