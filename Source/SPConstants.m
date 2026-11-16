@@ -267,6 +267,11 @@ NSString *SPToolbarTransferItemAdded             = @"SPToolbarTransferItemAdded"
 NSString *SPToolbarTransferItemMovedAfterQuery   = @"SPToolbarTransferItemMovedAfterQuery";
 NSString *SPToolbarUsersItemPlacedAfterTransfer  = @"SPToolbarUsersItemPlacedAfterTransfer";
 
+NSString *SPUpdateAutomaticChecks                = @"SPUpdateAutomaticChecks";
+NSString *SPUpdateCheckInterval                  = @"SPUpdateCheckInterval";
+NSString *SPUpdateLastCheckTime                  = @"SPUpdateLastCheckTime";
+NSString *SPUpdateSkippedVersion                 = @"SPUpdateSkippedVersion";
+
 NSString **SPViewModeToMainToolbarMap[] = 
 { 
 	nil, 

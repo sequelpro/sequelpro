@@ -919,8 +919,8 @@ Line 2</string>
                         </menu>
                     </popUpButtonCell>
                     <connections>
-                        <binding destination="117" name="enabled" keyPath="values.SUEnableAutomaticChecks" id="1368"/>
-                        <binding destination="331" name="selectedTag" keyPath="updateCheckInterval" id="1361"/>
+                        <binding destination="117" name="enabled" keyPath="values.SPUpdateAutomaticChecks" id="1368"/>
+                        <binding destination="117" name="selectedTag" keyPath="values.SPUpdateCheckInterval" id="1361"/>
                     </connections>
                 </popUpButton>
                 <textField verticalHuggingPriority="750" id="1351">
@@ -949,7 +949,7 @@ Line 2</string>
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
-                        <binding destination="117" name="value" keyPath="values.SULastCheckTime" id="146"/>
+                        <binding destination="117" name="value" keyPath="values.SPUpdateLastCheckTime" id="146"/>
                     </connections>
                 </textField>
                 <textField verticalHuggingPriority="750" id="98">
@@ -969,7 +969,7 @@ Line 2</string>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <action selector="checkForUpdates:" target="331" id="332"/>
+                        <action selector="checkForUpdates:" target="-1" id="332"/>
                     </connections>
                 </button>
                 <button id="94">
@@ -980,10 +980,10 @@ Line 2</string>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                     <connections>
-                        <binding destination="117" name="value" keyPath="values.SUEnableAutomaticChecks" id="145"/>
+                        <binding destination="117" name="value" keyPath="values.SPUpdateAutomaticChecks" id="145"/>
                     </connections>
                 </button>
-                <button id="1615">
+                <button hidden="YES" id="1615">
                     <rect key="frame" x="203" y="81" width="359" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Send anonymous system information" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1616">

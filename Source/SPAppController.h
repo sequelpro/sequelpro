@@ -70,6 +70,8 @@
 // IBAction methods
 - (IBAction)openAboutPanel:(id)sender;
 - (IBAction)openPreferences:(id)sender;
+/// Asks GitHub whether a newer Sequel Plus is out (SPUpdateChecker), and says what came of it.
+- (IBAction)checkForUpdates:(id)sender;
 - (IBAction)openConnectionSheet:(id)sender;
 
 // Services menu methods

@@ -6,6 +6,15 @@ Upgrading from 2.0.2.
 
 - Version **2.0.3**.
 
+### Check for Updates
+Sequel Plus now checks GitHub for newer releases. **Sequel Plus ▸ Check for Updates…** (and **Check Now** in Preferences ▸ Auto Update) asks for the latest release of github.com/JackXiao2017/sequel-plus. If it's newer than the running version, a dialog shows its version and release notes:
+- **Download** opens the release's zip in your browser. Unzip it and replace the app in Applications; the app doesn't install anything itself.
+- **Remind Me Later** closes the dialog, and **Skip This Version** stops automatic checks from offering that version again.
+- When you check yourself, it also says when you're up to date, or why the check failed (offline, GitHub busy, no release found).
+- Automatic checks are on by default, once a day; Preferences ▸ Auto Update turns them off or sets them hourly, daily or weekly. They only show something when there's a new version.
+- Pre-releases and drafts are never offered. A release is found by its tag (e.g. `2.0.4`, or `v2.0.4`) and its `.zip` asset.
+- The old Sparkle updater (Sequel Pro's feed) stays switched off, and "Send anonymous system information" is gone from Preferences.
+
 ### New Folder and New Favorite on a folder's right-click menu
 Right-clicking a folder in the favorites list now offers **New Folder** and **New Favorite** at the top of the menu. Both add the new item inside that folder and start editing its name, as the + and folder buttons below the list do with the folder selected. They don't appear when you right-click a favorite or an empty part of the list.
 

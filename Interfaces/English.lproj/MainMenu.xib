@@ -28,10 +28,10 @@
                                     <action selector="openAboutPanel:" target="213" id="1037"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Check for Updates..." hidden="YES" id="794">
+                            <menuItem title="Check for Updates..." id="794">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="checkForUpdates:" target="795" id="830"/>
+                                    <action selector="checkForUpdates:" target="-1" id="830"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="199">

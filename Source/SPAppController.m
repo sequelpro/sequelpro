@@ -54,6 +54,7 @@
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
+#import "SPUpdateChecker.h"
 
 @interface SPAppController ()
 
@@ -181,6 +182,11 @@
 	[self reloadBundles:self];
     [self _copyDefaultThemes];
 
+	// Newer releases on GitHub, checked now and then (not when hosting XCTest)
+	if (![[[NSProcessInfo processInfo] environment] objectForKey:@"XCTestConfigurationFilePath"]) {
+		[[SPUpdateChecker sharedChecker] startAutomaticChecks];
+	}
+
 	// If no documents are open, open one (skipped when hosting XCTest: the default connection reads the Keychain, which can block on a prompt)
 	if (![self frontDocument] && ![[[NSProcessInfo processInfo] environment] objectForKey:@"XCTestConfigurationFilePath"]) {
 		SPDatabaseDocument *newConnection = [self makeNewConnectionTabOrWindow];
@@ -213,8 +219,15 @@
 /**
  * Menu item validation.
  */
+- (IBAction)checkForUpdates:(id)sender
+{
+	[[SPUpdateChecker sharedChecker] checkForUpdates:sender];
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	if ([menuItem action] == @selector(checkForUpdates:)) return ![[SPUpdateChecker sharedChecker] isChecking];
+
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
 		[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
@@ -2223,8 +2236,9 @@
 }
 
 /**
- * Sparkle updater delegate method. Sequel Plus has no update feed of its own yet: the bundled feed is the original
- * Sequel Pro's, whose releases would "update" Sequel Plus back to Sequel Pro. So no check (scheduled or manual) runs.
+ * Sparkle updater delegate method. The bundled Sparkle feed is the original Sequel Pro's, whose releases would
+ * "update" Sequel Plus back to Sequel Pro, so Sparkle never checks: Sequel Plus checks its own GitHub releases
+ * (SPUpdateChecker, Check for Updates…).
  */
 - (BOOL)updaterMayCheckForUpdates:(SUUpdater *)updater
 {

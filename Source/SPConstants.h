@@ -484,6 +484,12 @@ extern NSString *SPToolbarTransferItemAdded;
 extern NSString *SPToolbarTransferItemMovedAfterQuery;
 // YES once a saved layout's Users item was placed right after Transfer (added or moved only once)
 extern NSString *SPToolbarUsersItemPlacedAfterTransfer;
+
+// Checking GitHub for a newer release (SPUpdateChecker)
+extern NSString *SPUpdateAutomaticChecks;
+extern NSString *SPUpdateCheckInterval;
+extern NSString *SPUpdateLastCheckTime;
+extern NSString *SPUpdateSkippedVersion;
 extern NSString **SPViewModeToMainToolbarMap[];
 
 // Preferences toolbar

@@ -203,5 +203,9 @@
 	<false/>
 	<key>CopyContentOnTableCopy</key>
 	<false/>
+	<key>SPUpdateAutomaticChecks</key>
+	<true/>
+	<key>SPUpdateCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

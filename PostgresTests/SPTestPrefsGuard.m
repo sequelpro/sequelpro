@@ -8,6 +8,7 @@
 NSString * const SPTestTransferAddedKey = @"SPToolbarTransferItemAdded";
 NSString * const SPTestTransferMovedKey = @"SPToolbarTransferItemMovedAfterQuery";
 NSString * const SPTestUsersPlacedKey = @"SPToolbarUsersItemPlacedAfterTransfer";
+NSString * const SPTestUpdateAutomaticChecksKey = @"SPUpdateAutomaticChecks";
 NSString * const SPTestSelectLastFavoriteUsedKey = @"SelectLastFavoriteUsed";
 NSString * const SPTestDefaultFavoriteKey = @"DefaultFavorite";
 NSString * const SPTestSparkleAutomaticChecksKey = @"SUEnableAutomaticChecks";
@@ -51,6 +52,8 @@ static const void *SPRequestedAutosaveNameKey = &SPRequestedAutosaveNameKey;
  *   this run's temporary directory, never the real "Query Scripts" folder under Application Support. Its files are
  *   removed after every test.
  *
+ * - Sequel Plus's GitHub update checks are off too (SPUpdateAutomaticChecks reads NO), so a test run never asks
+ *   GitHub or shows an update alert.
  * - Sparkle's automatic update checks are off (SUEnableAutomaticChecks reads NO from the volatile argument
  *   domain, and a check already scheduled is dropped), so no check runs in the middle of a test.
  *
@@ -139,6 +142,7 @@ static NSString *SPTestQueryStoreDirectory = nil;
 	domain[SPTestTransferAddedKey] = @YES;
 	domain[SPTestTransferMovedKey] = @YES;
 	domain[SPTestUsersPlacedKey] = @YES;
+	domain[SPTestUpdateAutomaticChecksKey] = @NO;
 	domain[SPTestSelectLastFavoriteUsedKey] = @NO;
 	domain[SPTestDefaultFavoriteKey] = @0;
 	// Sparkle never checks for updates during the run: a check needs the bundle version, which test builds leave
