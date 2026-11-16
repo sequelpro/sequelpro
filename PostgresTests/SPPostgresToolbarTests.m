@@ -234,7 +234,9 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"], expected, @"no saved layout in tests: the defaults");
 }
 
-- (void)testMySQLToolbarAllowsTransferButDisablesIt
+/// MySQL → MySQL Transfer: the document's -showTransfer:, enabled only when connected to a database (with one, on a
+/// live server: SPMySQLTransferControllerTests).
+- (void)testMySQLToolbarTransferNeedsADatabase
 {
 	id mysql = [self.controller addNewConnection];
 	NSToolbar *toolbar = [[self.controller window] toolbar];
@@ -243,20 +245,13 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	XCTAssertNotNil(created);
 	XCTAssertEqualObjects([created label], @"Transfer");
 	XCTAssertNotNil([created image]);
-	XCTAssertFalse([created isEnabled], @"created disabled");
+	XCTAssertEqual([created target], mysql);
+	XCTAssertEqualObjects(NSStringFromSelector([created action]), @"showTransfer:");
 
-	// Validated NO, also when connected with a table selected (when Content is enabled)
+	// Not connected: NO; connected (stubbed) but no database selected: NO
 	XCTAssertFalse([mysql validateToolbarItem:created]);
 	XCTAssertFalse([self validate:created asConnectedMySQLDocument:mysql]);
 	XCTAssertTrue([self validate:[self itemWithIdentifier:SPTestContent inToolbar:toolbar] asConnectedMySQLDocument:mysql]);
-
-	// The item in the window stays disabled, also when a connect enables every toolbar item
-	// (as -[SPConnectionController mySQLConnectionEstablished...] does) and after validation
-	NSToolbarItem *transfer = [self itemWithIdentifier:SPTestTransfer inToolbar:toolbar];
-	XCTAssertNotNil(transfer);
-	for (NSToolbarItem *item in [toolbar items]) [item setEnabled:YES];
-	[toolbar validateVisibleItems];
-	XCTAssertFalse([transfer isEnabled]);
 }
 
 #pragma mark One-time insertion into a saved layout
@@ -531,7 +526,7 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	NSToolbarItem *content = [self itemWithIdentifier:SPTestContent inToolbar:[window toolbar]];
 	XCTAssertEqual([content target], mysql);
 	XCTAssertTrue([self validate:content asConnectedMySQLDocument:mysql]);
-	XCTAssertFalse([[self itemWithIdentifier:SPTestTransfer inToolbar:[window toolbar]] isEnabled]);
+	XCTAssertFalse([mysql validateToolbarItem:[self itemWithIdentifier:SPTestTransfer inToolbar:[window toolbar]]], @"no database");
 
 	// Postgres tab: same identifier, Content disabled
 	[[self tabView] selectTabViewItem:postgres.parentTabViewItem];

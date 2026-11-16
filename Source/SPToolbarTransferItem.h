@@ -18,7 +18,7 @@
 __attribute__((visibility("default"))) NSImage *SPTransferToolbarImage(void);
 
 /**
- * Sets the Transfer item's label, palette label and image. Target, action and enabling are the
+ * Sets the Transfer item's label, palette label, tooltip and image. Target, action and enabling are the
  * caller's.
  */
 __attribute__((visibility("default"))) void SPConfigureTransferToolbarItem(NSToolbarItem *item);

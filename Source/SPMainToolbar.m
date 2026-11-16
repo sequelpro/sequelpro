@@ -133,8 +133,7 @@ NSToolbarItem *SPCreateMainToolbarItem(NSString *identifier)
 		image = [NSImage imageNamed:NSImageNameEveryone];
 	}
 	else if ([identifier isEqualToString:SPMainToolbarTransfer]) {
-		// Not available yet: never enabled (also after a MySQL connect enables every item), no action
-		item = [[[SPDisabledToolbarItem alloc] initWithItemIdentifier:identifier] autorelease];
+		// MySQL → MySQL Transfer (SPDatabaseDocument -showTransfer:; enabled by its validation)
 		SPConfigureTransferToolbarItem(item);
 		image = [item image];
 	}

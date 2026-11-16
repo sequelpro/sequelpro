@@ -12,6 +12,13 @@ A **Filter** field beside each of the Transfer sheet's **To:** and **Database:**
 - A connection or database the filter leaves out is unset: the connection is closed and its databases cleared, or the database is no longer chosen, and **Transfer** stays disabled until you choose one the menu lists. Clearing the filter doesn't choose again, and typing never opens a connection.
 - **New Database…** always stays in the Database: menu, and the database filter also applies to the databases of another connection you choose. A database you make with New Database… clears the database filter and is chosen.
 
+### Transfer for MySQL
+The toolbar's **Transfer** button now works on MySQL tabs too: it copies this tab's database, or some of its tables, to a database of another MySQL favorite. The sheet is the same as PostgreSQL's: **Whole database** or **Selected tables**, the **To:** and **Database:** menus with their filters and **New Database…**, **Empty the target database first** (confirmed by typing its name) or **Overwrite tables that already exist on the target**, and the task list.
+- The source is read in one consistent snapshot and its rows are sent in batches of multi-row INSERTs.
+- **Your target is safe until the very end.** MySQL can't undo table changes the way PostgreSQL rolls back a transaction, so the tables are first copied into the target under temporary names while the real ones stay untouched. Only once every table has been copied are they swapped in, all at once. A failure or cancel before then leaves the target exactly as it was.
+- After the swap, foreign keys, CHECK constraints, views (in the order they depend on each other), triggers, routines and events are created. If one of them can't be, the sheet lists which.
+- Definers aren't copied: views, routines, triggers and events are created with the To: connection's user as their definer, and the sheet says so. Selected tables bring their triggers; views, routines and events come with the whole database.
+
 ### Faster Transfer, especially over a network (PostgreSQL)
 - **Read** no longer asks the source about each table one at a time. It used to send about 13 queries per table before any data, and over a network each query waits a round trip, so a database with 1,000 tables spent minutes just waiting. It now reads every table's definition, columns, constraints, indexes and triggers in a few queries for all of them (about 55 queries in all, however many tables), and the sequences' values a few hundred at a time.
 - The target gets the structure's statements a few hundred at a time instead of one round trip each.

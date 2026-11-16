@@ -1665,16 +1665,15 @@ static NSString * const SPTestTransferIdentifier = @"TransferToolbarItemIdentifi
 		}
 	}];
 
-	// MySQL's Transfer item stays a never-enabled SPDisabledToolbarItem
+	// MySQL's Transfer item is its own (MySQL → MySQL, SPMySQLTransferControllerTests): disabled while not connected
 	SPWindowController *windowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 	XCTAssertNotNil([windowController window]);
 	id mysql = [windowController addNewConnection];
 	NSToolbar *toolbar = [[windowController window] toolbar];
 	NSToolbarItem *mysqlItem = [mysql toolbar:toolbar itemForItemIdentifier:SPTestTransferIdentifier willBeInsertedIntoToolbar:NO];
-	XCTAssertTrue([mysqlItem isKindOfClass:[SPDisabledToolbarItem class]]);
-	XCTAssertTrue(mysqlItem.action == NULL);
-	[mysqlItem setEnabled:YES];
-	XCTAssertFalse(mysqlItem.isEnabled);
+	XCTAssertEqualObjects(NSStringFromSelector(mysqlItem.action), @"showTransfer:");
+	XCTAssertEqual(mysqlItem.target, mysql);
+	XCTAssertFalse([mysql validateToolbarItem:mysqlItem]);
 	// A MySQL tab's filter editor resizes itself 0.2 s after it is built: let that run while the tab is alive
 	[self spinUntil:^BOOL{ return NO; } timeout:0.4];
 	NSTabView *tabView = [windowController valueForKey:@"tabView"];

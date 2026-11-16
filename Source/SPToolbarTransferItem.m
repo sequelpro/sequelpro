@@ -26,6 +26,7 @@ void SPConfigureTransferToolbarItem(NSToolbarItem *item)
 {
 	[item setLabel:NSLocalizedString(@"Transfer", @"PostgreSQL toolbar: Transfer")];
 	[item setPaletteLabel:[item label]];
+	[item setToolTip:NSLocalizedString(@"Copy this database, or some of its tables, to another connection", @"tooltip for the Transfer toolbar item")];
 	[item setImage:SPTransferToolbarImage()];
 }
 

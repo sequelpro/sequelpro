@@ -87,6 +87,7 @@
 #import "SPHelpViewerClient.h"
 #import "SPHelpViewerController.h"
 #import "SPToolbarTransferItem.h"
+#import "SPMySQLTransferController.h"
 #import "SPMainToolbar.h"
 
 #import <SPMySQL/SPMySQL.h>
@@ -2581,6 +2582,22 @@ static BOOL isOSAtLeast10_14;
 /**
  * Displays the user account manager.
  */
+#pragma mark - Transfer
+
+/// The Transfer sheet can open: connected, not busy, a database selected, no sheet on the window.
+- (BOOL)_canShowTransfer
+{
+	return _isConnected && !_isWorkingLevel && [[self database] length] > 0 && ![[self parentWindow] attachedSheet];
+}
+
+/// Toolbar ▸ Transfer: copies this database, or some of its tables, to another MySQL favorite.
+- (IBAction)showTransfer:(id)sender
+{
+	if (![self _canShowTransfer]) return;
+	SPMySQLTransferController *controller = [[[SPMySQLTransferController alloc] initWithDocument:self] autorelease];
+	[controller beginSheet];
+}
+
 - (IBAction)showUserManager:(id)sender
 {	
 	if (!userManagerInstance)
@@ -4137,11 +4154,24 @@ static BOOL isOSAtLeast10_14;
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarUserManager]) {
 		action = @selector(showUserManager:);
 	}
-	// SPMainToolbarTransfer is PostgreSQL-only: always disabled on MySQL tabs (an SPDisabledToolbarItem, no action)
+	else if ([itemIdentifier isEqualToString:SPMainToolbarTransfer]) {
+		action = @selector(showTransfer:);
+	}
 
 	if (action) {
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:action];
+	}
+
+	// Transfer looks as on PostgreSQL tabs (the two share the toolbar): AppKit would border an image item with an
+	// action and make it wider
+	if ([itemIdentifier isEqualToString:SPMainToolbarTransfer]) {
+		[toolbarItem setBordered:NO];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+		[toolbarItem setMinSize:NSMakeSize(28, 28)];
+		[toolbarItem setMaxSize:NSMakeSize(28, 28)];
+#pragma clang diagnostic pop
 	}
 
 	return toolbarItem;
@@ -4199,8 +4229,8 @@ static BOOL isOSAtLeast10_14;
 
 	NSString *identifier = [toolbarItem itemIdentifier];
 
-	// PostgreSQL-only
-	if ([identifier isEqualToString:SPMainToolbarTransfer]) return NO;
+	// Transfer: a database selected, nothing else on the window
+	if ([identifier isEqualToString:SPMainToolbarTransfer]) return [self _canShowTransfer];
 
 	// Show console item
 	if ([identifier isEqualToString:SPMainToolbarShowConsole]) {

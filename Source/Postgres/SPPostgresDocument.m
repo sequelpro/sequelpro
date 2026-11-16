@@ -4204,9 +4204,8 @@ static BOOL SPPostgresPaneIsInScope(NSString *pane)
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)theToolbar itemForItemIdentifier:(NSString *)identifier willBeInsertedIntoToolbar:(BOOL)flag
 {
-	// Transfer works on Postgres tabs: a plain item (MySQL's is an always-disabled SPDisabledToolbarItem) that looks
-	// exactly like MySQL's (label, image, no bezel, size), so switching tabs moves nothing. AppKit would border an
-	// image item with an action, making it wider
+	// Transfer: a plain item that looks exactly like MySQL's (label, tooltip, image, no bezel, size), so switching tabs
+	// moves nothing. AppKit would border an image item with an action, making it wider
 	if ([identifier isEqualToString:SPMainToolbarTransfer]) {
 		NSToolbarItem *transfer = [[[NSToolbarItem alloc] initWithItemIdentifier:identifier] autorelease];
 		SPConfigureTransferToolbarItem(transfer);
