@@ -8,6 +8,8 @@
 #import "SPPostgresTestServers.h"
 #import "../Source/NSWindow+SPCompactChrome.h"
 #import "../Source/SPToolbarTransferItem.h"
+// SPMainToolbar.h
+extern NSImage *SPUsersToolbarImage(void);
 #import "../Source/SPWindowController.h"
 #import "../Source/Postgres/SPPostgresDocument.h"
 #import "../Source/Postgres/SPPostgresConnector.h"
@@ -234,7 +236,6 @@ static NSData *SPImageData(NSImage *image)
 		SPParityTableInfo: @[@"Table Info", @"Table Info", @"Switch to the Table Info tab", @"toolbar-switch-to-table-info", @"viewStatus:"],
 		SPParityRelations: @[@"Relations", @"Table Relations", @"Switch to the Table Relations tab", @"toolbar-switch-to-table-relations", @"viewRelations:"],
 		SPParityTriggers: @[@"Triggers", @"Table Triggers", @"Switch to the Table Triggers tab", @"toolbar-switch-to-table-triggers", @"viewTriggers:"],
-		SPParityUsers: @[@"Users", @"Users", @"Switch to the User Manager tab", NSImageNameEveryone, @"showUserManager:"],
 	};
 
 	for (NSString *identifier in expected) {
@@ -250,6 +251,21 @@ static NSData *SPImageData(NSImage *image)
 		XCTAssertEqualObjects(NSStringFromSelector([item action]), values[4], @"%@", identifier);
 		XCTAssertNil([item view], @"%@", identifier);
 	}
+
+	// Users: its own drawing (two people in black, a template image), unbordered at 28 points as Transfer
+	NSToolbarItem *users = [mysql toolbar:toolbar itemForItemIdentifier:SPParityUsers willBeInsertedIntoToolbar:NO];
+	XCTAssertEqualObjects([users class], [NSToolbarItem class]);
+	XCTAssertEqualObjects([users label], @"Users");
+	XCTAssertEqualObjects([users paletteLabel], @"Users");
+	XCTAssertEqualObjects([users toolTip], @"Switch to the User Manager tab");
+	XCTAssertEqualObjects(SPImageData([users image]), SPImageData(SPCompactToolbarImage(SPUsersToolbarImage())));
+	XCTAssertNotEqualObjects(SPImageData([users image]), SPImageData(SPCompactToolbarImage([NSImage imageNamed:NSImageNameEveryone])));
+	XCTAssertTrue(NSEqualSizes([[users image] size], NSMakeSize(24, 24)));
+	XCTAssertTrue([[users image] isTemplate]);
+	XCTAssertEqual([users target], mysql);
+	XCTAssertEqualObjects(NSStringFromSelector([users action]), @"showUserManager:");
+	XCTAssertFalse([users isBordered]);
+	XCTAssertNil([users view]);
 
 	// Transfer: MySQL → MySQL (the document's -showTransfer:), unbordered at 28 points as on PostgreSQL tabs
 	NSToolbarItem *transfer = [mysql toolbar:toolbar itemForItemIdentifier:SPParityTransfer willBeInsertedIntoToolbar:NO];

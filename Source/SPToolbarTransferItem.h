@@ -47,6 +47,18 @@ __attribute__((visibility("default"))) BOOL SPInsertTransferToolbarItemIfNeeded(
 __attribute__((visibility("default"))) BOOL SPMoveTransferToolbarItemAfterQueryIfNeeded(NSToolbar *toolbar, NSUserDefaults *defaults);
 
 /**
+ * Users used to be on the right (after Table History), where a layout saved before it was added there doesn't show
+ * it: once, put Users right after Transfer (or, without Transfer, right after Query), adding it when the layout lacks
+ * it and moving it there otherwise, and record that under SPToolbarUsersItemPlacedAfterTransfer in `defaults`. A
+ * layout with neither Transfer nor Query gets Users before Console (else at the end) when it lacks it. Once recorded
+ * nothing is changed again, so removing or placing the item with Customize Toolbar sticks. Call once the toolbar is in
+ * a window (after the Transfer insert and move): before that it has no items, and nothing is changed or recorded.
+ *
+ * Returns YES if the layout was changed.
+ */
+__attribute__((visibility("default"))) BOOL SPPlaceUsersToolbarItemAfterTransferIfNeeded(NSToolbar *toolbar, NSUserDefaults *defaults);
+
+/**
  * A toolbar item that is never enabled: -setEnabled: always stores NO and validation keeps it so.
  * (Used for MySQL's Transfer item, which SPConnectionController's "enable every item" after a
  * connect would otherwise enable.)

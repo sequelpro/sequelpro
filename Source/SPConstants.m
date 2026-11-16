@@ -265,6 +265,7 @@ NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarI
 NSString *SPMainToolbarTransfer                  = @"TransferToolbarItemIdentifier";
 NSString *SPToolbarTransferItemAdded             = @"SPToolbarTransferItemAdded";
 NSString *SPToolbarTransferItemMovedAfterQuery   = @"SPToolbarTransferItemMovedAfterQuery";
+NSString *SPToolbarUsersItemPlacedAfterTransfer  = @"SPToolbarUsersItemPlacedAfterTransfer";
 
 NSString **SPViewModeToMainToolbarMap[] = 
 { 

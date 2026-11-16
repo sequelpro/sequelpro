@@ -29,6 +29,9 @@ __attribute__((visibility("default"))) NSArray *SPMainToolbarSelectableItemIdent
  */
 __attribute__((visibility("default"))) NSToolbarItem *SPCreateMainToolbarItem(NSString *identifier);
 
+/// The Users item's image: two people, the one behind lighter (a template image, so white in Dark Mode), 24 x 24.
+__attribute__((visibility("default"))) NSImage *SPUsersToolbarImage(void);
+
 /**
  * A new (autoreleased) database picker, styled as DBView.xib's chooseDatabaseButton: textured
  * rounded bezel, centred title in the 12 pt title bar font, truncated at the tail, and the same

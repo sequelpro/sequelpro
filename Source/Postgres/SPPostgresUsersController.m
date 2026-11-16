@@ -2,6 +2,7 @@
 #import "SPPostgresRoles.h"
 #import "SPPostgresConnector.h"
 #import "SPPostgresUsersPrivilegesPane.h"
+#import "SPLoadingSheet.h"
 #import <PostgresKit/PostgresKit.h>
 
 static const CGFloat SPPostgresUsersSheetWidth = 760;
@@ -71,8 +72,12 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 @interface SPPostgresUsersController () <SPPostgresUsersPrivilegesPaneDelegate>
 @end
 
+/// How long the sheet may take to get ready before "Loading users…" is shown (fast loads show nothing in between).
+static const NSTimeInterval SPPostgresUsersLoadingSheetDelay = 0.3;
+
 @implementation SPPostgresUsersController
 {
+	SPLoadingSheet *loadingSheet;   // "Loading users…" while the connection opens and the roles load
 	SPPostgresUsersMembershipSource *membershipSource;
 	SPPostgresUsersPrivilegesPane *privilegesPane;
 
@@ -168,6 +173,7 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 
 - (void)dealloc
 {
+	[loadingSheet release];
 	[rolesTable setDelegate:nil];
 	[rolesTable setDataSource:nil];
 	[memberOfTable setDelegate:nil];
@@ -242,7 +248,42 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 
 - (NSWindow *)windowForConnectorSheets
 {
-	return (sheetOpen && sheet) ? sheet : parentWindow;
+	if (sheetOpen && sheet) return sheet;
+	// The SSH tunnel's sheets (passphrase, host key) go on the loading sheet while it is up
+	if ([loadingSheet isShown]) return [loadingSheet panel];
+	return parentWindow;
+}
+
+#pragma mark - Loading sheet
+
+- (SPLoadingSheet *)loadingSheet
+{
+	return [[loadingSheet retain] autorelease];
+}
+
+- (void)_showLoadingSheet
+{
+	if (finished || sheetOpen || loadingSheet || !parentWindow) return;
+	__block SPPostgresUsersController *me = self; // not retained: the sheet ends before this controller finishes
+	loadingSheet = [[SPLoadingSheet beginOnWindow:parentWindow
+										  message:NSLocalizedString(@"Loading users…", @"user manager: loading sheet message")
+									cancelHandler:^{ [me _loadingCancelled]; }] retain];
+}
+
+- (void)_endLoadingSheet
+{
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_showLoadingSheet) object:nil];
+	[loadingSheet end];
+	[loadingSheet release];
+	loadingSheet = nil;
+}
+
+/// Cancel on the loading sheet: the sheet never opens (a connection that comes later is closed).
+- (void)_loadingCancelled
+{
+	[loadingSheet release];
+	loadingSheet = nil;
+	[self _finish:NO];
 }
 
 - (PGPostgresConnection *)openConnectionForDatabase:(NSString *)theDatabase
@@ -317,6 +358,9 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 		return;
 	}
 
+	// Opening the connection (maybe through SSH) and reading the roles can take seconds: say so if it does
+	[self performSelector:@selector(_showLoadingSheet) withObject:nil afterDelay:SPPostgresUsersLoadingSheetDelay];
+
 	[self _connectionForDatabase:database completion:^(PGPostgresConnection *connection, NSError *error) {
 		if (finished) return;
 		if (!connection) {
@@ -331,6 +375,7 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 			[self _finish:NO];
 			return;
 		}
+		[self _endLoadingSheet];
 		// The roles may take seconds to load (e.g. over SSH): by now the tab may be another one, or in another window
 		if (!parentWindow || [parentWindow attachedSheet] || (canPresent && !canPresent())) {
 			[self _finish:NO];
@@ -387,6 +432,7 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 	if (finished) return;
 	finished = YES;
 	sheetOpen = NO;
+	[self _endLoadingSheet];
 
 	[sheet orderOut:nil];
 	[self _closeConnections];
@@ -413,6 +459,7 @@ static BOOL SPPostgresUsersSameDate(NSDate *a, NSDate *b)
 
 - (void)_showErrorTitle:(NSString *)title message:(NSString *)message
 {
+	[self _endLoadingSheet]; // so the alert can go on the window
 	[lastErrorMessage release];
 	lastErrorMessage = [message copy];
 

@@ -40,6 +40,9 @@
 
 @property (assign) BOOL justGainedFocus;
 
+/// The row the last right-click (-menuForEvent:) was on, -1 for none (empty space, or several rows selected).
+@property (readonly) NSInteger menuRow;
+
 /**
  * The item on which the last doubleAction (double click or enter/return key) was performed.
  * May be nil.

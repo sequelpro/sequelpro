@@ -6,6 +6,19 @@ Upgrading from 2.0.2.
 
 - Version **2.0.3**.
 
+### New Folder and New Favorite on a folder's right-click menu
+Right-clicking a folder in the favorites list now offers **New Folder** and **New Favorite** at the top of the menu. Both add the new item inside that folder and start editing its name, as the + and folder buttons below the list do with the folder selected. They don't appear when you right-click a favorite or an empty part of the list.
+
+### "Loading users…" before the User Manager, and a MySQL 8 fix
+Clicking **Users** now shows a small **Loading users…** sheet with a spinner while the user list is fetched, instead of a window that seems frozen. It has a **Cancel** button.
+- **MySQL:** the sheet appears at once. The access check runs in the background, and the sheet stays up until the User Manager replaces it.
+- **PostgreSQL:** the Users sheet opens its own connection (possibly through SSH) and reads the roles. If that takes more than 0.3 seconds, the loading sheet appears; an SSH password prompt goes on top of it.
+- **MySQL 8:** the User Manager could fail to open at all when a user had privileges on a single database. It stopped at the "create temporary tables" privilege, which it stored under a name the app didn't recognise. Database privileges are now read correctly, and a privilege column the app doesn't know about is skipped instead of stopping it.
+
+### Users toolbar button
+The toolbar's **Users** button now sits right after **Transfer**, with the other buttons, and has a new icon: two people in black, the one behind lighter, like the Transfer icon (white in Dark Mode). It no longer sits in a round button background.
+- A toolbar you set up before gets Users after Transfer once (added if it wasn't there, moved if it was on the right). If you remove or move it afterwards with Customize Toolbar, that sticks.
+
 ### Foreign key links in Content (PostgreSQL)
 In the Content view, a column that is a foreign key now shows a small arrow after each value, as MySQL's Content view does. Click it to open the table the key points to, showing just the matching row.
 - The other table is selected in the left panel (switching schema when it's in another one) and its filter bar is shown holding the filter (for example `id = 2`), so you can change or clear it. Clearing it shows every row again.

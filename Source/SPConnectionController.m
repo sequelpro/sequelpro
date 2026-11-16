@@ -161,6 +161,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 @end
 
+/// The right-click menu's items for a folder (shown only on one, see -menuNeedsUpdate:)
+static const NSInteger SPFavoritesFolderMenuItemTag = 7311;
+
 @implementation SPConnectionController
 
 @synthesize delegate;
@@ -3275,6 +3278,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// import does not depend on a selection
 	if(action == @selector(importFavorites:)) return YES;
 
+	// The right-click menu's New Folder and New Favorite (on a folder)
+	if ([menuItem tag] == SPFavoritesFolderMenuItemTag) return [self _favoritesMenuIsOnFolder];
+
 	// PostgreSQL favorites: remove, rename and duplicate only (no default favorite); Export only exports
 	// the selected MySQL favorites, so it is disabled when only Postgres favorites are selected
 	BOOL postgresSelected = [postgresAdapter isPostgresNode:node];
@@ -3673,6 +3679,47 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
 	[self _setUpFavoritesFilterField];
+	[self _addFolderItemsToFavoritesContextMenu];
+}
+
+/**
+ * "New Folder" and "New Favorite" (then a separator) at the top of the favorites list's right-click menu, for a
+ * folder: right-clicking a row selects it, and both add to the selected folder, as the bar's buttons do.
+ */
+- (void)_addFolderItemsToFavoritesContextMenu
+{
+	NSMenu *menu = [favoritesOutlineView menu];
+	if (!menu || [menu itemWithTag:SPFavoritesFolderMenuItemTag]) return;
+
+	NSMenuItem *newFolder = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"New Folder", @"favorites context menu: new folder in the folder") action:@selector(addGroup:) keyEquivalent:@""] autorelease];
+	NSMenuItem *newFavorite = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"New Favorite", @"favorites context menu: new favorite in the folder") action:@selector(addFavorite:) keyEquivalent:@""] autorelease];
+	NSMenuItem *separator = [NSMenuItem separatorItem];
+	NSUInteger index = 0;
+	for (NSMenuItem *item in @[newFolder, newFavorite, separator]) {
+		[item setTag:SPFavoritesFolderMenuItemTag];
+		if (![item isSeparatorItem]) [item setTarget:self];
+		[item setHidden:YES];
+		[menu insertItem:item atIndex:index++];
+	}
+}
+
+/// Whether the last right-click in the favorites list was on a folder (not Quick Connect).
+- (BOOL)_favoritesMenuIsOnFolder
+{
+	NSInteger row = [favoritesOutlineView isKindOfClass:[SPFavoritesOutlineView class]] ? [(SPFavoritesOutlineView *)favoritesOutlineView menuRow] : -1;
+	if (row < 0 || row >= [favoritesOutlineView numberOfRows]) return NO;
+	SPTreeNode *node = [favoritesOutlineView itemAtRow:row];
+	return [node isGroup] && node != quickConnectItem && [[node parentNode] parentNode] != nil;
+}
+
+/// The favorites list's right-click menu: the folder items only on a folder.
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+	if (menu != [favoritesOutlineView menu]) return;
+	BOOL onFolder = [self _favoritesMenuIsOnFolder];
+	for (NSMenuItem *item in [menu itemArray]) {
+		if ([item tag] == SPFavoritesFolderMenuItemTag) [item setHidden:!onFolder];
+	}
 }
 
 /**

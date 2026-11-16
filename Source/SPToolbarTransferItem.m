@@ -87,6 +87,42 @@ BOOL SPMoveTransferToolbarItemAfterQueryIfNeeded(NSToolbar *toolbar, NSUserDefau
 	return moved;
 }
 
+BOOL SPPlaceUsersToolbarItemAfterTransferIfNeeded(NSToolbar *toolbar, NSUserDefaults *defaults)
+{
+	if (!toolbar || [defaults boolForKey:SPToolbarUsersItemPlacedAfterTransfer]) return NO;
+
+	NSArray *identifiers = [[toolbar items] valueForKey:@"itemIdentifier"];
+
+	// No items yet: the layout isn't loaded (a toolbar loads it once it is in a window)
+	if (![identifiers count]) return NO;
+
+	BOOL changed = NO;
+	NSUInteger users = [identifiers indexOfObject:SPMainToolbarUserManager];
+	NSUInteger anchor = [identifiers indexOfObject:SPMainToolbarTransfer];
+	if (anchor == NSNotFound) anchor = [identifiers indexOfObject:SPMainToolbarCustomQuery];
+
+	if (anchor != NSNotFound) {
+		if (users != anchor + 1) {
+			if (users != NSNotFound) {
+				[toolbar removeItemAtIndex:(NSInteger)users];
+				if (users < anchor) anchor--;
+			}
+			[toolbar insertItemWithItemIdentifier:SPMainToolbarUserManager atIndex:(NSInteger)(anchor + 1)];
+			changed = YES;
+		}
+	}
+	else if (users == NSNotFound) {
+		NSUInteger index = [identifiers indexOfObject:SPMainToolbarShowConsole];
+		if (index == NSNotFound) index = [identifiers count];
+		[toolbar insertItemWithItemIdentifier:SPMainToolbarUserManager atIndex:(NSInteger)index];
+		changed = YES;
+	}
+
+	[defaults setBool:YES forKey:SPToolbarUsersItemPlacedAfterTransfer];
+
+	return changed;
+}
+
 @implementation SPDisabledToolbarItem
 
 - (void)setEnabled:(BOOL)enabled

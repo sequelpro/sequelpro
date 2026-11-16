@@ -387,7 +387,8 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 				key = [privColumnToGrantMap objectForKey:key];
 			}
 			
-			[child setValue:[NSNumber numberWithBool:value] forKey:key];
+			// The model's attributes are lowercase (e.g. create_temporary_tables_priv)
+			[child setValue:[NSNumber numberWithBool:value] forKey:[key lowercaseString]];
 		} 
 		else if ([key hasPrefix:@"max"]) // Resource Management restrictions
 		{
@@ -429,23 +430,31 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 		
 		for (NSString *key in rowDict)
 		{
-			if ([key hasSuffix:@"_priv"]) {
-				
-				BOOL boolValue = [[rowDict objectForKey:key] boolValue];
-				
-				// Special case keys
-				if ([privColumnToGrantMap objectForKey:key]) {
-					key = [privColumnToGrantMap objectForKey:key];
+			// A column the model doesn't have (a newer server's) is skipped, as in -_initializeChild:withItem:, rather
+			// than stopping the User Manager from opening
+			@try {
+				if ([key hasSuffix:@"_priv"]) {
+					
+					BOOL boolValue = [[rowDict objectForKey:key] boolValue];
+					
+					// Special case keys
+					if ([privColumnToGrantMap objectForKey:key]) {
+						key = [privColumnToGrantMap objectForKey:key];
+					}
+					
+					// The model's attributes are lowercase (e.g. create_temporary_tables_priv)
+					[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:[key lowercaseString]];
+				} 
+				else if ([key isEqualToString:@"Db"]) {
+					NSString *db = [[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"];
+					[dbPriv setValue:db forKey:key];
+				} 
+				else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
+					[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 				}
-				
-				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
-			} 
-			else if ([key isEqualToString:@"Db"]) {
-				NSString *db = [[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"];
-                [dbPriv setValue:db forKey:key];
-            } 
-			else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
-				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
+			}
+			@catch (NSException *exception) {
+				if (![[exception name] isEqualToString:NSUndefinedKeyException]) @throw;
 			}
 		}
 		[privs addObject:dbPriv];

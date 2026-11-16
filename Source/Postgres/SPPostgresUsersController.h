@@ -48,7 +48,8 @@ __attribute__((visibility("default")))
 
 /**
  * The window a connector the provider opens should host its sheets on (e.g. SSH passwords and host keys): the
- * Users sheet once it is attached (the parent window can't show a sheet then), else the parent window.
+ * Users sheet once it is attached (the parent window can't show a sheet then), the "Loading users…" sheet while that is
+ * up, else the parent window.
  */
 @property (readonly) NSWindow *windowForConnectorSheets;
 
@@ -59,6 +60,9 @@ __attribute__((visibility("default")))
 #pragma mark - For tests
 
 @property (readonly) NSWindow *sheet;
+/// "Loading users…" (an SPLoadingSheet, with Cancel), shown on the parent window when the connection and the roles
+/// take more than 0.3 s; nil otherwise. Its Cancel ends the sheet before it opens (the completion gets NO).
+@property (readonly) id loadingSheet;
 @property (readonly) NSTableView *rolesTable;
 @property (readonly) NSTabView *tabView;
 

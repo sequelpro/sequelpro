@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <PostgresKit/PostgresKit.h>
 #import "SPPostgresTestServers.h"
+#import "../Source/SPLoadingSheet.h"
 #import "../Source/SPWindowController.h"
 #import "../Source/Postgres/SPPostgresUsersController.h"
 #import "../Source/Postgres/SPPostgresRoles.h"
@@ -1096,4 +1097,99 @@ static NSString * const SPUsersTestToolbarUsers = @"SwitchToUserManagerToolbarIt
 	XCTAssertTrue([[alter valueForKey:@"message"] containsString:@"SCRAM-SHA-256$"] || [[alter valueForKey:@"message"] containsString:@"md5"], @"%@", [alter valueForKey:@"message"]);
 }
 
+#pragma mark - Loading sheet
+
+/// A slow connection (as over SSH): "Loading users…" shows after 0.3 s, hosts the connector's sheets, and gives way to
+/// the Users sheet once the roles have loaded.
+- (void)testLoadingSheetShowsWhileTheConnectionIsSlow
+{
+	__block void (^pendingCompletion)(PGPostgresConnection *, NSError *) = nil;
+	SPPostgresUsersController *controller = [[SPPostgresUsersController alloc] initWithDatabase:@"pgkit_test" connectionProvider:^(NSString *database, void (^completion)(PGPostgresConnection *, NSError *)) {
+		pendingCompletion = completion; // deferred, as a connector's
+	}];
+	__weak SPPostgresUsersControllerTests *weakSelf = self;
+	controller.alertPresenter = ^(NSAlert *alert) { [weakSelf.alerts addObject:alert]; };
+	[self.controllers addObject:controller];
+	[controller beginSheetForWindow:self.window completion:^(BOOL applied) { [weakSelf.completions addObject:@(applied)]; }];
+
+	// Nothing at first (a fast load never flashes it), then the loading sheet
+	XCTAssertNil(controller.loadingSheet);
+	XCTAssertNil(self.window.attachedSheet);
+	XCTAssertTrue([self spinUntil:^BOOL{ return self.window.attachedSheet != nil; } timeout:2]);
+	SPLoadingSheet *loading = controller.loadingSheet;
+	XCTAssertNotNil(loading);
+	XCTAssertEqual(self.window.attachedSheet, [loading panel]);
+	XCTAssertEqualObjects([[loading messageField] stringValue], @"Loading users…");
+	XCTAssertTrue([[loading spinner] usesThreadedAnimation]);
+	XCTAssertNotNil([loading cancelButton]);
+	XCTAssertEqual(controller.windowForConnectorSheets, [loading panel], @"an SSH sheet goes on the loading sheet");
+
+	// The connection comes: the Users sheet replaces it
+	PGPostgresConnection *connection = [SPPostgresTestServers connectedConnectionOnPort:55418 database:@"pgkit_test"];
+	[self.openConnections addObject:connection];
+	pendingCompletion(connection, nil);
+	XCTAssertNil(controller.loadingSheet);
+	XCTAssertFalse([loading isShown]);
+	XCTAssertTrue([self spinUntil:^BOOL{ return self.window.attachedSheet == controller.sheet; } timeout:5], @"%@", controller.lastErrorMessage);
+	XCTAssertGreaterThan(controller.editedRoles.count, 0u);
+	XCTAssertEqual(self.completions.count, 0u);
+}
+
+/// Cancel on "Loading users…": the Users sheet never opens and a connection that comes later is closed.
+- (void)testCancellingTheLoadingSheet
+{
+	__block void (^pendingCompletion)(PGPostgresConnection *, NSError *) = nil;
+	SPPostgresUsersController *controller = [[SPPostgresUsersController alloc] initWithDatabase:@"pgkit_test" connectionProvider:^(NSString *database, void (^completion)(PGPostgresConnection *, NSError *)) {
+		pendingCompletion = completion;
+	}];
+	__weak SPPostgresUsersControllerTests *weakSelf = self;
+	controller.alertPresenter = ^(NSAlert *alert) { [weakSelf.alerts addObject:alert]; };
+	[self.controllers addObject:controller];
+	[controller beginSheetForWindow:self.window completion:^(BOOL applied) { [weakSelf.completions addObject:@(applied)]; }];
+	XCTAssertTrue([self spinUntil:^BOOL{ return controller.loadingSheet != nil; } timeout:2]);
+
+	[[(SPLoadingSheet *)controller.loadingSheet cancelButton] performClick:nil];
+	XCTAssertTrue([self spinUntil:^BOOL{ return self.window.attachedSheet == nil; } timeout:5]);
+	XCTAssertEqualObjects(self.completions, @[@NO]);
+	XCTAssertNil(controller.loadingSheet);
+
+	PGPostgresConnection *late = [SPPostgresTestServers connectedConnectionOnPort:55418 database:@"pgkit_test"];
+	pendingCompletion(late, nil);
+	XCTAssertFalse([late isConnected], @"closed: nobody wants it now");
+	XCTAssertNil(self.window.attachedSheet);
+	XCTAssertEqual(self.completions.count, 1u);
+	XCTAssertEqual(self.alerts.count, 0u);
+}
+
+/// A slow connection that fails: the loading sheet ends before the error is shown.
+- (void)testLoadingSheetEndsBeforeAnError
+{
+	__block void (^pendingCompletion)(PGPostgresConnection *, NSError *) = nil;
+	SPPostgresUsersController *controller = [[SPPostgresUsersController alloc] initWithDatabase:@"pgkit_test" connectionProvider:^(NSString *database, void (^completion)(PGPostgresConnection *, NSError *)) {
+		pendingCompletion = completion;
+	}];
+	__weak SPPostgresUsersControllerTests *weakSelf = self;
+	__block NSWindow *sheetWhenAlerted = (NSWindow *)[NSNull null];
+	controller.alertPresenter = ^(NSAlert *alert) { sheetWhenAlerted = weakSelf.window.attachedSheet; [weakSelf.alerts addObject:alert]; };
+	[self.controllers addObject:controller];
+	[controller beginSheetForWindow:self.window completion:^(BOOL applied) { [weakSelf.completions addObject:@(applied)]; }];
+	XCTAssertTrue([self spinUntil:^BOOL{ return controller.loadingSheet != nil; } timeout:2]);
+
+	pendingCompletion(nil, [NSError errorWithDomain:@"test" code:1 userInfo:@{NSLocalizedDescriptionKey: @"no route to host"}]);
+	XCTAssertEqual(self.alerts.count, 1u);
+	XCTAssertNil(sheetWhenAlerted, @"the loading sheet was gone when the error came");
+	XCTAssertEqualObjects(self.completions, @[@NO]);
+	XCTAssertTrue([self spinUntil:^BOOL{ return self.window.attachedSheet == nil; } timeout:5]);
+}
+
+/// A fast load (the connection at once) shows no loading sheet, even after the delay.
+- (void)testFastLoadShowsNoLoadingSheet
+{
+	SPPostgresUsersController *controller = [self beginOn:@55418];
+	[self spinUntil:^BOOL{ return NO; } timeout:0.5];
+	XCTAssertNil(controller.loadingSheet);
+	XCTAssertEqual(self.window.attachedSheet, controller.sheet);
+}
+
 @end
+

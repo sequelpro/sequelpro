@@ -89,6 +89,7 @@
 	
 #ifndef SP_CODA /* ivars */
     SPUserManager *userManagerInstance;
+    BOOL userManagerLoading; // "Loading users…" is up (see -showUserManager:)
 #endif
 	SPServerSupport *serverSupport;
 	

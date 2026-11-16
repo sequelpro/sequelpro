@@ -99,6 +99,7 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	// The test-run-wide guard (SPTestPrefsGuard.m) is in place: nothing in these tests may write the real preferences
 	XCTAssertEqualObjects([[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][SPTestTransferAddedKey], @YES);
 	XCTAssertEqualObjects([[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][SPTestTransferMovedKey], @YES);
+	XCTAssertEqualObjects([[NSUserDefaults standardUserDefaults] volatileDomainForName:NSArgumentDomain][SPTestUsersPlacedKey], @YES);
 	// MySQL tabs preselect no saved favorite, so they never read a password from the keychain
 	XCTAssertFalse([[NSUserDefaults standardUserDefaults] boolForKey:SPTestSelectLastFavoriteUsedKey]);
 	XCTAssertEqual([[NSUserDefaults standardUserDefaults] integerForKey:SPTestDefaultFavoriteKey], 0);
@@ -214,6 +215,9 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 						SPTestUsers, SPTestShowConsole];
 	NSMutableArray *expected = [before mutableCopy];
 	[expected insertObject:SPTestTransfer atIndex:[before indexOfObject:SPTestQuery] + 1];
+	// and Users moves from the right to right after Transfer
+	[expected removeObject:SPTestUsers];
+	[expected insertObject:SPTestUsers atIndex:[expected indexOfObject:SPTestTransfer] + 1];
 	XCTAssertEqualObjects([mysql toolbarDefaultItemIdentifiers:toolbar], expected);
 
 	// -toolbarAllowedItemIdentifiers: at base commit 72190e4, plus Transfer
@@ -411,6 +415,74 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	XCTAssertEqualObjects([[other items] valueForKey:@"itemIdentifier"], otherSaved);
 }
 
+#pragma mark One-time placing of Users after Transfer
+
+- (void)testUsersAddedAfterTransferToALayoutWithoutIt
+{
+	// The owner's layout: Users removed from the right (or never there)
+	SPToolbarTestsDelegate *delegate = nil;
+	NSArray *saved = @[SPTestDatabase, SPTestStructure, SPTestContent, SPTestQuery, SPTestTransfer, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestShowConsole];
+	NSToolbar *toolbar = [self toolbarWithLayout:saved delegate:&delegate];
+	SPToolbarTestsDefaults *defaults = [[SPToolbarTestsDefaults alloc] init];
+
+	XCTAssertTrue(SPPlaceUsersToolbarItemAfterTransferIfNeeded(toolbar, defaults));
+	NSArray *expected = @[SPTestDatabase, SPTestStructure, SPTestContent, SPTestQuery, SPTestTransfer, SPTestUsers, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestShowConsole];
+	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"], expected);
+	XCTAssertEqualObjects(defaults.values[SPTestUsersPlacedKey], @YES);
+
+	// Removed by the user afterwards: not added again
+	[toolbar removeItemAtIndex:5];
+	XCTAssertFalse(SPPlaceUsersToolbarItemAfterTransferIfNeeded(toolbar, defaults));
+	XCTAssertFalse([[[toolbar items] valueForKey:@"itemIdentifier"] containsObject:SPTestUsers]);
+}
+
+- (void)testUsersOnTheRightMovesAfterTransfer
+{
+	SPToolbarTestsDelegate *delegate = nil;
+	NSArray *saved = @[SPTestDatabase, SPTestQuery, SPTestTransfer, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestUsers, SPTestShowConsole];
+	NSToolbar *toolbar = [self toolbarWithLayout:saved delegate:&delegate];
+	XCTAssertTrue(SPPlaceUsersToolbarItemAfterTransferIfNeeded(toolbar, [[SPToolbarTestsDefaults alloc] init]));
+	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"],
+						  (@[SPTestDatabase, SPTestQuery, SPTestTransfer, SPTestUsers, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestShowConsole]));
+
+	// Before Transfer: moved after it
+	SPToolbarTestsDelegate *otherDelegate = nil;
+	NSToolbar *other = [self toolbarWithLayout:@[SPTestUsers, SPTestDatabase, SPTestTransfer, SPTestShowConsole] delegate:&otherDelegate];
+	XCTAssertTrue(SPPlaceUsersToolbarItemAfterTransferIfNeeded(other, [[SPToolbarTestsDefaults alloc] init]));
+	XCTAssertEqualObjects([[other items] valueForKey:@"itemIdentifier"], (@[SPTestDatabase, SPTestTransfer, SPTestUsers, SPTestShowConsole]));
+}
+
+- (void)testUsersAlreadyAfterTransferIsOnlyRecorded
+{
+	SPToolbarTestsDelegate *delegate = nil;
+	NSArray *saved = @[SPTestDatabase, SPTestQuery, SPTestTransfer, SPTestUsers, SPTestShowConsole];
+	NSToolbar *toolbar = [self toolbarWithLayout:saved delegate:&delegate];
+	SPToolbarTestsDefaults *defaults = [[SPToolbarTestsDefaults alloc] init];
+	XCTAssertFalse(SPPlaceUsersToolbarItemAfterTransferIfNeeded(toolbar, defaults));
+	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"], saved);
+	XCTAssertEqualObjects(defaults.values[SPTestUsersPlacedKey], @YES);
+}
+
+- (void)testUsersWithoutTransferGoesAfterQueryElseBeforeConsole
+{
+	SPToolbarTestsDelegate *delegate = nil;
+	NSToolbar *toolbar = [self toolbarWithLayout:@[SPTestDatabase, SPTestQuery, SPTestHistory, SPTestShowConsole] delegate:&delegate];
+	XCTAssertTrue(SPPlaceUsersToolbarItemAfterTransferIfNeeded(toolbar, [[SPToolbarTestsDefaults alloc] init]));
+	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"], (@[SPTestDatabase, SPTestQuery, SPTestUsers, SPTestHistory, SPTestShowConsole]));
+
+	SPToolbarTestsDelegate *otherDelegate = nil;
+	NSToolbar *other = [self toolbarWithLayout:@[SPTestDatabase, SPTestHistory, SPTestShowConsole] delegate:&otherDelegate];
+	XCTAssertTrue(SPPlaceUsersToolbarItemAfterTransferIfNeeded(other, [[SPToolbarTestsDefaults alloc] init]));
+	XCTAssertEqualObjects([[other items] valueForKey:@"itemIdentifier"], (@[SPTestDatabase, SPTestHistory, SPTestUsers, SPTestShowConsole]));
+
+	// Placed by the user, with neither: left where it is
+	SPToolbarTestsDelegate *thirdDelegate = nil;
+	NSArray *placed = @[SPTestUsers, SPTestDatabase, SPTestShowConsole];
+	NSToolbar *third = [self toolbarWithLayout:placed delegate:&thirdDelegate];
+	XCTAssertFalse(SPPlaceUsersToolbarItemAfterTransferIfNeeded(third, [[SPToolbarTestsDefaults alloc] init]));
+	XCTAssertEqualObjects([[third items] valueForKey:@"itemIdentifier"], placed);
+}
+
 - (void)testStandardDefaultsInTestsNeverInsert
 {
 	// The volatile argument-domain override (see SPToolbarTestsPrefsGuard) reads YES, so the real
@@ -430,6 +502,11 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	NSArray *withTransfer = @[SPTestDatabase, SPTestQuery, SPTestUsers, SPTestTransfer];
 	NSToolbar *moved = [self toolbarWithLayout:withTransfer delegate:&movedDelegate];
 	XCTAssertFalse(SPMoveTransferToolbarItemAfterQueryIfNeeded(moved, prefs));
+	XCTAssertEqualObjects([[moved items] valueForKey:@"itemIdentifier"], withTransfer);
+
+	// Nor by placing Users
+	XCTAssertTrue([prefs boolForKey:SPTestUsersPlacedKey]);
+	XCTAssertFalse(SPPlaceUsersToolbarItemAfterTransferIfNeeded(moved, prefs));
 	XCTAssertEqualObjects([[moved items] valueForKey:@"itemIdentifier"], withTransfer);
 }
 
@@ -454,7 +531,7 @@ static NSString * const SPTestUsers = @"SwitchToUserManagerToolbarItemIdentifier
 	XCTAssertEqualObjects([NSSet setWithArray:allowed], mysqlAllowed, @"identical to MySQL's");
 
 	NSArray *expected = @[SPTestDatabase, SPTestStructure, SPTestContent, SPTestRelations, SPTestTriggers, SPTestTableInfo,
-						  SPTestQuery, SPTestTransfer, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestUsers, SPTestShowConsole];
+						  SPTestQuery, SPTestTransfer, SPTestUsers, NSToolbarFlexibleSpaceItemIdentifier, SPTestHistory, SPTestShowConsole];
 	XCTAssertEqualObjects([[toolbar delegate] toolbarDefaultItemIdentifiers:toolbar], expected);
 	XCTAssertEqualObjects([mysql toolbarDefaultItemIdentifiers:mysqlToolbar], expected);
 	XCTAssertEqualObjects([[toolbar items] valueForKey:@"itemIdentifier"], expected);

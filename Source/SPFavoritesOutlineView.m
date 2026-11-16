@@ -42,6 +42,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 @implementation SPFavoritesOutlineView
 
 @synthesize justGainedFocus;
+@synthesize menuRow;
 @synthesize itemForDoubleAction = _itemForDoubleAction;
 
 - (void)awakeFromNib
@@ -71,6 +72,8 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {	
+	menuRow = -1;
+
 	// If more than one row is selected only return the default contextual menu
 	if ([self numberOfSelectedRows] > 1) return [self menu];
 	
@@ -80,6 +83,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	if ((row >= 0) && (row < [self numberOfRows])) {
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 		[[self window] makeFirstResponder:self];
+		menuRow = row;
 	}
 	
 	return [self menu];

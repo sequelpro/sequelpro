@@ -44,9 +44,9 @@ NSArray *SPMainToolbarDefaultItemIdentifiers(void)
 		SPMainToolbarTableInfo,
 		SPMainToolbarCustomQuery,
 		SPMainToolbarTransfer,
+		SPMainToolbarUserManager,
 		NSToolbarFlexibleSpaceItemIdentifier,
 		SPMainToolbarHistoryNavigation,
-		SPMainToolbarUserManager,
 		SPMainToolbarShowConsole
 	];
 }
@@ -61,6 +61,52 @@ NSArray *SPMainToolbarSelectableItemIdentifiers(void)
 		SPMainToolbarTableRelations,
 		SPMainToolbarTableTriggers
 	];
+}
+
+/// One person in r: a head over rounded shoulders.
+static NSBezierPath *SPToolbarPersonPath(NSRect r)
+{
+	CGFloat w = NSWidth(r), h = NSHeight(r);
+	CGFloat headDiameter = w * 0.46;
+	NSBezierPath *path = [NSBezierPath bezierPathWithOvalInRect:NSMakeRect(NSMidX(r) - headDiameter / 2, NSMaxY(r) - headDiameter, headDiameter, headDiameter)];
+
+	CGFloat bodyTop = NSMinY(r) + h * 0.50;
+	[path moveToPoint:NSMakePoint(NSMinX(r), NSMinY(r))];
+	[path lineToPoint:NSMakePoint(NSMinX(r), bodyTop - w * 0.30)];
+	[path curveToPoint:NSMakePoint(NSMidX(r), bodyTop) controlPoint1:NSMakePoint(NSMinX(r), bodyTop - w * 0.05) controlPoint2:NSMakePoint(NSMidX(r) - w * 0.30, bodyTop)];
+	[path curveToPoint:NSMakePoint(NSMaxX(r), bodyTop - w * 0.30) controlPoint1:NSMakePoint(NSMidX(r) + w * 0.30, bodyTop) controlPoint2:NSMakePoint(NSMaxX(r), bodyTop - w * 0.05)];
+	[path lineToPoint:NSMakePoint(NSMaxX(r), NSMinY(r))];
+	[path closePath];
+	return path;
+}
+
+NSImage *SPUsersToolbarImage(void)
+{
+	NSImage *image = [NSImage imageWithSize:NSMakeSize(24, 24) flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+		CGFloat scale = NSWidth(dstRect) / 24;
+		NSRect back = NSMakeRect(11.5 * scale, 4 * scale, 11 * scale, 16 * scale);
+		NSRect front = NSMakeRect(2 * scale, 1.5 * scale, 13 * scale, 19 * scale);
+
+		// The one behind lighter (a template image keeps the alpha: grey, and light grey in Dark Mode)
+		[[NSColor colorWithWhite:0 alpha:0.45] setFill];
+		[SPToolbarPersonPath(back) fill];
+
+		// A clear gap around the one in front, so the two read apart
+		[NSGraphicsContext saveGraphicsState];
+		[[NSGraphicsContext currentContext] setCompositingOperation:NSCompositingOperationClear];
+		NSBezierPath *gap = SPToolbarPersonPath(front);
+		[gap setLineWidth:2.5 * scale];
+		[gap stroke];
+		[gap fill];
+		[NSGraphicsContext restoreGraphicsState];
+
+		[[NSColor blackColor] setFill];
+		[SPToolbarPersonPath(front) fill];
+		return YES;
+	}];
+	// Black, as Transfer's symbol, and white in Dark Mode
+	[image setTemplate:YES];
+	return image;
 }
 
 NSToolbarItem *SPCreateMainToolbarItem(NSString *identifier)
@@ -130,7 +176,14 @@ NSToolbarItem *SPCreateMainToolbarItem(NSString *identifier)
 		[item setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[item setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[item setToolTip:NSLocalizedString(@"Switch to the User Manager tab", @"tooltip for toolbar item for switching to the User Manager tab")];
-		image = [NSImage imageNamed:NSImageNameEveryone];
+		// Drawn as the other items are (not in a bordered button, which AppKit would give an image item with an action)
+		image = SPUsersToolbarImage();
+		[item setBordered:NO];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+		[item setMinSize:NSMakeSize(28, 28)];
+		[item setMaxSize:NSMakeSize(28, 28)];
+#pragma clang diagnostic pop
 	}
 	else if ([identifier isEqualToString:SPMainToolbarTransfer]) {
 		// MySQL → MySQL Transfer (SPDatabaseDocument -showTransfer:; enabled by its validation)

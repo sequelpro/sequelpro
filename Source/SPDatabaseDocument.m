@@ -88,6 +88,7 @@
 #import "SPHelpViewerController.h"
 #import "SPToolbarTransferItem.h"
 #import "SPMySQLTransferController.h"
+#import "SPLoadingSheet.h"
 #import "SPMainToolbar.h"
 
 #import <SPMySQL/SPMySQL.h>
@@ -2599,7 +2600,10 @@ static BOOL isOSAtLeast10_14;
 }
 
 - (IBAction)showUserManager:(id)sender
-{	
+{
+	// Already getting ready (clicked again while "Loading users…" is up)
+	if (userManagerLoading) return;
+
 	if (!userManagerInstance)
 	{
 		userManagerInstance = [[SPUserManager alloc] init];
@@ -2609,10 +2613,43 @@ static BOOL isOSAtLeast10_14;
 		[userManagerInstance setServerSupport:serverSupport];
 	}
 
-	// Before displaying the user manager make sure the current user has access to the mysql.user table.
-	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT user FROM mysql.user LIMIT 1"];
-	
-	if ([mySQLConnection queryErrored] && ([result numberOfRows] == 0)) {
+	// The checks and the users take a few queries, seconds on a slow or remote server: say so at once instead of
+	// leaving the window frozen
+	userManagerLoading = YES;
+	__block BOOL cancelled = NO;
+	SPLoadingSheet *loading = [[SPLoadingSheet beginOnWindow:parentWindow
+													 message:NSLocalizedString(@"Loading users…", @"user manager: loading sheet message")
+											   cancelHandler:^{ cancelled = YES; }] retain];
+
+	// Before displaying the user manager make sure the current user has access to the mysql.user table (off the main
+	// thread, so the window stays responsive and the sheet's Cancel works)
+	SPMySQLConnection *connection = [mySQLConnection retain];
+	[self retain]; // until the check has come back
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		SPMySQLResult *result = [connection queryString:@"SELECT user FROM mysql.user LIMIT 1"];
+		BOOL failed = [connection queryErrored] && ([result numberOfRows] == 0);
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self _userManagerAccessChecked:!failed loading:loading cancelled:cancelled];
+			[loading release];
+			[connection release];
+			[self autorelease];
+		});
+	});
+}
+
+/// The rest of -showUserManager:, on the main thread once the mysql.user check has come back.
+- (void)_userManagerAccessChecked:(BOOL)allowed loading:(SPLoadingSheet *)loading cancelled:(BOOL)cancelled
+{
+	userManagerLoading = NO;
+
+	// Cancel on "Loading users…": nothing is shown
+	if (cancelled) {
+		SPClear(userManagerInstance);
+		return;
+	}
+
+	if (!allowed) {
+		[loading end];
 
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
 		                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
@@ -2629,7 +2666,11 @@ static BOOL isOSAtLeast10_14;
 	
 		return;
 	}
-	
+
+	// The window reads the users as it loads, while "Loading users…" stays up (its indicator still spinning)
+	[userManagerInstance window];
+	[loading end];
+
 	[userManagerInstance beginSheetModalForWindow:parentWindow completionHandler:^(){
 		SPClear(userManagerInstance);
 	}];
@@ -4435,6 +4476,8 @@ static BOOL isOSAtLeast10_14;
 	SPInsertTransferToolbarItemIfNeeded(mainToolbar, prefs);
 	// and, once, a saved layout's Transfer moves from after Users to right after Query
 	SPMoveTransferToolbarItemAfterQueryIfNeeded(mainToolbar, prefs);
+	// and, once, Users goes right after Transfer (added to a layout that lacks it)
+	SPPlaceUsersToolbarItemAfterTransferIfNeeded(mainToolbar, prefs);
 
 	// Compact title and toolbar layout, kept centered as the window resizes
 	[parentWindow sp_useExpandedCompactToolbar];

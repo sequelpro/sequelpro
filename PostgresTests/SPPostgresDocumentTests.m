@@ -468,8 +468,8 @@ static const NSUInteger SPPostgresDocumentTestPort = 55418;
 		*tableInfo = @"SwitchToTableInfoToolbarItemIdentifier", *relations = @"SwitchToTableRelationsToolbarItemIdentifier",
 		*triggers = @"SwitchToTableTriggersToolbarItemIdentifier", *users = @"SwitchToUserManagerToolbarItemIdentifier",
 		*transfer = @"TransferToolbarItemIdentifier";
-	NSArray *expected = @[database, structure, content, relations, triggers, tableInfo, query, transfer,
-						  NSToolbarFlexibleSpaceItemIdentifier, history, users, console];
+	NSArray *expected = @[database, structure, content, relations, triggers, tableInfo, query, transfer, users,
+						  NSToolbarFlexibleSpaceItemIdentifier, history, console];
 	NSToolbar *toolbar = [self window].toolbar;
 	XCTAssertNotNil(toolbar);
 	XCTAssertEqual(toolbar, [self.document toolbar]);
