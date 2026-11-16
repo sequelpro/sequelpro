@@ -337,6 +337,35 @@ BOOL SPPostgresRunGuardedRead(PGPostgresConnection *connection, NSString *savepo
 	return YES;
 }
 
+- (NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *)foreignKeyReferences:(NSError **)error
+{
+	// conkey and confkey are int2[] (1-based subscripts): their first entries pair the first column with the one it references
+	PGPostgresResult *result = [self run:
+		@"SELECT a.attname::text AS col, rn.nspname::text AS refschema, rc.relname::text AS reftable, ra.attname::text AS refcol "
+		 "FROM pg_constraint con "
+		 "JOIN pg_class c ON c.oid = con.conrelid JOIN pg_namespace n ON n.oid = c.relnamespace "
+		 "JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = con.conkey[1] "
+		 "JOIN pg_class rc ON rc.oid = con.confrelid JOIN pg_namespace rn ON rn.oid = rc.relnamespace "
+		 "JOIN pg_attribute ra ON ra.attrelid = con.confrelid AND ra.attnum = con.confkey[1] "
+		 "WHERE con.contype = 'f' AND n.nspname = $1::text AND c.relname = $2::text "
+		 "ORDER BY con.conname"
+								  values:@[_schema ?: @"", _table ?: @""] error:error];
+	if (!result) return nil;
+
+	NSMutableDictionary *references = [NSMutableDictionary dictionary];
+	for (NSDictionary *row in result) {
+		NSString *column = [row objectForKey:@"col"];
+		NSString *refSchema = [row objectForKey:@"refschema"];
+		NSString *refTable = [row objectForKey:@"reftable"];
+		NSString *refColumn = [row objectForKey:@"refcol"];
+		if (![column isKindOfClass:[NSString class]] || ![refSchema isKindOfClass:[NSString class]]
+			|| ![refTable isKindOfClass:[NSString class]] || ![refColumn isKindOfClass:[NSString class]]) continue;
+		if ([references objectForKey:column]) continue;
+		[references setObject:@{@"schema" : refSchema, @"table" : refTable, @"column" : refColumn} forKey:column];
+	}
+	return references;
+}
+
 - (SPPostgresColumn *)columnNamed:(NSString *)name error:(NSError **)error
 {
 	for (SPPostgresColumn *column in _columns) {

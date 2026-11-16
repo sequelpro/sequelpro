@@ -147,6 +147,13 @@ __attribute__((visibility("default")))
 /// Why the rows can't be edited, or nil when they can.
 - (NSString *)readOnlyReason;
 
+/**
+ * The foreign keys of the relation, as MySQL's Content link arrows: column name → @{@"schema", @"table", @"column"},
+ * the referenced table and column, for each column that is the first column of a FOREIGN KEY constraint (the first
+ * such constraint by name, when there are several). Empty for a relation without any; nil on failure.
+ */
+- (NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *)foreignKeyReferences:(NSError **)error;
+
 /// A page of rows; limit 0 means no limit. column may be nil for no explicit sort; rows are then in primary-key order (if any), and the
 /// primary key also breaks ties after the sort column, so paging is stable. filter may be nil.
 - (NSArray *)rowsWithFilter:(SPPostgresFilter *)filter sortColumn:(NSString *)column ascending:(BOOL)ascending

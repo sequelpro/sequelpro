@@ -3,6 +3,7 @@
 @class PGPostgresConnection;
 @class SPPostgresTaskRunner;
 @class SPPostgresPaginationView;
+@class SPPostgresFilter;
 
 /**
  * The Content view of a PostgreSQL tab, laid out as MySQL's Content tab: a filter bar on top (column,
@@ -34,6 +35,13 @@ __attribute__((visibility("default")))
 /// Shows the rows of schema.table from the first page, unfiltered and unsorted. A nil table empties the grid.
 /// If the rows can't be loaded the error is shown and the grid is empty (only Refresh, to retry, is enabled).
 - (void)showTable:(NSString *)table inSchema:(NSString *)schema;
+
+/**
+ * As -showTable:inSchema:, starting with theFilter instead of no filter: the filter bar is shown (without changing its
+ * preference) holding it, and the first page is the rows it matches. A filter on a column the table doesn't have is
+ * dropped. The Content view's foreign key links open their table this way.
+ */
+- (void)showTable:(NSString *)table inSchema:(NSString *)schema filter:(SPPostgresFilter *)filter;
 
 /// Reloads the current page (keeping the filter and sort). On failure the rows stay and the error is shown.
 - (void)reload;
@@ -127,5 +135,19 @@ __attribute__((visibility("default")))
 /// completion after a table switch or -invalidate, or for a row that is gone, changes nothing. One sheet at a time.
 /// nil (the default) shows MySQL's field editor (SPFieldEditorController) as a sheet on the view's window.
 @property (copy) void (^fieldEditorPresenter)(NSString *value, NSString *columnName, NSString *typeName, BOOL editable, BOOL allowNull, void (^completion)(id newValue));
+
+/**
+ * Foreign keys, as MySQL's Content link arrows: a column that is the first column of a FOREIGN KEY has an arrow after
+ * the value of each cell that isn't NULL (none on the cell or row being edited, or on a new row not yet inserted).
+ * Clicking it shows the referenced rows: in this view, with an "=" filter on the referenced column, when the key
+ * references this table; otherwise through this block (schema, table and column referenced, and the cell's value),
+ * NSBeep when it is nil. Nothing happens while the runner is busy (NSBeep).
+ */
+@property (copy) void (^foreignKeyFollower)(NSString *schema, NSString *table, NSString *column, NSString *value);
+/// The shown table's foreign keys (see SPPostgresTableData -foreignKeyReferences:), loaded with its columns (empty
+/// when they can't be read).
+@property (readonly) NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *foreignKeyReferences;
+/// As clicking the link arrow of a cell (row, and the column's index in the table).
+- (void)followForeignKeyAtRow:(NSInteger)row column:(NSUInteger)columnIndex;
 
 @end

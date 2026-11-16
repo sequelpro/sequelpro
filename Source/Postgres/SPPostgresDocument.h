@@ -95,6 +95,9 @@ __attribute__((visibility("default")))
  * runner, not polled). A schema that can't be loaded, or a name that isn't listed, leaves the tab as it is.
  */
 - (void)selectRelationAfterLoad:(NSString *)name inSchema:(NSString *)schema;
+/// A Content foreign key link: selects schema.table (switching the sidebar's schema first) and shows its rows whose
+/// column equals value in Content (NSBeep when it isn't listed or the selection can't change).
+- (void)showRowsOfTable:(NSString *)table inSchema:(NSString *)schema whereColumn:(NSString *)column equals:(NSString *)value;
 
 /**
  * The same, showing `pane` (Structure, Content, Relations, Triggers, Table Info or Query; nil or another one: the pane

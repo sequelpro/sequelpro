@@ -6,6 +6,13 @@ Upgrading from 2.0.2.
 
 - Version **2.0.3**.
 
+### Foreign key links in Content (PostgreSQL)
+In the Content view, a column that is a foreign key now shows a small arrow after each value, as MySQL's Content view does. Click it to open the table the key points to, showing just the matching row.
+- The other table is selected in the left panel (switching schema when it's in another one) and its filter bar is shown holding the filter (for example `id = 2`), so you can change or clear it. Clearing it shows every row again.
+- A key into the same table (such as `parent_id`) filters this table. A key over several columns follows its first column.
+- There's no arrow on NULL values, on the row being edited, or on a new row that isn't saved yet.
+- Following a link is a place in History, so Back returns to the table you came from.
+
 ### Filters in Transfer's To: and Database: menus (PostgreSQL)
 A **Filter** field beside each of the Transfer sheet's **To:** and **Database:** menus narrows that menu to the names containing what you type (upper or lower case, with or without accents).
 - When you pause typing (half a second), the menu opens showing the matches; choose one, or press Esc to type more. It doesn't open when nothing matches.

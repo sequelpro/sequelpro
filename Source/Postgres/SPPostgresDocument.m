@@ -1,6 +1,7 @@
 #import "SPPostgresDocument.h"
 #import "SPPostgresSidebarController.h"
 #import "SPPostgresContentController.h"
+#import "SPPostgresTableData.h"
 #import "SPPostgresStructureController.h"
 #import "SPPostgresRelationsController.h"
 #import "SPPostgresTriggersController.h"
@@ -172,6 +173,7 @@ NSString * const SPPostgresPaneExtension = @"extension";
 	SPPostgresConsoleLogger *logger;
 	SPPostgresSidebarController *sidebar;
 	SPPostgresContentController *contentController;
+	NSDictionary *pendingContentLink; // a foreign key link being followed: @{schema, table, filter} for the next show of that table
 	SPPostgresStructureController *structureController;
 	SPPostgresRelationsController *relationsController;
 	SPPostgresTriggersController *triggersController;
@@ -387,6 +389,7 @@ NSString * const SPPostgresPaneExtension = @"extension";
 	[logger release];
 	[sidebar release];
 	[contentController release];
+	[pendingContentLink release];
 	[structureController release];
 	[relationsController release];
 	[triggersController release];
@@ -668,6 +671,9 @@ NSString * const SPPostgresPaneExtension = @"extension";
 	__block SPPostgresDocument *document = self;
 	[contentController setAlertPresenter:^(NSAlert *alert) {
 		[document _presentAlert:alert];
+	}];
+	[contentController setForeignKeyFollower:^(NSString *refSchema, NSString *refTable, NSString *refColumn, NSString *value) {
+		[document showRowsOfTable:refTable inSchema:refSchema whereColumn:refColumn equals:value];
 	}];
 
 	NSView *contentView = [contentController view];
@@ -1540,8 +1546,16 @@ static BOOL SPPostgresPaneIsInScope(NSString *pane)
 	NSString *schema = [sidebar selectedSchema];
 
 	// A switch to this table that was cancelled (the view is stale) loads it again
-	if (![table isEqualToString:[contentController table]] || ![schema isEqualToString:[contentController schema]] || !table || [contentController isStale]) {
-		[contentController showTable:table inSchema:schema];
+	// A foreign key link being followed to this table starts it with its filter
+	SPPostgresFilter *linkFilter = nil;
+	if (pendingContentLink && [[pendingContentLink objectForKey:@"table"] isEqualToString:table] && [[pendingContentLink objectForKey:@"schema"] isEqualToString:schema]) {
+		linkFilter = [[[pendingContentLink objectForKey:@"filter"] retain] autorelease];
+	}
+	[pendingContentLink release];
+	pendingContentLink = nil;
+
+	if (linkFilter || ![table isEqualToString:[contentController table]] || ![schema isEqualToString:[contentController schema]] || !table || [contentController isStale]) {
+		[contentController showTable:table inSchema:schema filter:linkFilter];
 		contentNeedsReload = NO;
 		contentNeedsReset = NO;
 	}
@@ -2898,6 +2912,41 @@ static BOOL SPPostgresPaneIsInScope(NSString *pane)
 	};
 	if ([schema length]) [sidebar reloadSchema:schema completion:[self _quietSidebarCompletion:show]];
 	else show(YES);
+}
+
+/**
+ * A Content foreign key link: the table (in its schema, the sidebar switching to it first) selected, as a click in the
+ * sidebar would (a place in History), its Content starting with the rows whose column equals value. NSBeep when the
+ * table isn't listed or the selection can't change (an edit that can't be saved).
+ */
+- (void)showRowsOfTable:(NSString *)theTable inSchema:(NSString *)theSchema whereColumn:(NSString *)column equals:(NSString *)value
+{
+	if (tornDown || ![theTable length] || ![theSchema length] || ![column length]) return;
+	if (isProcessing) {
+		NSBeep();
+		return;
+	}
+
+	NSDictionary *link = @{@"schema" : [[theSchema copy] autorelease], @"table" : [[theTable copy] autorelease],
+						   @"filter" : [SPPostgresFilter filterWithColumn:column comparison:@"=" value:value ?: @""]};
+	void (^select)(BOOL) = ^(BOOL loaded) {
+		if (![[link objectForKey:@"schema"] isEqualToString:[sidebar selectedSchema]]) {
+			NSBeep();
+			return;
+		}
+		[pendingContentLink release];
+		pendingContentLink = [link retain];
+		BOOL selected = [sidebar selectTableNamed:[link objectForKey:@"table"]];
+		// Taken by -_showSelectedTable when the selection changed; still here if it didn't
+		if (pendingContentLink) {
+			[pendingContentLink release];
+			pendingContentLink = nil;
+			if (!selected) NSBeep();
+		}
+	};
+
+	if ([theSchema isEqualToString:[sidebar selectedSchema]]) select(YES);
+	else [sidebar reloadSchema:theSchema completion:[self _quietSidebarCompletion:select]];
 }
 
 - (void)selectRelationAfterLoad:(NSString *)name inSchema:(NSString *)schema

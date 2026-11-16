@@ -9,6 +9,7 @@
 #import "SPPostgresDateTimePicker.h"
 #import "SPPostgresPaginationView.h"
 #import "SPPostgresRowsGrid.h"
+#import "SPTextAndLinkCell.h"
 
 // MySQL's Content tab (DBView.xib): 23 pt button bar, 32 x 25 textured buttons
 static const CGFloat SPPostgresContentBottomBarHeight = 23;
@@ -81,6 +82,7 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 	PGPostgresConnection *connection;
 	SPPostgresTableData *tableData;
 	NSArray *columns;               // SPPostgresColumn, in grid order (identifier = index)
+	NSDictionary *foreignKeys;      // column name → the referenced schema, table and column (-foreignKeyReferences)
 	NSMutableArray *rows;           // NSArray of NSString / NSNull
 	BOOL editable;
 	BOOL loaded;                    // the current table's rows loaded at least once (the grid and counts are its own)
@@ -147,6 +149,7 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 @synthesize alertPresenter;
 @synthesize confirmationPresenter;
 @synthesize fieldEditorPresenter;
+@synthesize foreignKeyFollower;
 @synthesize taskRunner;
 @synthesize pasteboard;
 @synthesize stale;
@@ -206,6 +209,7 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 	[defaults release];
 	[tableData release];
 	[columns release];
+	[foreignKeys release];
 	[rows release];
 	[pendingEditedColumns release];
 	[filter release];
@@ -272,6 +276,13 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 	confirmationPresenter = nil;
 	[fieldEditorPresenter release];
 	fieldEditorPresenter = nil;
+	[foreignKeyFollower release];
+	foreignKeyFollower = nil;
+	// The link arrows' cells keep a plain pointer to this controller
+	for (NSTableColumn *tableColumn in [tableView tableColumns]) {
+		id cell = [tableColumn dataCell];
+		if ([cell isKindOfClass:[SPTextAndLinkCell class]]) [cell setTarget:nil action:NULL];
+	}
 	// A date / time picker this view opened (its completion sees invalidated)
 	if (fieldEditorPending) [[SPPostgresDateTimePicker currentPicker] cancel:nil];
 }
@@ -648,6 +659,11 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 
 - (void)showTable:(NSString *)theTable inSchema:(NSString *)theSchema
 {
+	[self showTable:theTable inSchema:theSchema filter:nil];
+}
+
+- (void)showTable:(NSString *)theTable inSchema:(NSString *)theSchema filter:(SPPostgresFilter *)startFilter
+{
 	if (invalidated) return;
 	if ([tableView currentEditor]) [tableView abortEditing];
 
@@ -658,6 +674,8 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 	tableData = nil;
 	[columns release];
 	columns = [@[] retain];
+	[foreignKeys release];
+	foreignKeys = [@{} retain];
 	[rows removeAllObjects];
 	[self _clearPendingRow];
 	[filter release];
@@ -691,12 +709,16 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 
 	// First the columns (shown as soon as they come, so a cancel leaves them), then the first page
 	SPPostgresTableData *data = tableData;
+	SPPostgresFilter *theStartFilter = [[startFilter retain] autorelease];
 	NSString *description = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theTable];
 	[taskRunner runTaskWithDescription:description cancelTitle:NSLocalizedString(@"Stop", @"stop button") work:^id(PGPostgresConnection *theConnection, NSError **error) {
 		NSArray *theColumns = [data columns:error];
 		if (!theColumns) return nil;
 		BOOL isEditable = [data isEditable];
-		return @{@"columns" : theColumns, @"editable" : @(isEditable), @"readOnlyReason" : (isEditable ? nil : [data readOnlyReason]) ?: @""};
+		// Without its foreign keys the table still shows (with no link arrows)
+		NSDictionary *references = [data foreignKeyReferences:NULL] ?: @{};
+		return @{@"columns" : theColumns, @"editable" : @(isEditable), @"readOnlyReason" : (isEditable ? nil : [data readOnlyReason]) ?: @"",
+				 @"foreignKeys" : references};
 	} completion:^(id result, NSError *error, BOOL cancelled) {
 		if (invalidated || generation != loadGeneration) return;
 
@@ -713,11 +735,15 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 
 		[columns release];
 		columns = [[result objectForKey:@"columns"] copy];
+		[foreignKeys release];
+		foreignKeys = [[result objectForKey:@"foreignKeys"] copy];
 		editable = [[result objectForKey:@"editable"] boolValue];
 		[self setNoticeText:[result objectForKey:@"readOnlyReason"]];
 		[self _showColumns];
 		[self _updateBottomBar];
-		[self _loadWithFilter:nil sortColumn:nil ascending:YES page:1 description:description];
+		SPPostgresFilter *firstFilter = [[self columnNames] containsObject:[theStartFilter column] ?: @""] ? theStartFilter : nil;
+		if (firstFilter) [self _showFilterInBar:firstFilter];
+		[self _loadWithFilter:firstFilter sortColumn:nil ascending:YES page:1 description:description];
 	}];
 }
 
@@ -868,7 +894,14 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 		[tableColumn setResizingMask:NSTableColumnUserResizingMask];
 		[tableColumn setMinWidth:SPPostgresContentMinColumnWidth];
 
-		NSTextFieldCell *cell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
+		NSTextFieldCell *cell;
+		if ([foreignKeys objectForKey:[column name]]) {
+			// As MySQL's grid: an arrow after the value, to the referenced row
+			SPTextAndLinkCell *linkCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
+			[linkCell setTarget:self action:@selector(_clickLinkArrow:)];
+			cell = linkCell;
+		}
+		else cell = [[[NSTextFieldCell alloc] initTextCell:@""] autorelease];
 		[cell setEditable:YES];
 		[cell setScrollable:YES];
 		[cell setLineBreakMode:NSLineBreakByClipping];
@@ -900,7 +933,9 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 			width = MAX(width, [string sizeWithAttributes:attributes].width + 8);
 		}
 
-		[tableColumn setWidth:MIN(MAX(ceil(width), SPPostgresContentMinColumnWidth), SPPostgresContentMaxColumnWidth)];
+		// Room for the link arrow (as MySQL's)
+		CGFloat arrowWidth = [foreignKeys objectForKey:[[self _columnForTableColumn:tableColumn] name] ?: @""] ? 18 : 0;
+		[tableColumn setWidth:MIN(MAX(ceil(width + arrowWidth), SPPostgresContentMinColumnWidth), SPPostgresContentMaxColumnWidth + arrowWidth)];
 	}
 }
 
@@ -981,6 +1016,16 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 		[self _loadWithFilter:nil sortColumn:sortColumn ascending:sortAscending page:1
 				  description:NSLocalizedString(@"Filtering table...", @"Filtering table task description")];
 	}
+}
+
+/// The filter bar shown (its preference unchanged) holding filter, as if typed.
+- (void)_showFilterInBar:(SPPostgresFilter *)theFilter
+{
+	if (!filterBarVisible) [self _setFilterBarVisible:YES];
+	if ([filterColumnPopup indexOfItemWithTitle:[theFilter column]] >= 0) [filterColumnPopup selectItemWithTitle:[theFilter column]];
+	if ([filterComparisonPopup indexOfItemWithTitle:[theFilter comparison]] >= 0) [filterComparisonPopup selectItemWithTitle:[theFilter comparison]];
+	[filterValueField setStringValue:[theFilter value] ?: @""];
+	[self _filterComparisonChanged:nil];
 }
 
 - (IBAction)applyFilter:(id)sender
@@ -1791,13 +1836,66 @@ static void *SPPostgresContentDefaultsContext = &SPPostgresContentDefaultsContex
 - (void)tableView:(NSTableView *)theTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
-	if (rowIndex < 0 || (NSUInteger)rowIndex >= [rows count]) return;
+	BOOL isLinkCell = [cell isKindOfClass:[SPTextAndLinkCell class]];
+	if (rowIndex < 0 || (NSUInteger)rowIndex >= [rows count]) {
+		if (isLinkCell) [cell setLinkActive:NO];
+		return;
+	}
 
 	id value = [[rows objectAtIndex:(NSUInteger)rowIndex] objectAtIndex:(NSUInteger)[[tableColumn identifier] integerValue]];
 
 	// As MySQL's grid: NULL in grey, except in the selected rows
 	BOOL isNull = ![value isKindOfClass:[NSString class]];
 	[cell setTextColor:(isNull && ![theTableView isRowSelected:rowIndex]) ? [NSColor lightGrayColor] : [NSColor controlTextColor]];
+
+	// As MySQL's: no link arrow on NULL, on the row being edited, or on a new row not inserted yet
+	if (isLinkCell) [cell setLinkActive:!isNull && [theTableView editedRow] != rowIndex && rowIndex != [self _pendingRowIndex]];
+}
+
+#pragma mark - Foreign key links
+
+- (NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *)foreignKeyReferences
+{
+	return [[foreignKeys retain] autorelease];
+}
+
+- (void)_clickLinkArrow:(SPTextAndLinkCell *)cell
+{
+	NSInteger columnIndex = [cell getClickedColumn];
+	NSInteger row = [cell getClickedRow];
+	if (columnIndex < 0 || row < 0 || columnIndex >= (NSInteger)[[tableView tableColumns] count]) return;
+	NSTableColumn *tableColumn = [[tableView tableColumns] objectAtIndex:(NSUInteger)columnIndex];
+	[self followForeignKeyAtRow:row column:(NSUInteger)[[tableColumn identifier] integerValue]];
+}
+
+- (void)followForeignKeyAtRow:(NSInteger)row column:(NSUInteger)columnIndex
+{
+	if (invalidated || [self _refuseWriteWhileBusy]) return;
+	if (row < 0 || (NSUInteger)row >= [rows count] || columnIndex >= [columns count] || row == [self _pendingRowIndex]) return;
+
+	NSDictionary *reference = [foreignKeys objectForKey:[[columns objectAtIndex:columnIndex] name]];
+	id value = [[rows objectAtIndex:(NSUInteger)row] objectAtIndex:columnIndex];
+	if (!reference || ![value isKindOfClass:[NSString class]]) return;
+
+	// The value is copied first: ending the edit may reload the rows
+	NSString *theValue = [[value copy] autorelease];
+	[self _endEditing];
+
+	SPPostgresFilter *linkFilter = [SPPostgresFilter filterWithColumn:[reference objectForKey:@"column"] comparison:@"=" value:theValue];
+
+	// A key into this table: filtered here
+	if ([[reference objectForKey:@"schema"] isEqualToString:schema] && [[reference objectForKey:@"table"] isEqualToString:table]) {
+		[self _showFilterInBar:linkFilter];
+		[self _loadWithFilter:linkFilter sortColumn:sortColumn ascending:sortAscending page:1
+				  description:NSLocalizedString(@"Filtering table...", @"Filtering table task description")];
+		return;
+	}
+
+	if (!foreignKeyFollower) {
+		NSBeep();
+		return;
+	}
+	foreignKeyFollower([reference objectForKey:@"schema"], [reference objectForKey:@"table"], [reference objectForKey:@"column"], theValue);
 }
 
 /// Ascending on the first click, then toggles; from the first page.
